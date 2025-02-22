@@ -1,0 +1,8 @@
+<h2>Pending Orders</h2>
+{% for order in orders %}
+    <p>{{ order.name }} - {{ order.order_details }} - {{ order.phone }}</p>
+    <form method="POST">
+        <input type="hidden" name="order_id" value="{{ order.id }}">
+        <button type="submit">Confirm Payment</button>
+    </form>
+{% endfor %}
