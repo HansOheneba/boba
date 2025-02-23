@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Order Confirmation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-100">
+    <div
+      class="max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-10"
+    >
+      <div class="p-4">
+        <h1 class="text-xl font-bold text-center">Order Confirmation</h1>
+        <p class="text-center mt-4">
+          Thank you for your order! We will process it shortly.
+        </p>
+        <p class="text-center mt-4">
+          Total Amount: <strong>{{ total }} Cedis</strong>
+        </p>
+        <p class="text-center mt-4">
+          Order Number: <strong>{{ order_number }}</strong>
+        </p>
+        <p class="text-center mt-4">
+          Please make payment to mobile money number:
+          <strong>0592076527</strong>
+        </p>
+        <p class="text-center mt-4">
+          You will receive a call from us once payment has been made.
+        </p>
+        <p class="text-center mt-4 text-red-500">
+          Note: Some extras will attract additional costs.
+        </p>
+        <div class="text-center mt-4">
+          <a href="/" class="bg-blue-500 text-white p-2 rounded"
+            >Place Another Order</a
+          >
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
