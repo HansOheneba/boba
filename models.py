@@ -51,3 +51,11 @@ def update_order_status(order_id, status):
     cursor.execute("UPDATE orders SET status=%s WHERE id=%s", (status, order_id))
     conn.commit()
     conn.close()
+
+
+def confirm_order(order_id):
+    update_order_status(order_id, "confirmed")
+
+
+def cancel_order(order_id):
+    update_order_status(order_id, "canceled")

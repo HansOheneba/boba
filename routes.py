@@ -1,8 +1,20 @@
 from flask import Blueprint, render_template, request, redirect, url_for
-from models import create_order, get_orders, update_order_status
-import uuid
+from models import (
+    create_order,
+    get_orders,
+    update_order_status,
+    confirm_order,
+    cancel_order,
+)
+import random
+import string
 
 app = Blueprint("app", __name__)
+
+
+def generate_order_number():
+    chars = string.ascii_lowercase + string.digits
+    return "boba-" + "".join(random.choice(chars) for _ in range(4))
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -14,7 +26,7 @@ def index():
         notes = request.form.get("notes")
         phone = request.form.get("phone")
         total = request.form.get("total")
-        order_number = str(uuid.uuid4())[:8]
+        order_number = generate_order_number()
 
         if not name or not location or not order_details or not phone:
             return "All fields are required", 400
@@ -40,7 +52,11 @@ def order_confirmation():
 def admin():
     if request.method == "POST":
         order_id = request.form.get("order_id")
-        update_order_status(order_id, "confirmed")
+        action = request.form.get("action")
+        if action == "confirm":
+            confirm_order(order_id)
+        elif action == "cancel":
+            cancel_order(order_id)
 
     orders = get_orders("pending")
     return render_template("admin.html", orders=orders)

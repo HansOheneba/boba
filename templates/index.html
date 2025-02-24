@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html lang="en" x-data="{ showModal: false, total: 0, orderNumber: '' }">
+<html
+  lang="en"
+  x-data="{ showModal: false, total: 0, orderNumber: '', name: '', location: '', notes: '', phone: '' }"
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,30 +19,30 @@
     >
       <div class="p-4">
         <h1 class="text-xl font-bold text-center">Bubble Bliss</h1>
-        <form action="/" method="POST" class="mt-4">
+        <form action="/" method="POST" class="mt-4" id="order-form">
           <div class="mt-4">
             <h2 class="text-lg font-semibold">Boba Tea</h2>
             <div class="grid grid-cols-3 gap-4 mt-4">
               <button
                 type="button"
                 class="p-4 bg-pink-400 rounded-lg font-semibold"
-                onclick="addToCart('Strawberry Boba', 4)"
+                onclick="addToCart('Strawberry Boba', 40)"
               >
-                Strawberry - 4 Cedis
+                Strawberry
               </button>
               <button
                 type="button"
                 class="p-4 bg-brown-400 rounded-lg font-semibold"
-                onclick="addToCart('Chocolate Boba', 4)"
+                onclick="addToCart('Chocolate Boba', 40)"
               >
-                Chocolate - 4 Cedis
+                Chocolate
               </button>
               <button
                 type="button"
                 class="p-4 bg-yellow-400 rounded-lg font-semibold"
-                onclick="addToCart('Vanilla Boba', 4)"
+                onclick="addToCart('Vanilla Boba', 40)"
               >
-                Vanilla - 4 Cedis
+                Vanilla
               </button>
             </div>
           </div>
@@ -49,16 +52,16 @@
               <button
                 type="button"
                 class="p-4 bg-gray-200 rounded-lg font-semibold"
-                onclick="addToCart('Shawarma Regular', 5)"
+                onclick="addToCart('Shawarma Regular', 40)"
               >
-                Regular - 5 Cedis
+                Regular
               </button>
               <button
                 type="button"
                 class="p-4 bg-gray-300 rounded-lg font-semibold"
-                onclick="addToCart('Shawarma Large', 7)"
+                onclick="addToCart('Shawarma Large', 50)"
               >
-                Large - 7 Cedis
+                Large
               </button>
             </div>
           </div>
@@ -66,7 +69,7 @@
             <h2 class="text-lg font-semibold">Your Order</h2>
             <ul id="cart" class="list-disc pl-4 text-gray-700"></ul>
             <div id="total-container" class="mt-2 text-right font-bold hidden">
-              Total: <span id="total">0</span> Cedis
+              Total: <span id="total">0</span> GHS
             </div>
             <input type="hidden" name="order" id="order-input" />
             <input type="hidden" name="total" id="total-input" />
@@ -76,6 +79,7 @@
               placeholder="Enter your name"
               required
               class="w-full p-2 mt-2 border rounded"
+              x-model="name"
             />
             <input
               type="text"
@@ -83,11 +87,13 @@
               placeholder="Enter your location"
               required
               class="w-full p-2 mt-2 border rounded"
+              x-model="location"
             />
             <textarea
               name="notes"
               placeholder="Any special requests?"
               class="w-full p-2 mt-2 border rounded"
+              x-model="notes"
             ></textarea>
             <input
               type="text"
@@ -95,11 +101,12 @@
               placeholder="Enter your phone number"
               required
               class="w-full p-2 mt-2 border rounded"
+              x-model="phone"
             />
             <button
               type="button"
               class="mt-4 w-full bg-blue-500 text-white p-2 rounded"
-              @click="showModal = true; total = document.getElementById('total').textContent; orderNumber = generateOrderNumber()"
+              @click="validateForm()"
             >
               Place Order
             </button>
@@ -120,32 +127,30 @@
       x-transition:leave-end="opacity-0"
     >
       <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
-        <h2 class="text-xl font-bold text-center">Order Confirmation</h2>
-        <p class="text-center mt-4">
-          Thank you for your order! We will process it shortly.
+        <h2 class="text-xl font-bold text-center">Confirm Your Order</h2>
+        <p class="text-center mt-4 text-sm">
+          Please review your order details below:
         </p>
-        <p class="text-center mt-4">
-          Total Amount: <strong x-text="total">0</strong> Cedis
-        </p>
-        <p class="text-center mt-4">
-          Order Number: <strong x-text="orderNumber"></strong>
-        </p>
-        <p class="text-center mt-4">
-          Please make payment to mobile money number:
-          <strong>0592076527</strong>
-        </p>
-        <p class="text-center mt-4">
-          You will receive a call from us once payment has been made.
-        </p>
-        <p class="text-center mt-4 text-red-500">
-          Note: Some extras will attract additional costs.
-        </p>
+        <div class="mt-4 text-sm">
+          <p><strong>Name:</strong> <span x-text="name"></span></p>
+          <p><strong>Location:</strong> <span x-text="location"></span></p>
+          <p><strong>Phone:</strong> <span x-text="phone"></span></p>
+          <p><strong>Notes:</strong> <span x-text="notes"></span></p>
+          <p><strong>Order:</strong> <span id="order-summary"></span></p>
+          <p><strong>Total:</strong> <span x-text="total"></span> GHS</p>
+        </div>
         <div class="text-center mt-4">
           <button
-            class="bg-blue-500 text-white p-2 rounded"
-            @click="showModal = false; window.location.reload()"
+            class="bg-green-500 text-white p-2 rounded w-full hover:bg-green-600 focus:ring-2 focus:outline-none focus:ring-green-300"
+            @click="document.querySelector('form').submit()"
           >
-            Close
+            Confirm
+          </button>
+          <button
+            class="border-2 border-red-500 text-red-500 p-2 rounded w-full mt-2 hover:bg-red-200 focus:ring-2 focus:outline-none focus:ring-red-300"
+            @click="showModal = false"
+          >
+            Edit
           </button>
         </div>
       </div>
@@ -181,7 +186,7 @@
           let li = document.createElement("li");
           li.textContent = `${item.name} x${item.quantity} - ${
             item.price * item.quantity
-          } Cedis`;
+          } GHS`;
           li.classList.add("cursor-pointer", "hover:text-red-500");
           li.onclick = () => removeFromCart(index);
           let removeButton = document.createElement("span");
@@ -204,12 +209,35 @@
           document.getElementById("total-container").classList.add("hidden");
         }
 
-        // Update the total in the modal
-        document.querySelector('[x-text="total"]').textContent = total;
+        // Update the order summary in the modal
+        document.getElementById("order-summary").textContent = cart
+          .map((item) => `${item.name} x${item.quantity}`)
+          .join(", ");
       }
 
       function generateOrderNumber() {
-        return Math.random().toString(36).substr(2, 8).toUpperCase();
+        const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        let result = "boba-";
+        for (let i = 0; i < 4; i++) {
+          result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+      }
+
+      function validateForm() {
+        const form = document.getElementById("order-form");
+        if (form.checkValidity() && cart.length > 0) {
+          document.querySelector("[x-data]").__x.$data.showModal = true;
+          document.querySelector("[x-data]").__x.$data.total =
+            document.getElementById("total").textContent;
+          document.querySelector("[x-data]").__x.$data.orderNumber =
+            generateOrderNumber();
+        } else {
+          form.reportValidity();
+          if (cart.length === 0) {
+            alert("Please select at least one item.");
+          }
+        }
       }
     </script>
   </body>
