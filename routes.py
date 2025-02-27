@@ -26,12 +26,28 @@ def index():
         notes = request.form.get("notes")
         phone = request.form.get("phone")
         total = request.form.get("total")
+        boba_toppings = request.form.get("boba_toppings")
+        shawarma_type = request.form.get("shawarma_type")
         order_number = generate_order_number()
 
         if not name or not location or not order_details or not phone:
             return "All fields are required", 400
 
-        create_order(name, location, order_details, notes, phone, total, order_number)
+        # Combine boba toppings and shawarma type into order_details
+        if boba_toppings:
+            order_details += f" with {boba_toppings}"
+        if shawarma_type:
+            order_details += f", {shawarma_type}"
+
+        create_order(
+            name,
+            location,
+            order_details,
+            notes,
+            phone,
+            total,
+            order_number,
+        )
         return redirect(
             url_for("app.order_confirmation", total=total, order_number=order_number)
         )

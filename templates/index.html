@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html
   lang="en"
-  x-data="{ showModal: false, total: 0, orderNumber: '', name: '', location: '', notes: '', phone: '' }"
+  x-data="{ showModal: false, showToppingsModal: false, showShawarmaModal: false, total: 0, orderNumber: '', name: '', location: '', notes: '', phone: '', selectedBoba: '', selectedShawarma: '', selectedShawarmaType: '', selectedBobaType: '' }"
 >
   <head>
     <meta charset="UTF-8" />
@@ -22,46 +22,46 @@
         <form action="/" method="POST" class="mt-4" id="order-form">
           <div class="mt-4">
             <h2 class="text-lg font-semibold">Boba Tea</h2>
-            <div class="grid grid-cols-3 gap-4 mt-4">
+            <div class="grid grid-cols-3 gap-4 mt-4 text-sm text-white">
               <button
                 type="button"
                 class="p-4 bg-pink-400 rounded-lg font-semibold"
-                onclick="addToCart('Strawberry Boba', 40)"
+                onclick="selectBobaType('Strawberry Boba')"
               >
                 Strawberry
               </button>
               <button
                 type="button"
-                class="p-4 bg-brown-400 rounded-lg font-semibold"
-                onclick="addToCart('Chocolate Boba', 40)"
+                class="p-4 bg-orange-950  rounded-lg font-semibold"
+                onclick="selectBobaType('Chocolate Boba')"
               >
                 Chocolate
               </button>
               <button
                 type="button"
                 class="p-4 bg-yellow-400 rounded-lg font-semibold"
-                onclick="addToCart('Vanilla Boba', 40)"
+                onclick="selectBobaType('Vanilla Boba')"
               >
                 Vanilla
               </button>
             </div>
           </div>
-          <div class="mt-4">
+          <div class="mt-4 text-sm">
             <h2 class="text-lg font-semibold">Shawarma</h2>
-            <div class="grid grid-cols-2 gap-4 mt-4">
+            <div class="grid grid-cols-2 gap-4 mt-4 text-white">
               <button
                 type="button"
-                class="p-4 bg-gray-200 rounded-lg font-semibold"
-                onclick="addToCart('Shawarma Regular', 40)"
+                class="p-4 bg-yellow-500 rounded-lg font-semibold"
+                onclick="selectShawarmaType('Chicken Shawarma')"
               >
-                Regular
+                Chicken Shawarma
               </button>
               <button
                 type="button"
-                class="p-4 bg-gray-300 rounded-lg font-semibold"
-                onclick="addToCart('Shawarma Large', 50)"
+                class="p-4 bg-red-700 rounded-lg font-semibold"
+                onclick="selectShawarmaType('Beef Shawarma')"
               >
-                Large
+                Beef Shawarma
               </button>
             </div>
           </div>
@@ -115,6 +115,99 @@
       </div>
     </div>
 
+    <!-- Toppings Modal -->
+  <div
+  x-show="showToppingsModal"
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4"
+  x-transition:enter="transition ease-out duration-300"
+  x-transition:enter-start="opacity-0"
+  x-transition:enter-end="opacity-100"
+  x-transition:leave="transition ease-in duration-300"
+  x-transition:leave-start="opacity-100"
+  x-transition:leave-end="opacity-0"
+>
+  <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+    <h2 class="text-xl font-bold text-center" x-text="selectedBobaType"></h2>
+
+    <!-- Styled Topping Selection -->
+    <div class="mt-4 text-sm space-y-3">
+      <label class="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer">
+        <input type="radio" name="topping" value="Tapioca Pearls" class="w-5 h-5 text-green-500 focus:ring-green-500">
+        <span>Tapioca Pearls</span>
+      </label>
+      <label class="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer">
+        <input type="radio" name="topping" value="Popping Boba" class="w-5 h-5 text-green-500 focus:ring-green-500">
+        <span>Popping Boba</span>
+      </label>
+      <label class="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer">
+        <input type="radio" name="topping" value="Jelly" class="w-5 h-5 text-green-500 focus:ring-green-500">
+        <span>Jelly</span>
+      </label>
+    </div>
+
+    <p class="text-left mt-4 text-xs text-gray-500">
+      Note: Extra toppings can be added at a fee in the special requests section.
+    </p>
+
+    <div class="text-center mt-4">
+      <button
+        class="bg-green-500 text-white p-3 rounded w-full hover:bg-green-600 focus:ring-2 focus:outline-none focus:ring-green-300"
+        @click="addToppings()"
+      >
+        Add Toppings
+      </button>
+      <button
+        class="border-2 border-red-500 text-red-500 p-3 rounded w-full mt-2 hover:bg-red-200 focus:ring-2 focus:outline-none focus:ring-red-300"
+        @click="showToppingsModal = false"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+
+
+    <!-- Shawarma Size Modal -->
+    <div
+      x-show="showShawarmaModal"
+      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-300"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+    >
+      <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+        <h2
+          class="text-xl font-bold text-center"
+          x-text="selectedShawarmaType"
+        ></h2>
+        <div class="mt-4 text-sm">
+          <button
+            class="bg-gray-200 text-black p-2 rounded w-full hover:bg-gray-300 focus:ring-2 focus:outline-none focus:ring-gray-300"
+            @click="addShawarma(selectedShawarmaType, 'Medium', selectedShawarmaType.includes('Chicken') ? 35 : 40)"
+          >
+            Medium
+          </button>
+          <button
+            class="bg-gray-300 text-black p-2 rounded w-full mt-2 hover:bg-gray-400 focus:ring-2 focus:outline-none focus:ring-gray-300"
+            @click="addShawarma(selectedShawarmaType, 'Large', selectedShawarmaType.includes('Chicken') ? 45 : 50)"
+          >
+            Large
+          </button>
+        </div>
+        <div class="text-center mt-4">
+          <button
+            class="border-2 border-red-500 text-red-500 p-2 rounded w-full mt-2 hover:bg-red-200 focus:ring-2 focus:outline-none focus:ring-red-300"
+            @click="showShawarmaModal = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Confirmation Modal -->
     <div
       x-show="showModal"
@@ -158,6 +251,32 @@
 
     <script>
       let cart = [];
+
+      function selectBobaType(type) {
+        document.querySelector("[x-data]").__x.$data.selectedBobaType = type;
+        document.querySelector("[x-data]").__x.$data.showToppingsModal = true;
+      }
+
+      function addToppings() {
+        const topping = document.querySelector(
+          'input[name="topping"]:checked'
+        ).value;
+        const selectedBobaType =
+          document.querySelector("[x-data]").__x.$data.selectedBobaType;
+        addToCart(selectedBobaType + " with " + topping, 30);
+        document.querySelector("[x-data]").__x.$data.showToppingsModal = false;
+      }
+
+      function selectShawarmaType(type) {
+        document.querySelector("[x-data]").__x.$data.selectedShawarmaType =
+          type;
+        document.querySelector("[x-data]").__x.$data.showShawarmaModal = true;
+      }
+
+      function addShawarma(type, size, price) {
+        addToCart(type + " (" + size + ")", price);
+        document.querySelector("[x-data]").__x.$data.showShawarmaModal = false;
+      }
 
       function addToCart(item, price) {
         let existingItem = cart.find((cartItem) => cartItem.name === item);
