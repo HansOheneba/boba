@@ -21,75 +21,123 @@
         <h1 class="text-xl font-bold text-center">Bubble Bliss</h1>
         <form action="/" method="POST" class="mt-4" id="order-form">
           <div class="mt-4">
-  <h2 class="text-lg font-semibold">Boba Tea</h2>
-  <div class="overflow-x-auto whitespace-nowrap flex gap-4 mt-4 p-2">
-    <div class="grid grid-cols-4 gap-4 flex-shrink-0">
-      <!-- Blueberry Boba -->
-      <div class="bg-blue-500 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48" 
-        x-bind:class="{ 'border-green-500': selectedBobaType === 'Blueberry Boba' }" 
-        @click="selectBobaType('Blueberry Boba')">
-        <img src="{{ url_for('static', filename='img/blueberry_boba.png') }}" alt="Blueberry Boba" class="mx-auto rounded-full w-24 h-24" />
-        <p class="mt-2 font-bold">Blueberry Boba</p>
-      </div>
-      
-      <!-- Brown Sugar Boba -->
-      <div class="bg-yellow-700 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48" 
-        x-bind:class="{ 'border-green-500': selectedBobaType === 'Brown Sugar Boba' }" 
-        @click="selectBobaType('Brown Sugar Boba')">
-        <img src="{{ url_for('static', filename='img/brown_sugar_boba.png') }}" alt="Brown Sugar Boba" class="mx-auto rounded-full w-24 h-24" />
-        <p class="mt-2 font-bold">Brown Sugar Boba</p>
-      </div>
-      
-      <!-- Caramel Milk -->
-      <div class="bg-amber-500 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48" 
-        x-bind:class="{ 'border-green-500': selectedBobaType === 'Caramel Milk' }" 
-        @click="selectBobaType('Caramel Milk')">
-        <img src="{{ url_for('static', filename='img/caramel_milk.png') }}" alt="Caramel Milk" class="mx-auto rounded-full w-24 h-24" />
-        <p class="mt-2 font-bold">Caramel Milk</p>
-      </div>
-      
-      <!-- Classic Boba -->
-      <div class="bg-gray-700 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48" 
-        x-bind:class="{ 'border-green-500': selectedBobaType === 'Classic Boba' }" 
-        @click="selectBobaType('Classic Boba')">
-        <img src="{{ url_for('static', filename='img/classic_boba.png') }}" alt="Classic Boba" class="mx-auto rounded-full w-24 h-24" />
-        <p class="mt-2 font-bold">Classic Boba</p>
-      </div>
-      
-      <!-- Coconut Milk -->
-      <div class="bg-teal-500 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48" 
-        x-bind:class="{ 'border-green-500': selectedBobaType === 'Coconut Milk' }" 
-        @click="selectBobaType('Coconut Milk')">
-        <img src="{{ url_for('static', filename='img/coconut_milk.png') }}" alt="Coconut Milk" class="mx-auto rounded-full w-24 h-24" />
-        <p class="mt-2 font-bold">Coconut Milk</p>
-      </div>
-      
-      <!-- Coffee -->
-      <div class="bg-red-950 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48" 
-        x-bind:class="{ 'border-green-500': selectedBobaType === 'Coffee' }" 
-        @click="selectBobaType('Coffee')">
-        <img src="{{ url_for('static', filename='img/coffee.png') }}" alt="Coffee" class="mx-auto rounded-full w-24 h-24" />
-        <p class="mt-2 font-bold">Coffee</p>
-      </div>
-      
-      <!-- Taro Boba -->
-      <div class="bg-purple-500 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48" 
-        x-bind:class="{ 'border-green-500': selectedBobaType === 'Taro Boba' }" 
-        @click="selectBobaType('Taro Boba')">
-        <img src="{{ url_for('static', filename='img/taro_boba.png') }}" alt="Taro Boba" class="mx-auto rounded-full w-24 h-24" />
-        <p class="mt-2 font-bold">Taro Boba</p>
-      </div>
-      
-      <!-- Vanilla Boba -->
-      <div class="bg-yellow-300 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48" 
-        x-bind:class="{ 'border-green-500': selectedBobaType === 'Vanilla Boba' }" 
-        @click="selectBobaType('Vanilla Boba')">
-        <img src="{{ url_for('static', filename='img/vanilla_boba.png') }}" alt="Vanilla Boba" class="mx-auto rounded-full w-24 h-24" />
-        <p class="mt-2 font-bold">Vanilla Boba</p>
-      </div>
-    </div>
-  </div>
-</div>
+            <h2 class="text-lg font-semibold">Boba Tea</h2>
+            <div class="overflow-x-auto whitespace-nowrap flex gap-4 mt-4 p-2">
+              <div class="grid grid-cols-4 gap-4 flex-shrink-0">
+                <!-- Blueberry Boba -->
+                <div
+                  class="bg-blue-500 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Blueberry Boba' }"
+                  @click="selectBobaType('Blueberry Boba')"
+                >
+                  <img
+                    src="{{ url_for('static', filename='img/blueberry_boba.png') }}"
+                    alt="Blueberry Boba"
+                    class="mx-auto rounded-full w-24 h-24"
+                  />
+                  <p class="mt-2 font-bold">Blueberry Boba</p>
+                </div>
+
+                <!-- Brown Sugar Boba -->
+                <div
+                  class="bg-yellow-700 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Brown Sugar Boba' }"
+                  @click="selectBobaType('Brown Sugar Boba')"
+                >
+                  <img
+                    src="{{ url_for('static', filename='img/brown_sugar_boba.png') }}"
+                    alt="Brown Sugar Boba"
+                    class="mx-auto rounded-full w-24 h-24"
+                  />
+                  <p class="mt-2 font-bold">Brown Sugar Boba</p>
+                </div>
+
+                <!-- Caramel Milk -->
+                <div
+                  class="bg-amber-500 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Caramel Milk' }"
+                  @click="selectBobaType('Caramel Milk')"
+                >
+                  <img
+                    src="{{ url_for('static', filename='img/caramel_milk.png') }}"
+                    alt="Caramel Milk"
+                    class="mx-auto rounded-full w-24 h-24"
+                  />
+                  <p class="mt-2 font-bold">Caramel Milk</p>
+                </div>
+
+                <!-- Classic Boba -->
+                <div
+                  class="bg-gray-700 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Classic Boba' }"
+                  @click="selectBobaType('Classic Boba')"
+                >
+                  <img
+                    src="{{ url_for('static', filename='img/classic_boba.png') }}"
+                    alt="Classic Boba"
+                    class="mx-auto rounded-full w-24 h-24"
+                  />
+                  <p class="mt-2 font-bold">Classic Boba</p>
+                </div>
+
+                <!-- Coconut Milk -->
+                <div
+                  class="bg-teal-500 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Coconut Milk' }"
+                  @click="selectBobaType('Coconut Milk')"
+                >
+                  <img
+                    src="{{ url_for('static', filename='img/coconut_milk.png') }}"
+                    alt="Coconut Milk"
+                    class="mx-auto rounded-full w-24 h-24"
+                  />
+                  <p class="mt-2 font-bold">Coconut Milk</p>
+                </div>
+
+                <!-- Coffee -->
+                <div
+                  class="bg-red-950 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Coffee' }"
+                  @click="selectBobaType('Coffee')"
+                >
+                  <img
+                    src="{{ url_for('static', filename='img/coffee.png') }}"
+                    alt="Coffee"
+                    class="mx-auto rounded-full w-24 h-24"
+                  />
+                  <p class="mt-2 font-bold">Coffee</p>
+                </div>
+
+                <!-- Taro Boba -->
+                <div
+                  class="bg-purple-500 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Taro Boba' }"
+                  @click="selectBobaType('Taro Boba')"
+                >
+                  <img
+                    src="{{ url_for('static', filename='img/taro_boba.png') }}"
+                    alt="Taro Boba"
+                    class="mx-auto rounded-full w-24 h-24"
+                  />
+                  <p class="mt-2 font-bold">Taro Boba</p>
+                </div>
+
+                <!-- Vanilla Boba -->
+                <div
+                  class="bg-yellow-300 text-white p-4 rounded-lg shadow-lg text-center cursor-pointer border-4 border-transparent w-48"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Vanilla Boba' }"
+                  @click="selectBobaType('Vanilla Boba')"
+                >
+                  <img
+                    src="{{ url_for('static', filename='img/vanilla_boba.png') }}"
+                    alt="Vanilla Boba"
+                    class="mx-auto rounded-full w-24 h-24"
+                  />
+                  <p class="mt-2 font-bold">Vanilla Boba</p>
+                </div>
+              </div>
+            </div>
+          </div>
           <div class="mt-4 text-sm">
             <h2 class="text-lg font-semibold">Shawarma</h2>
             <div class="grid grid-cols-2 gap-4 mt-4 text-white">
@@ -160,60 +208,102 @@
     </div>
 
     <!-- Toppings Modal -->
-  <div
-  x-show="showToppingsModal"
-  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4"
-  x-transition:enter="transition ease-out duration-300"
-  x-transition:enter-start="opacity-0"
-  x-transition:enter-end="opacity-100"
-  x-transition:leave="transition ease-in duration-300"
-  x-transition:leave-start="opacity-100"
-  x-transition:leave-end="opacity-0"
->
-  <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
-    <h2 class="text-xl font-bold text-center" x-text="selectedBobaType"></h2>
+    <div
+      x-show="showToppingsModal"
+      class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 p-4"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-300"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+    >
+      <div class="bg-white p-6 rounded-lg shadow-lg max-w-sm w-full">
+        <h2
+          class="text-xl font-bold text-center"
+          x-text="selectedBobaType"
+        ></h2>
 
-    <!-- Styled Topping Selection -->
-    <div class="mt-4 text-sm space-y-3">
-      <label class="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer">
-        <input type="radio" name="topping" value="Tapioca Pearls" class="w-5 h-5 text-green-500 focus:ring-green-500">
-        <span>Tapioca Pearls</span>
-      </label>
-      <label class="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer">
-        <input type="radio" name="topping" value="Popping Boba" class="w-5 h-5 text-green-500 focus:ring-green-500">
-        <span>Popping Boba</span>
-      </label>
-      <label class="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer">
-        <input type="radio" name="topping" value="Jelly" class="w-5 h-5 text-green-500 focus:ring-green-500">
-        <span>Jelly</span>
-      </label>
-      <label class="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer">
-        <input type="radio" name="topping" value="no toppings" class="w-5 h-5 text-green-500 focus:ring-green-500">
-        <span>No Toppings</span>
-      </label>
+        <!-- Styled Topping Selection -->
+        <div class="mt-4 text-sm space-y-3">
+          <label
+            class="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer"
+          >
+            <input
+              type="radio"
+              name="topping"
+              value="Medium (No Toppings)"
+              class="w-5 h-5 text-green-500 focus:ring-green-500"
+            />
+            <span>Medium (No Toppings)</span>
+          </label>
+          <label
+            class="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer"
+          >
+            <input
+              type="radio"
+              name="topping"
+              value="Tapioca Pearls"
+              class="w-5 h-5 text-green-500 focus:ring-green-500"
+            />
+            <span>Tapioca Pearls</span>
+          </label>
+          <label
+            class="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer"
+          >
+            <input
+              type="radio"
+              name="topping"
+              value="Popping Boba"
+              class="w-5 h-5 text-green-500 focus:ring-green-500"
+            />
+            <span>Popping Boba</span>
+          </label>
+          <label
+            class="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer"
+          >
+            <input
+              type="radio"
+              name="topping"
+              value="Jelly"
+              class="w-5 h-5 text-green-500 focus:ring-green-500"
+            />
+            <span>Jelly</span>
+          </label>
+          <label
+            class="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer"
+          >
+            <input
+              type="radio"
+              name="topping"
+              value="large (no toppings)"
+              class="w-5 h-5 text-green-500 focus:ring-green-500"
+            />
+            <span>Large with no Toppings</span>
+          </label>
+        </div>
+
+        <p class="text-left mt-4 text-xs text-gray-500">
+          Note: Extra toppings can be added at a fee in the special requests
+          section.
+        </p>
+
+        <div class="text-center mt-4">
+          <button
+            class="bg-green-500 text-white p-3 rounded w-full hover:bg-green-600 focus:ring-2 focus:outline-none focus:ring-green-300"
+            @click="addToppings()"
+          >
+            Add
+          </button>
+          <button
+            class="border-2 border-red-500 text-red-500 p-3 rounded w-full mt-2 hover:bg-red-200 focus:ring-2 focus:outline-none focus:ring-red-300"
+            @click="showToppingsModal = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
-
-    <p class="text-left mt-4 text-xs text-gray-500">
-      Note: Extra toppings can be added at a fee in the special requests section.
-    </p>
-
-    <div class="text-center mt-4">
-      <button
-        class="bg-green-500 text-white p-3 rounded w-full hover:bg-green-600 focus:ring-2 focus:outline-none focus:ring-green-300"
-        @click="addToppings()"
-      >
-        Add
-      </button>
-      <button
-        class="border-2 border-red-500 text-red-500 p-3 rounded w-full mt-2 hover:bg-red-200 focus:ring-2 focus:outline-none focus:ring-red-300"
-        @click="showToppingsModal = false"
-      >
-        Cancel
-      </button>
-    </div>
-  </div>
-</div>
-
 
     <!-- Shawarma Size Modal -->
     <div
@@ -231,23 +321,39 @@
           class="text-xl font-bold text-center"
           x-text="selectedShawarmaType"
         ></h2>
-        <div class="mt-4 text-sm">
-          <button
-            class="bg-gray-200 text-black p-2 rounded w-full hover:bg-gray-300 focus:ring-2 focus:outline-none focus:ring-gray-300"
-            @click="addShawarma(selectedShawarmaType, 'Medium', selectedShawarmaType.includes('Chicken') ? 35 : 40)"
+        <div class="mt-4 text-sm space-y-3">
+          <label
+            class="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer"
           >
-            Medium
-          </button>
-          <button
-            class="bg-gray-300 text-black p-2 rounded w-full mt-2 hover:bg-gray-400 focus:ring-2 focus:outline-none focus:ring-gray-300"
-            @click="addShawarma(selectedShawarmaType, 'Large', selectedShawarmaType.includes('Chicken') ? 45 : 50)"
+            <input
+              type="radio"
+              name="shawarma_size"
+              value="Medium"
+              class="w-5 h-5 text-green-500 focus:ring-green-500"
+            />
+            <span>Medium</span>
+          </label>
+          <label
+            class="flex items-center gap-3 p-3 border border-gray-300 rounded-lg hover:bg-gray-100 cursor-pointer"
           >
-            Large
-          </button>
+            <input
+              type="radio"
+              name="shawarma_size"
+              value="Large"
+              class="w-5 h-5 text-green-500 focus:ring-green-500"
+            />
+            <span>Large</span>
+          </label>
         </div>
         <div class="text-center mt-4">
           <button
-            class="border-2 border-red-500 text-red-500 p-2 rounded w-full mt-2 hover:bg-red-200 focus:ring-2 focus:outline-none focus:ring-red-300"
+            class="bg-green-500 text-white p-3 rounded w-full hover:bg-green-600 focus:ring-2 focus:outline-none focus:ring-green-300"
+            @click="addShawarma()"
+          >
+            Add
+          </button>
+          <button
+            class="border-2 border-red-500 text-red-500 p-3 rounded w-full mt-2 hover:bg-red-200 focus:ring-2 focus:outline-none focus:ring-red-300"
             @click="showShawarmaModal = false"
           >
             Cancel
@@ -311,7 +417,13 @@
         ).value;
         const selectedBobaType =
           document.querySelector("[x-data]").__x.$data.selectedBobaType;
-        addToCart(selectedBobaType + " with " + topping, 30);
+        let price = 40; // Default price for large with toppings
+
+        if (topping === "Medium (No Toppings)") {
+          price = 30; // Price for medium with no toppings
+        }
+
+        addToCart(selectedBobaType + " with " + topping, price);
         document.querySelector("[x-data]").__x.$data.showToppingsModal = false;
       }
 
@@ -321,8 +433,22 @@
         document.querySelector("[x-data]").__x.$data.showShawarmaModal = true;
       }
 
-      function addShawarma(type, size, price) {
-        addToCart(type + " (" + size + ")", price);
+      function addShawarma() {
+        const size = document.querySelector(
+          'input[name="shawarma_size"]:checked'
+        ).value;
+        const selectedShawarmaType =
+          document.querySelector("[x-data]").__x.$data.selectedShawarmaType;
+        let price =
+          size === "Medium"
+            ? selectedShawarmaType.includes("Chicken")
+              ? 35
+              : 40
+            : selectedShawarmaType.includes("Chicken")
+            ? 45
+            : 50;
+
+        addToCart(selectedShawarmaType + " (" + size + ")", price);
         document.querySelector("[x-data]").__x.$data.showShawarmaModal = false;
       }
 
