@@ -10,4 +10,4 @@ app.config.from_object(Config)
 app.register_blueprint(routes_app)
 
 if __name__ == "__main__":
-    app.run( host="0.0.0.0", port=5000)
+    app.run( host="0.0.0.0", port=5001)
