@@ -1,48 +1,75 @@
 <!DOCTYPE html>
-<html lang="en">
+<html
+  lang="en"
+  x-data="{ showModal: false, showToppingsModal: false, showShawarmaModal: false, total: 0, orderNumber: '', name: '', location: '', notes: '', phone: '', selectedBoba: '', selectedShawarma: '', selectedShawarmaType: '', selectedBobaType: '', isLoading: true }"
+  x-init="window.addEventListener('load', () => { isLoading = false; })"
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playwrite+US+Trad:wght@100..400&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&family=Satisfy&display=swap" rel="stylesheet">
+
     <title>Order Confirmation</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-gray-100 p-5">
+  <body class="bg-black p-5 flex flex-col items-center justify-center min-h-screen font-[quicksand]">
+    <div>
+       <h1 class="text-white text-3xl font-bold font-[satisfy] text-center pt-5 -mb-5">
+          Bubble Bliss
+        </h1>
+    </div>
     <div
-      class="max-w-md mx-auto bg-white shadow-lg rounded-lg overflow-hidden mt-10 p-4 sm:p-6"
+      class="max-w-md mx-auto bg-[#1C1C1E] shadow-lg rounded-2xl overflow-hidden mt-10 p-6 sm:p-8"
     >
       <div class="p-4">
-        <h1 class="text-xl font-bold text-center sm:text-2xl">
+        <h1 class="text-2xl font-semibold text-center text-gray-100 sm:text-3xl">
           Order Confirmation
         </h1>
-        <p class="text-center mt-4 text-sm sm:text-base">
+        <p class="text-center mt-4 text-gray-400 text-sm sm:text-base">
           Thank you for your order! We will process it shortly.
         </p>
-        <p class="text-center mt-4 text-sm sm:text-base">
-          Total Amount: <strong>{{ total }} GHS</strong>
-        </p>
-        <p class="text-center mt-4 text-sm sm:text-base">
-          Order Reference: <strong>{{ order_number }}</strong>
-        </p>
-        <p class="text-center mt-4 text-sm sm:text-base">
-          Please make payment to mobile money number:
-          <strong>0592076527</strong> with the order reference.
-        </p>
-        <p class="text-center mt-4 text-sm sm:text-base">
-          You will receive a call from us once payment has been made.
-        </p>
-        <p class="text-center mt-4 text-red-500 text-sm sm:text-base">
-          Note: Some extras will attract additional costs.
-        </p>
-        <p class="text-center mt-4 text-red-500 text-sm sm:text-base">
-          Delivery costs can be between 10 to 30 GHS depending on location and
-          will be paid to the rider upon arrival.
-        </p>
-        <div class="text-center mt-4">
+
+        <div class="mt-6 space-y-3 text-sm sm:text-base">
+          <p class="text-center text-gray-300">
+            Total Amount: <strong class="text-gray-100">{{ total }} GHS</strong>
+          </p>
+          <p class="text-center text-gray-300">
+            Order Reference: <strong class="text-gray-100">{{ order_number }}</strong>
+          </p>
+          <p class="text-center text-gray-300">
+            Please make payment to mobile money number:
+            <strong class="text-gray-100">0592076527</strong> with the order number <strong class="text-gray-100">{{ order_number }}</strong> as reference.
+          </p>
+          <p class="text-center text-gray-300">
+            You will receive a call from us once payment has been made.
+          </p>
+        </div>
+
+        <div class="mt-6">
+          <p class="text-center text-red-400 font-medium text-sm sm:text-base">
+            Note: Some extras will attract additional costs.
+          </p>
+          <p class="text-center text-red-400 font-medium text-sm sm:text-base">
+            Delivery costs can be between <strong>10 to 30 GHS</strong> depending on location
+            and will be paid to the rider upon arrival.
+          </p>
+        </div>
+
+        <div class="text-center mt-6">
           <a
             href="/"
-            class="bg-blue-500 text-white p-2 rounded text-sm sm:text-base"
-            >Place Another Order</a
+            class="bg-[#007AFF] text-white p-3 rounded-lg text-sm sm:text-base shadow-md hover:bg-[#005EC7] transition focus:ring-2 focus:ring-[#007AFF] focus:outline-none"
           >
+            Place Another Order
+          </a>
         </div>
       </div>
     </div>
