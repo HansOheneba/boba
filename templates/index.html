@@ -69,15 +69,6 @@
       .bounce-side {
         animation: bounceSide 1s infinite ease-in-out;
       }
-
-      @supports (-webkit-touch-callout: none) {
-  /* Targets iOS Safari */
-  .ios-padding {
-    padding-right: 1rem !important;
-    padding-left: 1rem !important;
-  }
-}
-
     </style>
   </head>
   <body class="bg-[black] text-white">
@@ -315,7 +306,7 @@
           <label class="block text-gray-300">Size</label>
           <select
             x-model="selectedBobaSize"
-            class="w-full p-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition ios-padding"
+            class="w-full p-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
             @change="selectedBobaSize === 'Medium' ? disableToppings = true : disableToppings = false"
           >
             <option value="Medium">Medium (No Toppings)</option>
@@ -327,7 +318,7 @@
           <label class="block text-gray-300">Toppings</label>
           <select
             x-model="selectedBobaTopping"
-            class="w-full p-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition ios-padding"
+            class="w-full p-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
             :disabled="selectedBobaSize === 'Medium'"
           >
             <option value="No Toppings">No Toppings</option>
