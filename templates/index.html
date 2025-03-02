@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html
   lang="en"
-  x-data="{ showModal: false, showToppingsModal: false, showShawarmaModal: false, total: 0, orderNumber: '', name: '', location: '', notes: '', phone: '', selectedBoba: '', selectedShawarma: '', selectedShawarmaType: '', selectedBobaType: '', isLoading: true, selectedBobaSize: 'Medium', selectedBobaTopping: 'No Toppings', disableToppings: true, selectedBobaQuantity: 1, selectedShawarmaQuantity: 1 }"
+  x-data="{ showModal: false, showToppingsModal: false, showShawarmaModal: false, showIceTeaModal: false, total: 0, orderNumber: '', name: '', location: '', notes: '', phone: '', selectedBoba: '', selectedShawarma: '', selectedShawarmaType: '', selectedBobaType: '', selectedIceTeaType: '', isLoading: true, selectedBobaSize: 'Medium', selectedBobaTopping: 'No Toppings', disableToppings: true, selectedBobaQuantity: 1, selectedShawarmaQuantity: 1, selectedIceTeaQuantity: 1, selectedIceTeaSize: 'Medium' }"
   x-init="window.addEventListener('load', () => { isLoading = false; })"
 >
   <head>
@@ -92,15 +92,16 @@
       x-show="!isLoading"
     >
       <div class="p-4">
-        <h1
+        <img class="h-24 mx-auto mb-10" src="{{url_for('static', filename='img/logo.png')}}" alt="logo">
+        <!-- <h1
           class="text-white text-2xl font-bold font-[satisfy] text-center mb-10"
         >
           Bubble Bliss
-        </h1>
+        </h1> -->
         <form action="/" method="POST" class="mt-4" id="order-form">
           <div class="mt-4">
             <div class="flex justify-between items-center">
-              <h2 class="text-lg text-white font-semibold">Boba Tea</h2>
+              <h2 class="text-lg text-white font-semibold">Milk Tea</h2>
 
               <div class="text-purple-500 flex items-center gap-2">
                 <p>scroll</p>
@@ -222,6 +223,18 @@
                 onclick="selectShawarmaType('Beef Shawarma')"
               >
                 Beef Shawarma
+              </button>
+            </div>
+          </div>
+          <div class="mt-4 text-sm">
+            <h2 class="text-lg font-semibold">Ice Tea</h2>
+            <div class="grid grid-cols-1 gap-4 mt-4 text-white">
+              <button
+                type="button"
+                class="h-28 p-4 text-lg rounded-lg font-bold bg-[url({{ url_for('static', filename='img/lemonade.png') }})] bg-cover"
+                onclick="selectIceTeaType('Fizzy Lemonade')"
+              >
+                <p class="z-10 text-white brightness-100">Fizzy Lemonade</p>
               </button>
             </div>
           </div>
@@ -460,6 +473,73 @@
       </div>
     </div>
 
+    <!-- Ice Tea Modal -->
+    <div
+      x-show="showIceTeaModal"
+      class="fixed z-20 inset-0 flex items-center justify-center bg-black bg-opacity-70 p-4"
+      x-transition:enter="transition ease-out duration-300"
+      x-transition:enter-start="opacity-0 scale-90"
+      x-transition:enter-end="opacity-100 scale-100"
+      x-transition:leave="transition ease-in duration-300"
+      x-transition:leave-start="opacity-100 scale-100"
+      x-transition:leave-end="opacity-0 scale-90"
+    >
+      <div
+        class="bg-[#12091A] border border-gray-700 p-6 rounded-xl shadow-lg max-w-sm w-full"
+      >
+        <h2
+          class="text-xl font-bold text-gray-300 text-center"
+          x-text="selectedIceTeaType"
+        ></h2>
+        <!-- Size Selection -->
+        <div class="mt-4 text-sm space-y-3">
+          <label class="block text-gray-300">Size</label>
+          <select
+            x-model="selectedIceTeaSize"
+            class="w-full p-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
+          >
+            <option value="Medium">Medium</option>
+            <option value="Large">Large</option>
+          </select>
+        </div>
+        <!-- Multiplier Selection -->
+        <div class="mt-4 text-sm space-y-3">
+          <label class="block text-gray-300">Quantity</label>
+          <div class="flex items-center space-x-3">
+            <button
+              type="button"
+              class="bg-gray-600 text-white px-3 py-1 rounded-lg"
+              @click="selectedIceTeaQuantity = Math.max(1, selectedIceTeaQuantity - 1)"
+            >
+              -
+            </button>
+            <span x-text="selectedIceTeaQuantity" class="text-gray-300"></span>
+            <button
+              type="button"
+              class="bg-gray-600 text-white px-3 py-1 rounded-lg"
+              @click="selectedIceTeaQuantity++"
+            >
+              +
+            </button>
+          </div>
+        </div>
+        <div class="text-center mt-4">
+          <button
+            class="bg-purple-950 text-white p-3 rounded-lg w-full hover:bg-[#2B1A40] focus:ring-2 focus:outline-none focus:ring-purple-600 transition"
+            @click="addIceTea()"
+          >
+            Add
+          </button>
+          <button
+            class="border-2 border-gray-500 text-white p-3 rounded-lg w-full mt-2 hover:bg-gray-800 hover:text-white focus:ring-2 focus:outline-none focus:ring-gray-600 transition"
+            @click="showIceTeaModal = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Confirmation Modal -->
     <div
       x-show="showModal"
@@ -613,6 +693,27 @@
 
         addToCart(selectedShawarmaType + " (" + size + ")", price, quantity);
         document.querySelector("[x-data]").__x.$data.showShawarmaModal = false;
+      }
+
+      function selectIceTeaType(type) {
+        document.querySelector("[x-data]").__x.$data.selectedIceTeaType = type;
+        document.querySelector("[x-data]").__x.$data.selectedIceTeaSize =
+          "Medium";
+        document.querySelector("[x-data]").__x.$data.selectedIceTeaQuantity = 1;
+        document.querySelector("[x-data]").__x.$data.showIceTeaModal = true;
+      }
+
+      function addIceTea() {
+        const size =
+          document.querySelector("[x-data]").__x.$data.selectedIceTeaSize;
+        const quantity =
+          document.querySelector("[x-data]").__x.$data.selectedIceTeaQuantity;
+        const selectedIceTeaType =
+          document.querySelector("[x-data]").__x.$data.selectedIceTeaType;
+        let price = size === "Large" ? 40 : 30; // Default price for large
+
+        addToCart(selectedIceTeaType + " (" + size + ")", price, quantity);
+        document.querySelector("[x-data]").__x.$data.showIceTeaModal = false;
       }
 
       function addToCart(item, price, quantity = 1) {
