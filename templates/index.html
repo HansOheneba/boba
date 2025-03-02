@@ -306,7 +306,7 @@
           <label class="block text-gray-300">Size</label>
           <select
             x-model="selectedBobaSize"
-            class="w-full p-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
+            class="w-full p-5 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
             @change="selectedBobaSize === 'Medium' ? disableToppings = true : disableToppings = false"
           >
             <option value="Medium">Medium (No Toppings)</option>
@@ -318,7 +318,7 @@
           <label class="block text-gray-300">Toppings</label>
           <select
             x-model="selectedBobaTopping"
-            class="w-full p-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
+            class="w-full p-5 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
             :disabled="selectedBobaSize === 'Medium'"
           >
             <option value="No Toppings">No Toppings</option>
