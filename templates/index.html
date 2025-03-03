@@ -207,6 +207,18 @@
               </div>
             </div>
           </div>
+           <div class="mt-4 text-sm">
+            <h2 class="text-lg font-semibold">Ice Tea</h2>
+            <div class="grid grid-cols-1 gap-4 mt-4 text-white">
+              <button
+                type="button"
+                class="h-28 p-4 text-lg rounded-lg font-bold bg-[url({{ url_for('static', filename='img/lemonade.png') }})] bg-cover"
+                onclick="selectIceTeaType('Fizzy Lemonade')"
+              >
+                <p class="z-10 text-white brightness-100">Fizzy Lemonade</p>
+              </button>
+            </div>
+          </div>
           <div class="mt-4 text-sm">
             <h2 class="text-lg font-semibold">Shawarma</h2>
             <div class="grid grid-cols-2 gap-4 mt-4 text-white">
@@ -226,18 +238,7 @@
               </button>
             </div>
           </div>
-          <div class="mt-4 text-sm">
-            <h2 class="text-lg font-semibold">Ice Tea</h2>
-            <div class="grid grid-cols-1 gap-4 mt-4 text-white">
-              <button
-                type="button"
-                class="h-28 p-4 text-lg rounded-lg font-bold bg-[url({{ url_for('static', filename='img/lemonade.png') }})] bg-cover"
-                onclick="selectIceTeaType('Fizzy Lemonade')"
-              >
-                <p class="z-10 text-white brightness-100">Fizzy Lemonade</p>
-              </button>
-            </div>
-          </div>
+         
           <div class="mt-4">
             <h2 class="text-lg font-semibold">Your Order</h2>
             <ul id="cart" class="list-disc pl-4 text-xs text-gray-300"></ul>
