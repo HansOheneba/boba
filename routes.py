@@ -1,20 +1,34 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 from models import (
     create_order,
     get_orders,
     update_order_status,
     confirm_order,
     cancel_order,
+    get_admin_by_username,
+    create_admin,
 )
+from werkzeug.security import check_password_hash
 import random
 import string
 
+# Create a Blueprint named "app"
 app = Blueprint("app", __name__)
 
 
 def generate_order_number():
     chars = string.ascii_lowercase + string.digits
     return "boba-" + "".join(random.choice(chars) for _ in range(4))
+
+
+def login_required(view):
+    def wrapped_view(*args, **kwargs):
+        if "admin_id" not in session:
+            flash("You must be logged in to access this page.", "error")
+            return redirect(url_for("app.login"))
+        return view(*args, **kwargs)
+
+    return wrapped_view
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -64,7 +78,49 @@ def order_confirmation():
     )
 
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        admin = get_admin_by_username(username)
+        if admin and check_password_hash(admin["password_hash"], password):
+            session["admin_id"] = admin["id"]
+            session["username"] = admin["username"]
+            flash("Logged in successfully!", "success")
+            return redirect("/admin" )
+        else:
+            flash("Invalid username or password.", "error")
+
+    return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    session.clear()
+    flash("Logged out successfully!", "success")
+    return redirect(url_for("app.login"))
+
+
+@app.route("/create_admin", methods=["GET", "POST"])
+def create_admin_route():
+    if request.method == "POST":
+        username = request.form.get("username")
+        password = request.form.get("password")
+
+        if not username or not password:
+            flash("Username and password are required.", "error")
+        else:
+            create_admin(username, password)
+            flash("Admin created successfully!", "success")
+            return redirect(url_for("app.login"))
+
+    return render_template("create_admin.html")
+
+
 @app.route("/admin", methods=["GET", "POST"])
+@login_required
 def admin():
     if request.method == "POST":
         order_id = request.form.get("order_id")
@@ -75,8 +131,21 @@ def admin():
         elif action == "cancel":
             cancel_order(order_id)
 
-        return redirect(url_for("app.admin")) 
+        return redirect(url_for("app.admin"))
 
-    # Fetch orders and render the template
-    orders = get_orders()
+    # Handle filtering and search
+    status_filter = request.args.get("status", "")
+    search_query = request.args.get("search", "")
+
+    # Fetch orders sorted by latest first
+    orders = get_orders(status=status_filter)
+
+    # Filter by search query
+    if search_query:
+        orders = [
+            order
+            for order in orders
+            if search_query.lower() in order["order_number"].lower()
+        ]
+
     return render_template("admin.html", orders=orders)

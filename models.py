@@ -1,5 +1,6 @@
 import pymysql
 from config import Config
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
 def get_db_connection():
@@ -9,6 +10,27 @@ def get_db_connection():
         password=Config.MYSQL_PASSWORD,
         database=Config.MYSQL_DB,
     )
+
+
+def create_admin(username, password):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    password_hash = generate_password_hash(password)
+    cursor.execute(
+        "INSERT INTO admins (username, password_hash) VALUES (%s, %s)",
+        (username, password_hash),
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_admin_by_username(username):
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT * FROM admins WHERE username = %s", (username,))
+    admin = cursor.fetchone()
+    conn.close()
+    return admin
 
 
 def create_order(
@@ -36,11 +58,21 @@ def create_order(
 def get_orders(status=None):
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    query = (
-        "SELECT * FROM orders" if not status else "SELECT * FROM orders WHERE status=%s"
-    )
+
+    # Base query
+    query = "SELECT * FROM orders"
+
+    # Add status filter if provided
+    if status:
+        query += " WHERE status = %s"
+
+    # Sort by latest first (assuming `id` is auto-incremented)
+    query += " ORDER BY id DESC"
+
+    # Execute the query
     cursor.execute(query, (status,) if status else ())
     orders = cursor.fetchall()
+
     conn.close()
     return orders
 
