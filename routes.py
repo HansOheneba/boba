@@ -69,10 +69,14 @@ def admin():
     if request.method == "POST":
         order_id = request.form.get("order_id")
         action = request.form.get("action")
+
         if action == "confirm":
             confirm_order(order_id)
         elif action == "cancel":
             cancel_order(order_id)
 
-    orders = get_orders("pending")
+        return redirect(url_for("app.admin")) 
+
+    # Fetch orders and render the template
+    orders = get_orders()
     return render_template("admin.html", orders=orders)
