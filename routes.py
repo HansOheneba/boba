@@ -103,20 +103,20 @@ def logout():
     return redirect(url_for("app.login"))
 
 
-@app.route("/create_admin", methods=["GET", "POST"])
-def create_admin_route():
-    if request.method == "POST":
-        username = request.form.get("username")
-        password = request.form.get("password")
+# @app.route("/create_admin", methods=["GET", "POST"])
+# def create_admin_route():
+#     if request.method == "POST":
+#         username = request.form.get("username")
+#         password = request.form.get("password")
 
-        if not username or not password:
-            flash("Username and password are required.", "error")
-        else:
-            create_admin(username, password)
-            flash("Admin created successfully!", "success")
-            return redirect(url_for("app.login"))
+#         if not username or not password:
+#             flash("Username and password are required.", "error")
+#         else:
+#             create_admin(username, password)
+#             flash("Admin created successfully!", "success")
+#             return redirect(url_for("app.login"))
 
-    return render_template("create_admin.html")
+#     return render_template("create_admin.html")
 
 
 @app.route("/admin", methods=["GET", "POST"])
