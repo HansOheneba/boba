@@ -1,7 +1,32 @@
 <!DOCTYPE html>
 <html
   lang="en"
-  x-data="{ showModal: false, showToppingsModal: false, showShawarmaModal: false, showIceTeaModal: false, total: 0, orderNumber: '', name: '', location: '', notes: '', phone: '', selectedBoba: '', selectedShawarma: '', selectedShawarmaType: '', selectedBobaType: '', selectedIceTeaType: '', isLoading: true, selectedBobaSize: 'Medium', selectedBobaTopping: 'No Toppings', disableToppings: true, selectedBobaQuantity: 1, selectedShawarmaQuantity: 1, selectedIceTeaQuantity: 1, selectedIceTeaSize: 'Medium', email: '' }"
+  x-data="{
+    showModal: false,
+    showToppingsModal: false,
+    showShawarmaModal: false,
+    showIceTeaModal: false,
+    total: 0,
+    orderNumber: '',
+    name: localStorage.getItem('name') || '',
+    location: localStorage.getItem('location') || '',
+    notes: '',
+    phone: localStorage.getItem('phone') || '',
+    email: localStorage.getItem('email') || '',
+    selectedBoba: '',
+    selectedShawarma: '',
+    selectedShawarmaType: '',
+    selectedBobaType: '',
+    selectedIceTeaType: '',
+    isLoading: true,
+    selectedBobaSize: 'Medium',
+    selectedBobaTopping: 'No Toppings',
+    disableToppings: true,
+    selectedBobaQuantity: 1,
+    selectedShawarmaQuantity: 1,
+    selectedIceTeaQuantity: 1,
+    selectedIceTeaSize: 'Medium'
+  }"
   x-init="window.addEventListener('load', () => { isLoading = false; })"
 >
   <head>
