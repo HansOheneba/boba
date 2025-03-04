@@ -91,7 +91,7 @@ def login():
             session["admin_id"] = admin["id"]
             session["username"] = admin["username"]
             flash("Logged in successfully!", "success")
-            return redirect("/admin" )
+            return redirect("/admin")
         else:
             flash("Invalid username or password.", "error")
 
