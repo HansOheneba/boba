@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html
   lang="en"
-  x-data="{ showModal: false, showToppingsModal: false, showShawarmaModal: false, total: 0, orderNumber: '', name: '', location: '', notes: '', phone: '', selectedBoba: '', selectedShawarma: '', selectedShawarmaType: '', selectedBobaType: '', isLoading: true }"
-  x-init="window.addEventListener('load', () => { isLoading = false; })"
+  x-data="{ showModal: false, showToppingsModal: false, showShawarmaModal: false, total: 0, orderNumber: '', name: '', location: '', notes: '', phone: '', selectedBoba: '', selectedShawarma: '', selectedShawarmaType: '', selectedBobaType: '', isLoading: true, messages: [ 'I like your taste!', 'Excellent choice!', 'Great combination!', 'You’ve got a refined palate!', 'This order is a masterpiece!', 'A bold and delicious decision!', 'Flavor explosion incoming!', 'That’s a top-tier pick!', 'You just unlocked ultimate flavor mode!' ], randomMessage: '' }"
+  x-init="randomMessage = messages[Math.floor(Math.random() * messages.length)]; window.addEventListener('load', () => { isLoading = false; })"
 >
   <head>
     <meta charset="UTF-8" />
@@ -36,6 +36,7 @@
         <h1 class="text-2xl font-semibold text-center text-gray-100 sm:text-3xl">
           Order Confirmation
         </h1>
+        <p class="text-center mt-4 text-gray-400 text-sm sm:text-base" x-text="randomMessage"></p>
         <p class="text-center mt-4 text-gray-400 text-sm sm:text-base">
           Thank you for your order! We will process it shortly.
         </p>

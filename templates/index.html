@@ -18,9 +18,9 @@
     selectedBobaType: '',
     selectedIceTeaType: '',
     isLoading: true,
-    selectedBobaSize: 'Medium',
+    selectedBobaSize: 'Large',
     selectedBobaTopping: 'No Toppings',
-    disableToppings: true,
+    disableToppings: false,
     selectedBobaQuantity: 1,
     selectedShawarmaQuantity: 1,
     selectedIceTeaQuantity: 1,
@@ -486,8 +486,8 @@
             class="w-full p-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
             @change="selectedBobaSize === 'Medium' ? disableToppings = true : disableToppings = false"
           >
-            <option value="Medium">Medium (No Toppings)</option>
             <option value="Large">Large</option>
+            <option value="Medium">Medium (No Toppings)</option>
           </select>
         </div>
         <!-- Toppings Selection -->
@@ -802,12 +802,11 @@
 
       function selectBobaType(type) {
         document.querySelector("[x-data]").__x.$data.selectedBobaType = type;
-        document.querySelector("[x-data]").__x.$data.selectedBobaSize =
-          "Medium";
+        document.querySelector("[x-data]").__x.$data.selectedBobaSize = "Large";
         document.querySelector("[x-data]").__x.$data.selectedBobaTopping =
           "No Toppings";
         document.querySelector("[x-data]").__x.$data.selectedBobaQuantity = 1;
-        document.querySelector("[x-data]").__x.$data.disableToppings = true;
+        document.querySelector("[x-data]").__x.$data.disableToppings = false;
         document.querySelector("[x-data]").__x.$data.showToppingsModal = true;
       }
 
@@ -986,7 +985,7 @@
         if (storedPhone)
           document.querySelector("[name='phone']").value = storedPhone;
         //if (storedEmail)
-         // document.querySelector("[name='email']").value = storedEmail;
+        // document.querySelector("[name='email']").value = storedEmail;
 
         // Store values in local storage on input change
         document
@@ -1005,9 +1004,9 @@
             localStorage.setItem("phone", this.value);
           });
         //document
-         // .querySelector("[name='email']")
-         // .addEventListener("input", function () {
-         //   localStorage.setItem("email", this.value);
+        // .querySelector("[name='email']")
+        // .addEventListener("input", function () {
+        //   localStorage.setItem("email", this.value);
         //  });
       });
     </script>
