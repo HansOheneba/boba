@@ -39,12 +39,13 @@ def index():
         order_details = request.form.get("order")
         notes = request.form.get("notes")
         phone = request.form.get("phone")
+        email = request.form.get("email")
         total = request.form.get("total")
         boba_toppings = request.form.get("boba_toppings")
         shawarma_type = request.form.get("shawarma_type")
         order_number = generate_order_number()
 
-        if not name or not location or not order_details or not phone:
+        if not name or not location or not order_details or not phone or not email:
             return "All fields are required", 400
 
         # Combine boba toppings and shawarma type into order_details
@@ -59,6 +60,7 @@ def index():
             order_details,
             notes,
             phone,
+            email,
             total,
             order_number,
         )
