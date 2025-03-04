@@ -39,7 +39,7 @@ def create_order(
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO orders (name, location, order_details, preferences, phone, total, order_number, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        "INSERT INTO orders (name, location, order_details, preferences, phone, total, order_number, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
         (
             name,
             location,
