@@ -3,7 +3,7 @@
   <head>
     <title>Admin Dashboard</title>
     <meta charset="UTF-8" />
-     <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script
@@ -22,49 +22,49 @@
         Orders Dashboard
       </h1>
 
-   <!-- Filter and Search Section -->
-<div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
-  <!-- Status Filter -->
-  <div class="flex items-center gap-2">
-    <label for="status-filter" class="text-sm font-medium text-gray-700">Filter by Status:</label>
-    <select
-      id="status-filter"
-      x-data="{ selectedStatus: '{{ request.args.get('status', '') }}' }"
-      @change="window.location.href = '/admin?status=' + selectedStatus"
-      x-model="selectedStatus"
-      class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
-      <option value="">All</option>
-      <option value="pending">Pending</option>
-      <option value="confirmed">Confirmed</option>
-      <option value="canceled">Canceled</option>
-    </select>
-  </div>
+      <!-- Filter and Search Section -->
+      <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
+        <!-- Status Filter -->
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <label for="status-filter" class="text-sm font-medium text-gray-700">Filter by Status:</label>
+          <select
+            id="status-filter"
+            x-data="{ selectedStatus: '{{ request.args.get('status', '') }}' }"
+            @change="window.location.href = '/admin?status=' + selectedStatus"
+            x-model="selectedStatus"
+            class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
+          >
+            <option value="">All</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="canceled">Canceled</option>
+          </select>
+        </div>
 
-  <!-- Search by Order Number -->
-  <form action="/admin" method="GET" class="flex items-center gap-2">
-    <input
-      type="text"
-      name="search"
-      placeholder="Search by Order Number"
-      value="{{ request.args.get('search', '') }}"
-      class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-    />
-    <button
-      type="submit"
-      class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
-      Search
-    </button>
-    <!-- Reset Button -->
-    <a
-      href="/admin"
-      class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
-    >
-      Reset
-    </a>
-  </form>
-</div>
+        <!-- Search by Order Number -->
+        <form action="/admin" method="GET" class="flex items-center gap-2 w-full sm:w-auto">
+          <input
+            type="text"
+            name="search"
+            placeholder="Search by Order Number"
+            value="{{ request.args.get('search', '') }}"
+            class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
+          />
+          <button
+            type="submit"
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto"
+          >
+            Search
+          </button>
+          <!-- Reset Button -->
+          <a
+            href="/admin"
+            class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500 w-full sm:w-auto"
+          >
+            Reset
+          </a>
+        </form>
+      </div>
 
       <!-- Orders Table -->
       <div class="overflow-x-auto">
@@ -74,9 +74,9 @@
           <thead class="text-xs uppercase text-gray-700">
             <tr class="bg-gray-100">
               <th class="py-3 px-6 text-left">Name</th>
-              <th class="py-3 px-6 text-left">Location</th>
-              <th class="py-3 px-6 text-left">Order Details</th>
-              <th class="py-3 px-6 text-left">Notes</th>
+              <th class="py-3 px-6 text-left hidden sm:table-cell">Location</th>
+              <th class="py-3 px-6 text-left hidden sm:table-cell">Order Details</th>
+              <th class="py-3 px-6 text-left hidden sm:table-cell">Notes</th>
               <th class="py-3 px-6 text-left">Phone</th>
               <th class="py-3 px-6 text-left">Total</th>
               <th class="py-3 px-6 text-left">Order Number</th>
@@ -88,9 +88,9 @@
             {% for order in orders %}
             <tr class="border-b border-gray-200">
               <td class="py-4 px-6">{{ order.name }}</td>
-              <td class="py-4 px-6">{{ order.location }}</td>
-              <td class="py-4 px-6">{{ order.order_details }}</td>
-              <td class="py-4 px-6">{{ order.preferences }}</td>
+              <td class="py-4 px-6 hidden sm:table-cell">{{ order.location }}</td>
+              <td class="py-4 px-6 hidden sm:table-cell">{{ order.order_details }}</td>
+              <td class="py-4 px-6 hidden sm:table-cell">{{ order.preferences }}</td>
               <td class="py-4 px-6">{{ order.phone }}</td>
               <td class="py-4 px-6">{{ order.total }}</td>
               <td class="py-4 px-6">{{ order.order_number }}</td>

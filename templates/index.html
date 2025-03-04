@@ -12,7 +12,6 @@
     location: localStorage.getItem('location') || '',
     notes: '',
     phone: localStorage.getItem('phone') || '',
-    email: localStorage.getItem('email') || '',
     selectedBoba: '',
     selectedShawarma: '',
     selectedShawarmaType: '',
@@ -440,14 +439,14 @@
               x-model="phone"
             />
 
-            <input
+            <!-- <input
               type="email"
               name="email"
               placeholder="Enter your email"
               required
               class="w-full p-3 mt-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
               x-model="email"
-            />
+            /> -->
 
             <button
               type="button"
@@ -755,13 +754,13 @@
               x-text="notes"
             ></span>
           </p>
-          <p class="flex justify-between text-gray-400">
+          <!-- <p class="flex justify-between text-gray-400">
             <strong class="text-gray-300">Email:</strong>
             <span
               class="bg-gray-800/20 px-2 py-1 rounded text-gray-300"
               x-text="email"
             ></span>
-          </p>
+          </p> -->
           <p class="flex justify-between text-gray-400 text-right">
             <strong class="text-gray-300">Order:</strong>
             <span
@@ -978,7 +977,7 @@
         const storedName = localStorage.getItem("name");
         const storedLocation = localStorage.getItem("location");
         const storedPhone = localStorage.getItem("phone");
-        const storedEmail = localStorage.getItem("email");
+        //const storedEmail = localStorage.getItem("email");
 
         if (storedName)
           document.querySelector("[name='name']").value = storedName;
@@ -986,8 +985,8 @@
           document.querySelector("[name='location']").value = storedLocation;
         if (storedPhone)
           document.querySelector("[name='phone']").value = storedPhone;
-        if (storedEmail)
-          document.querySelector("[name='email']").value = storedEmail;
+        //if (storedEmail)
+         // document.querySelector("[name='email']").value = storedEmail;
 
         // Store values in local storage on input change
         document
@@ -1005,11 +1004,11 @@
           .addEventListener("input", function () {
             localStorage.setItem("phone", this.value);
           });
-        document
-          .querySelector("[name='email']")
-          .addEventListener("input", function () {
-            localStorage.setItem("email", this.value);
-          });
+        //document
+         // .querySelector("[name='email']")
+         // .addEventListener("input", function () {
+         //   localStorage.setItem("email", this.value);
+        //  });
       });
     </script>
   </body>

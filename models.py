@@ -34,19 +34,18 @@ def get_admin_by_username(username):
 
 
 def create_order(
-    name, location, order_details, preferences, phone, email, total, order_number
+    name, location, order_details, preferences, phone, total, order_number
 ):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO orders (name, location, order_details, preferences, phone, email, total, order_number, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        "INSERT INTO orders (name, location, order_details, preferences, phone, total, order_number, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (
             name,
             location,
             order_details,
             preferences,
             phone,
-            email,
             total,
             order_number,
             "pending",
