@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html
   lang="en"
-  x-data="{ showModal: false, showToppingsModal: false, showShawarmaModal: false, showIceTeaModal: false, total: 0, orderNumber: '', name: '', location: '', notes: '', phone: '', selectedBoba: '', selectedShawarma: '', selectedShawarmaType: '', selectedBobaType: '', selectedIceTeaType: '', isLoading: true, selectedBobaSize: 'Medium', selectedBobaTopping: 'No Toppings', disableToppings: true, selectedBobaQuantity: 1, selectedShawarmaQuantity: 1, selectedIceTeaQuantity: 1, selectedIceTeaSize: 'Medium' }"
+  x-data="{ showModal: false, showToppingsModal: false, showShawarmaModal: false, showIceTeaModal: false, total: 0, orderNumber: '', name: '', location: '', notes: '', phone: '', selectedBoba: '', selectedShawarma: '', selectedShawarmaType: '', selectedBobaType: '', selectedIceTeaType: '', isLoading: true, selectedBobaSize: 'Medium', selectedBobaTopping: 'No Toppings', disableToppings: true, selectedBobaQuantity: 1, selectedShawarmaQuantity: 1, selectedIceTeaQuantity: 1, selectedIceTeaSize: 'Medium', email: '' }"
   x-init="window.addEventListener('load', () => { isLoading = false; })"
 >
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+     <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png">
     <title>Boba & Shawarma | Bubble Bliss</title>
     <meta name="theme-color" content="#000000" />
     <link
@@ -92,7 +93,11 @@
       x-show="!isLoading"
     >
       <div class="p-4">
-        <img class="h-24 mx-auto mb-10" src="{{url_for('static', filename='img/logo.png')}}" alt="logo">
+        <img
+          class="h-24 mx-auto mb-10"
+          src="{{url_for('static', filename='img/logo.png')}}"
+          alt="logo"
+        />
         <!-- <h1
           class="text-white text-2xl font-bold font-[satisfy] text-center mb-10"
         >
@@ -207,7 +212,7 @@
               </div>
             </div>
           </div>
-           <div class="mt-4 text-sm">
+          <div class="mt-4 text-sm">
             <h2 class="text-lg font-semibold">Ice Tea</h2>
             <div class="grid grid-cols-1 gap-4 mt-4 text-white">
               <button
@@ -238,7 +243,7 @@
               </button>
             </div>
           </div>
-         
+
           <div class="mt-4">
             <h2 class="text-lg font-semibold">Your Order</h2>
             <ul id="cart" class="list-disc pl-4 text-xs text-gray-300"></ul>
@@ -283,6 +288,15 @@
               required
               class="w-full p-3 mt-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
               x-model="phone"
+            />
+
+            <input
+              type="email"
+              name="email"
+              placeholder="Enter your email"
+              required
+              class="w-full p-3 mt-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
+              x-model="email"
             />
 
             <button
@@ -589,6 +603,13 @@
             <span
               class="bg-gray-800/20 px-2 py-1 rounded text-gray-300"
               x-text="notes"
+            ></span>
+          </p>
+          <p class="flex justify-between text-gray-400">
+            <strong class="text-gray-300">Email:</strong>
+            <span
+              class="bg-gray-800/20 px-2 py-1 rounded text-gray-300"
+              x-text="email"
             ></span>
           </p>
           <p class="flex justify-between text-gray-400 text-right">
