@@ -132,7 +132,7 @@ def admin():
         elif action == "cancel":
             cancel_order(order_id)
 
-        return redirect(url_for("app.admin"))
+        return redirect("/admin")
 
     # Handle filtering and search
     status_filter = request.args.get("status", "")
