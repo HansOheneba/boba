@@ -238,6 +238,127 @@
                   ></div>
                   <p class="font-bold relative z-10">Vanilla Boba</p>
                 </div>
+
+                <!-- New Flavors -->
+                <!-- Lilac (Grape) -->
+                <div
+                  class="flex items-center justify-center relative bg-[#522b5b] text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48 bg-[url({{ url_for('static', filename='img/grape.png') }})] bg-cover bg-top"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Lilac (Grape)' }"
+                  @click="selectBobaType('Lilac (Grape)')"
+                >
+                  <div
+                    class="absolute inset-0 bg-black bg-opacity-10 rounded-lg"
+                  ></div>
+                  <p class="font-bold relative z-10">Lilac (Grape)</p>
+                </div>
+
+                <!-- Dew Drop-Honeydew -->
+                <div
+                  class="flex items-center justify-center relative bg-[#2b5731] text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48 bg-[url({{ url_for('static', filename='img/dew_drop.png') }})] bg-cover bg-top"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Dew Drop-Honeydew' }"
+                  @click="selectBobaType('Dew Drop-Honeydew')"
+                >
+                  <div
+                    class="absolute inset-0 bg-black bg-opacity-10 rounded-lg"
+                  ></div>
+                  <p class="font-bold relative z-10">Dew Drop-Honeydew</p>
+                </div>
+
+                <!-- Strawberry-Rosey Rush -->
+                <div
+                  class="flex items-center justify-center relative bg-[#8b2f47] text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48 bg-[url({{ url_for('static', filename='img/strawberry.png') }})] bg-cover bg-top"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Strawberry-Rosey Rush' }"
+                  @click="selectBobaType('Strawberry-Rosey Rush')"
+                >
+                  <div
+                    class="absolute inset-0 bg-black bg-opacity-10 rounded-lg"
+                  ></div>
+                  <p class="font-bold relative z-10">Strawberry-Rosey Rush</p>
+                </div>
+
+                <!-- Banana Breeze -->
+                <div
+                  class="flex items-center justify-center relative bg-[#a57c2b] text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48 bg-[url({{ url_for('static', filename='img/banana.png') }})] bg-cover bg-top"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Banana Breeze' }"
+                  @click="selectBobaType('Banana Breeze')"
+                >
+                  <div
+                    class="absolute inset-0 bg-black bg-opacity-10 rounded-lg"
+                  ></div>
+                  <p class="font-bold relative z-10">Banana Breeze</p>
+                </div>
+
+                <!-- Lotus-Bliss -->
+                <div
+                  class="flex items-center justify-center relative bg-[#204f78] text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48 bg-[url({{ url_for('static', filename='img/lotus.png') }})] bg-cover bg-top"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Lotus-Bliss' }"
+                  @click="selectBobaType('Lotus-Bliss')"
+                >
+                  <div
+                    class="absolute inset-0 bg-black bg-opacity-10 rounded-lg"
+                  ></div>
+                  <p class="font-bold relative z-10">Lotus-Bliss</p>
+                </div>
+
+                <!-- Matcha-Emerald -->
+                <div
+                  class="flex items-center justify-center relative bg-[#29663e] text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48 bg-[url({{ url_for('static', filename='img/matcha.png') }})] bg-cover bg-top"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Matcha-Emerald' }"
+                  @click="selectBobaType('Matcha-Emerald')"
+                >
+                  <div
+                    class="absolute inset-0 bg-black bg-opacity-10 rounded-lg"
+                  ></div>
+                  <p class="font-bold relative z-10">Matcha-Emerald</p>
+                </div>
+
+                <!-- Chocolate Delight -->
+                <div
+                  class="flex items-center justify-center relative bg-[#4a2c2a] text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48 bg-[url({{ url_for('static', filename='img/chocolate.png') }})] bg-cover bg-top"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Chocolate Delight' }"
+                  @click="selectBobaType('Chocolate Delight')"
+                >
+                  <div
+                    class="absolute inset-0 bg-black bg-opacity-10 rounded-lg"
+                  ></div>
+                  <p class="font-bold relative z-10">Chocolate Delight</p>
+                </div>
+
+                <!-- Oreoreo -->
+                <div
+                  class="flex items-center justify-center relative bg-[#2f2f2f] text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48 bg-[url({{ url_for('static', filename='img/oreo.png') }})] bg-cover bg-top"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Oreoreo' }"
+                  @click="selectBobaType('Oreoreo')"
+                >
+                  <div
+                    class="absolute inset-0 bg-black bg-opacity-10 rounded-lg"
+                  ></div>
+                  <p class="font-bold relative z-10">Oreoreo</p>
+                </div>
+
+                <!-- Piñata-Pineapple -->
+                <div
+                  class="flex items-center justify-center relative bg-[#a57c2b] text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48 bg-[url({{ url_for('static', filename='img/pineapple.png') }})] bg-cover bg-top"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Piñata-Pineapple' }"
+                  @click="selectBobaType('Piñata-Pineapple')"
+                >
+                  <div
+                    class="absolute inset-0 bg-black bg-opacity-10 rounded-lg"
+                  ></div>
+                  <p class="font-bold relative z-10">Piñata-Pineapple</p>
+                </div>
+
+                <!-- Pudding (Custard) -->
+                <div
+                  class="flex items-center justify-center relative bg-yellow-200 text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48 bg-[url({{ url_for('static', filename='img/custard.png') }})] bg-cover bg-top"
+                  x-bind:class="{ 'border-green-500': selectedBobaType === 'Pudding (Custard)' }"
+                  @click="selectBobaType('Pudding (Custard)')"
+                >
+                  <div
+                    class="absolute inset-0 bg-black bg-opacity-10 rounded-lg"
+                  ></div>
+                  <p class="font-bold relative z-10">Pudding (Custard)</p>
+                </div>
               </div>
             </div>
           </div>
