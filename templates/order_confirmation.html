@@ -8,35 +8,55 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#000000" />
-     <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <link
+      rel="icon"
+      href="{{ url_for('static', filename='img/logo.png') }}"
+      type="image/png"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    />
     <meta
       name="apple-mobile-web-app-status-bar-style"
       content="black-translucent"
     />
- <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playwrite+US+Trad:wght@100..400&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&family=Satisfy&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playwrite+US+Trad:wght@100..400&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&family=Satisfy&display=swap"
+      rel="stylesheet"
+    />
 
     <title>Order Confirmation</title>
     <script src="https://cdn.tailwindcss.com"></script>
   </head>
-  <body class="bg-black p-5 flex flex-col items-center justify-center min-h-screen font-[quicksand]">
+  <body
+    class="bg-black p-5 flex flex-col items-center justify-center min-h-screen font-[quicksand]"
+  >
     <div>
-       <!-- <h1 class="text-white text-3xl font-bold font-[satisfy] text-center pt-5 -mb-5">
+      <!-- <h1 class="text-white text-3xl font-bold font-[satisfy] text-center pt-5 -mb-5">
           Bubble Bliss
         </h1> -->
-        <img class="h-24 mx-auto mb-2 -mt-5 " src="{{url_for('static', filename='img/logo.png')}}" alt="logo">
-
+      <img
+        class="h-24 mx-auto mb-2 -mt-5"
+        src="{{url_for('static', filename='img/logo.png')}}"
+        alt="logo"
+      />
     </div>
     <div
       class="max-w-md mx-auto bg-[#1C1C1E] shadow-lg rounded-2xl overflow-hidden mt-10 p-6 sm:p-8"
     >
       <div class="p-4">
-        <h1 class="text-2xl font-semibold text-center text-gray-100 sm:text-3xl">
+        <h1
+          class="text-2xl font-semibold text-center text-gray-100 sm:text-3xl"
+        >
           Order Confirmation
         </h1>
-        <p class="text-center mt-4 text-gray-400 text-sm sm:text-base" x-text="randomMessage"></p>
+        <p
+          class="text-center mt-4 text-gray-400 text-sm sm:text-base"
+          x-text="randomMessage"
+        ></p>
         <p class="text-center mt-4 text-gray-400 text-sm sm:text-base">
           Thank you for your order! We will process it shortly.
         </p>
@@ -46,11 +66,14 @@
             Total Amount: <strong class="text-gray-100">{{ total }} GHS</strong>
           </p>
           <p class="text-center text-gray-300">
-            Order Reference: <strong class="text-gray-100">{{ order_number }}</strong>
+            Order Reference:
+            <strong class="text-gray-100">{{ order_number }}</strong>
           </p>
           <p class="text-center text-gray-300">
             Please make payment to mobile money number:
-            <strong class="text-gray-100">0592076527</strong> with the order number <strong class="text-gray-100">{{ order_number }}</strong> as reference.
+            <strong class="text-gray-100">0592076527</strong> with the order
+            number <strong class="text-gray-100">{{ order_number }}</strong> as
+            reference.
           </p>
           <p class="text-center text-gray-300">
             You will receive a call from us once payment has been made.
@@ -62,8 +85,9 @@
             Note: Some extras will attract additional costs.
           </p>
           <p class="text-center text-red-400 font-medium text-sm sm:text-base">
-            Delivery costs can be between <strong>10 to 30 GHS</strong> depending on location
-            and will be paid to the rider upon arrival.
+            Delivery costs can be between
+            <strong>10 to 30 GHS</strong> depending on location and will be paid
+            to the rider upon arrival.
           </p>
         </div>
 

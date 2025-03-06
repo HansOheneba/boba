@@ -10,8 +10,9 @@
     orderNumber: '',
     name: localStorage.getItem('name') || '',
     location: localStorage.getItem('location') || '',
-    notes: '',
+    preferences: '',  // Use preferences instead of notes
     phone: localStorage.getItem('phone') || '',
+    email: localStorage.getItem('email') || '',  // Ensure email is initialized
     selectedBoba: '',
     selectedShawarma: '',
     selectedShawarmaType: '',
@@ -59,6 +60,7 @@
       src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js"
       defer
     ></script>
+    <script src="https://js.paystack.co/v1/inline.js"></script>
     <style>
       @keyframes bounce {
         0%,
@@ -427,7 +429,7 @@
               name="notes"
               placeholder="Any special requests?"
               class="w-full p-3 mt-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
-              x-model="notes"
+              x-model="preferences"  // Use preferences instead of notes
             ></textarea>
 
             <input
@@ -439,14 +441,14 @@
               x-model="phone"
             />
 
-            <!-- <input
+            <input
               type="email"
               name="email"
               placeholder="Enter your email"
               required
               class="w-full p-3 mt-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
               x-model="email"
-            /> -->
+            />
 
             <button
               type="button"
@@ -751,16 +753,16 @@
             <strong class="text-gray-300">Notes:</strong>
             <span
               class="bg-gray-800/20 px-2 py-1 rounded text-gray-300"
-              x-text="notes"
+              x-text="preferences"
             ></span>
           </p>
-          <!-- <p class="flex justify-between text-gray-400">
+          <p class="flex justify-between text-gray-400">
             <strong class="text-gray-300">Email:</strong>
             <span
               class="bg-gray-800/20 px-2 py-1 rounded text-gray-300"
               x-text="email"
             ></span>
-          </p> -->
+          </p>
           <p class="flex justify-between text-gray-400 text-right">
             <strong class="text-gray-300">Order:</strong>
             <span
@@ -783,7 +785,7 @@
         <div class="text-center mt-6">
           <button
             class="bg-purple-900 text-white p-3 rounded-lg w-full hover:bg-[#2B1A40] focus:ring-2 focus:outline-none focus:ring-purple-600 transition"
-            @click="document.querySelector('form').submit()"
+            @click="payWithPaystack()"
           >
             Confirm
           </button>
@@ -971,12 +973,30 @@
         }
       }
 
+      function payWithPaystack() {
+        const handler = PaystackPop.setup({
+          key: 'pk_test_ab9e41a1a26c75b8f9834facfc309cb860ae3330', // Replace with your Paystack public key
+          email: document.querySelector("[x-data]").__x.$data.email,
+          amount: document.querySelector("[x-data]").__x.$data.total * 100, // Amount in kobo
+          currency: 'GHS',
+          ref: document.querySelector("[x-data]").__x.$data.orderNumber,
+          callback: function(response) {
+            // Payment successful, submit the form
+            document.querySelector('form').submit();
+          },
+          onClose: function() {
+            alert('Payment cancelled');
+          }
+        });
+        handler.openIframe();
+      }
+
       document.addEventListener("DOMContentLoaded", function () {
         // Retrieve stored values from local storage
         const storedName = localStorage.getItem("name");
         const storedLocation = localStorage.getItem("location");
         const storedPhone = localStorage.getItem("phone");
-        //const storedEmail = localStorage.getItem("email");
+        const storedEmail = localStorage.getItem("email");
 
         if (storedName)
           document.querySelector("[name='name']").value = storedName;
@@ -984,8 +1004,8 @@
           document.querySelector("[name='location']").value = storedLocation;
         if (storedPhone)
           document.querySelector("[name='phone']").value = storedPhone;
-        //if (storedEmail)
-        // document.querySelector("[name='email']").value = storedEmail;
+        if (storedEmail)
+          document.querySelector("[name='email']").value = storedEmail;
 
         // Store values in local storage on input change
         document
@@ -1003,11 +1023,11 @@
           .addEventListener("input", function () {
             localStorage.setItem("phone", this.value);
           });
-        //document
-        // .querySelector("[name='email']")
-        // .addEventListener("input", function () {
-        //   localStorage.setItem("email", this.value);
-        //  });
+        document
+          .querySelector("[name='email']")
+          .addEventListener("input", function () {
+            localStorage.setItem("email", this.value);
+          });
       });
     </script>
   </body>
