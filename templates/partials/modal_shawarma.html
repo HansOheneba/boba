@@ -1,0 +1,58 @@
+<div
+  x-show="showShawarmaModal"
+  class="fixed z-20 inset-0 flex items-center justify-center bg-black bg-opacity-70 p-4"
+  x-transition:enter="transition ease-out duration-300"
+  x-transition:enter-start="opacity-0 scale-90"
+  x-transition:enter-end="opacity-100 scale-100"
+  x-transition:leave="transition ease-in duration-300"
+  x-transition:leave-start="opacity-100 scale-100"
+  x-transition:leave-end="opacity-0 scale-90"
+>
+  <div class="bg-[#12091A] border border-gray-700 p-6 rounded-xl shadow-lg max-w-sm w-full">
+    <h2 class="text-xl font-bold text-gray-300 text-center" x-text="selectedShawarmaType"></h2>
+    <div class="mt-4 text-sm space-y-3">
+      <label class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg hover:bg-[#1C0F2D] cursor-pointer transition">
+        <input type="radio" name="shawarma_size" value="Medium" class="w-5 h-5 text-purple-500 focus:ring-purple-500" />
+        <span class="text-gray-300">Medium</span>
+      </label>
+      <label class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg hover:bg-[#1C0F2D] cursor-pointer transition">
+        <input type="radio" name="shawarma_size" value="Large" class="w-5 h-5 text-purple-500 focus:ring-purple-500" />
+        <span class="text-gray-300">Large</span>
+      </label>
+    </div>
+    <div class="mt-4 text-sm space-y-3">
+      <label class="block text-gray-300">Quantity</label>
+      <div class="flex items-center space-x-3">
+        <button
+          type="button"
+          class="bg-gray-600 text-white px-3 py-1 rounded-lg"
+          @click="selectedShawarmaQuantity = Math.max(1, selectedShawarmaQuantity - 1)"
+        >
+          -
+        </button>
+        <span x-text="selectedShawarmaQuantity" class="text-gray-300"></span>
+        <button
+          type="button"
+          class="bg-gray-600 text-white px-3 py-1 rounded-lg"
+          @click="selectedShawarmaQuantity++"
+        >
+          +
+        </button>
+      </div>
+    </div>
+    <div class="text-center mt-4">
+      <button
+        class="bg-purple-950 text-white p-3 rounded-lg w-full hover:bg-[#2B1A40] focus:ring-2 focus:outline-none focus:ring-purple-600 transition"
+        @click="addShawarma()"
+      >
+        Add
+      </button>
+      <button
+        class="border-2 border-gray-500 text-white p-3 rounded-lg w-full mt-2 hover:bg-gray-800 hover:text-white focus:ring-2 focus:outline-none focus:ring-gray-600 transition"
+        @click="showShawarmaModal = false"
+      >
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>

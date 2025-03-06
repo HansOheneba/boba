@@ -33,6 +33,27 @@ def login_required(view):
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    boba_items = [
+        {"name": "Blueberry Boba", "image": "img/blueberry_boba.png"},
+        {"name": "Brown Sugar Boba", "image": "img/brown_sugar_boba.png"},
+        {"name": "Caramel Milk", "image": "img/caramel_milk.png"},
+        {"name": "Classic Boba", "image": "img/classic_boba.png"},
+        {"name": "Coconut Milk", "image": "img/coconut_milk.png"},
+        {"name": "Coffee", "image": "img/coffee.png"},
+        {"name": "Taro Boba", "image": "img/taro_boba.png"},
+        {"name": "Vanilla Boba", "image": "img/vanilla_boba.png"},
+        {"name": "Lilac (Grape)", "image": "img/grape.png"},
+        {"name": "Dew Drop-Honeydew", "image": "img/dew_drop.png"},
+        {"name": "Strawberry-Rosey Rush", "image": "img/strawberry.png"},
+        {"name": "Banana Breeze", "image": "img/banana.png"},
+        {"name": "Lotus-Bliss", "image": "img/lotus.png"},
+        {"name": "Matcha-Emerald", "image": "img/matcha.png"},
+        {"name": "Chocolate Delight", "image": "img/chocolate.png"},
+        {"name": "Oreoreo", "image": "img/oreo.png"},
+        {"name": "Piñata-Pineapple", "image": "img/pineapple.png"},
+        {"name": "Pudding (Custard)", "image": "img/custard.png"},
+    ]
+
     if request.method == "POST":
         name = request.form.get("name")
         location = request.form.get("location")
@@ -67,7 +88,7 @@ def index():
             url_for("app.order_confirmation", total=total, order_number=order_number)
         )
 
-    return render_template("index.html")
+    return render_template("index.html", boba_items=boba_items)
 
 
 @app.route("/order-confirmation")
