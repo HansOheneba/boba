@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+
+{% extends "admin_base.html" %}
+{% block content %}
+<!-- <!DOCTYPE html>
 <html lang="en">
   <head>
     <title>Admin Dashboard</title>
@@ -16,11 +19,18 @@
       }
     </style>
   </head>
-  <body class="bg-gray-100">
+  <body class="bg-gray-100"> -->
     <div class="container mx-auto px-4 py-12">
       <h1 class="text-3xl font-bold text-center text-gray-800 mb-10">
         Orders Dashboard
       </h1>
+
+     
+      <a href="/admin/products">
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto mb-10">
+          Edit products
+        </button>
+      </a>
 
       <!-- Filter and Search Section -->
       <div class="flex flex-col sm:flex-row justify-between items-center mb-6 gap-4">
@@ -73,11 +83,9 @@
         >
           <thead class="text-xs uppercase text-gray-700">
             <tr class="bg-gray-100">
-              <th class="py-3 px-6 text-left">Name</th>
-              <th class="py-3 px-6 text-left ">Location</th>
+              <th class="py-3 px-6 text-left">Customer</th>
               <th class="py-3 px-6 text-left">Order Details</th>
               <th class="py-3 px-6 text-left ">Notes</th>
-              <th class="py-3 px-6 text-left">Phone</th>
               <th class="py-3 px-6 text-left">Total</th>
               <th class="py-3 px-6 text-left">Order Number</th>
               <th class="py-3 px-6 text-left">Status</th>
@@ -87,11 +95,16 @@
           <tbody>
             {% for order in orders %}
             <tr class="border-b border-gray-200">
-              <td class="py-4 px-6">{{ order.name }}</td>
-              <td class="py-4 px-6">{{ order.location }}</td>
-              <td class="py-4 px-6">{{ order.order_details }}</td>
+               <td class="py-4 px-6">
+      <div class="flex flex-col">
+        <span class="text-gray-900 font-semibold">{{ order.name }}</span>
+        <span class="text-gray-600 text-sm">{{ order.location }}</span>
+        <span class="text-gray-600 text-sm">{{ order.phone }}</span>
+        
+      </div>
+    </td>
+              <td class="py-4 px-6 min-w-96">{{ order.order_details }}</td>
               <td class="py-4 px-6">{{ order.preferences }}</td>
-              <td class="py-4 px-6">{{ order.phone }}</td>
               <td class="py-4 px-6">{{ order.total }}</td>
               <td class="py-4 px-6">{{ order.order_number }}</td>
               <td class="py-4 px-6">
@@ -288,5 +301,4 @@
         </table>
       </div>
     </div>
-  </body>
-</html>
+{% endblock %}

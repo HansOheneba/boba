@@ -11,7 +11,7 @@
     location: localStorage.getItem('location') || '',
     preferences: '',  // Use preferences instead of notes
     phone: localStorage.getItem('phone') || '',
-    email: localStorage.getItem('email') || '',  // Ensure email is initialized
+    email: localStorage.getItem('email') || '', 
     selectedBoba: '',
     selectedShawarma: '',
     selectedShawarmaType: '',
@@ -27,7 +27,7 @@
     selectedIceTeaSize: 'Medium'
   }"
   x-init="window.addEventListener('load', () => { isLoading = false; })"
->>
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -233,7 +233,7 @@
 
       function payWithPaystack() {
         const handler = PaystackPop.setup({
-          key: 'pk_test_ab9e41a1a26c75b8f9834facfc309cb860ae3330', // Replace with your Paystack public key
+          key: 'pk_test_de389fd1dddaa1ccf384e65b4d1a410d04a2dd42', // Replace with your Paystack public key
           email: document.querySelector("[x-data]").__x.$data.email,
           amount: document.querySelector("[x-data]").__x.$data.total * 100, // Amount in kobo
           currency: 'GHS',

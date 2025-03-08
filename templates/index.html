@@ -28,39 +28,36 @@
     </div>
 
     <!-- Ice Tea Section -->
-    <div class="mt-4 text-sm">
-      <h2 class="text-lg font-semibold">Ice Tea</h2>
-      <div class="grid grid-cols-1 gap-4 mt-4 text-white">
-        <button
-          type="button"
-          class="h-28 p-4 text-lg rounded-lg font-bold bg-[url({{ url_for('static', filename='img/lemonade.png') }})] bg-cover"
-          onclick="selectIceTeaType('Fizzy Lemonade')"
-        >
-          <p class="z-10 text-white brightness-100">Fizzy Lemonade</p>
-        </button>
-      </div>
-    </div>
+ <div class="mt-4 text-sm">
+  <h2 class="text-lg font-semibold">Ice Tea</h2>
+  <div class="grid grid-cols-2 gap-4 mt-4 text-white">
+    {% for ice_tea in ice_tea_items %}
+      <button
+        type="button"
+        class="h-20 p-4 text-lg rounded-lg font-bold bg-[url({{ url_for('static', filename=ice_tea.image) }})] bg-cover bg-center"
+        onclick="selectIceTeaType('{{ ice_tea.name }}')"
+      >
+        <p class="z-10 text-white brightness-100">{{ ice_tea.name }}</p>
+      </button>
+    {% endfor %}
+  </div>
+</div>
 
     <!-- Shawarma Section -->
-    <div class="mt-4 text-sm">
-      <h2 class="text-lg font-semibold">Shawarma</h2>
-      <div class="grid grid-cols-2 gap-4 mt-4 text-white">
-        <button
-          type="button"
-          class="h-28 p-4 text-lg rounded-lg font-bold bg-[url({{ url_for('static', filename='img/chicken.png') }})] bg-cover"
-          onclick="selectShawarmaType('Chicken Shawarma')"
-        >
-          <p class="z-10 text-white brightness-100">Chicken Shawarma</p>
-        </button>
-        <button
-          type="button"
-          class="h-28 p-4 rounded-lg bg-[url({{ url_for('static', filename='img/beef.png') }})] bg-cover font-bold text-lg"
-          onclick="selectShawarmaType('Beef Shawarma')"
-        >
-          Beef Shawarma
-        </button>
-      </div>
-    </div>
+  <div class="mt-4 text-sm">
+  <h2 class="text-lg font-semibold">Shawarma</h2>
+  <div class="grid grid-cols-2 gap-4 mt-4 text-white">
+    {% for shawarma in shawarma_items %}
+      <button
+        type="button"
+        class="h-20 p-4 text-lg rounded-lg font-bold bg-[url({{ url_for('static', filename=shawarma.image) }})] bg-cover bg-center"
+        onclick="selectShawarmaType('{{ shawarma.name }}')"
+      >
+        <p class="z-10 text-white brightness-100">{{ shawarma.name }}</p>
+      </button>
+    {% endfor %}
+  </div>
+</div>
 
     <!-- Cart and Form -->
     {% include 'partials/cart.html' %}

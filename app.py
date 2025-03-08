@@ -6,6 +6,8 @@ from config import Config
 app = Flask(__name__)
 app.config.from_object(Config)
 
+
+app.config["UPLOAD_FOLDER"] = "static/img/"
 # Register routes
 app.register_blueprint(routes_app)
 

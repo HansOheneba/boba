@@ -3,6 +3,7 @@ from config import Config
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
+
 def get_db_connection():
     return pymysql.connect(
         host=Config.MYSQL_HOST,
@@ -34,18 +35,19 @@ def get_admin_by_username(username):
 
 
 def create_order(
-    name, location, order_details, preferences, phone, total, order_number
+    name, location, order_details, preferences, phone, email, total, order_number
 ):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO orders (name, location, order_details, preferences, phone, total, order_number, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)",
+        "INSERT INTO orders (name, location, order_details, preferences, phone, email, total, order_number, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (
             name,
             location,
             order_details,
             preferences,
             phone,
+            email,
             total,
             order_number,
             "pending",
@@ -91,3 +93,54 @@ def confirm_order(order_id):
 
 def cancel_order(order_id):
     update_order_status(order_id, "canceled")
+
+
+def get_products():
+    """Fetch all products from the database."""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT * FROM products ORDER BY id")
+    products = cursor.fetchall()
+    conn.close()
+    return products
+
+
+def add_product(name, image, category, in_stock):
+    """Add a new product to the database."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO products (name, image, category, in_stock) VALUES (%s, %s, %s, %s)",
+        (name, image, category, in_stock),
+    )
+    conn.commit()
+    conn.close()
+
+
+def update_product(product_id, name, category, in_stock, image=None):
+    """Update a product’s details, including optional image update."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    if image:
+        cursor.execute(
+            "UPDATE products SET name=%s, category=%s, in_stock=%s, image=%s WHERE id=%s",
+            (name, category, in_stock, image, product_id),
+        )
+    else:
+        cursor.execute(
+            "UPDATE products SET name=%s, category=%s, in_stock=%s WHERE id=%s",
+            (name, category, in_stock, product_id),
+        )
+
+    conn.commit()
+    conn.close()
+
+
+def delete_product(product_id):
+    """Delete a product from the database."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM products WHERE id=%s", (product_id,))
+    conn.commit()
+    conn.close()
