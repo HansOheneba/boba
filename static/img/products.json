@@ -1,0 +1,31 @@
+[
+{"type":"header","version":"5.2.1","comment":"Export to JSON plugin for PHPMyAdmin"},
+{"type":"database","name":"u941080935_boba"},
+{"type":"table","name":"products","database":"u941080935_boba","data":
+[
+{"name":"Blueberry Boba"},
+{"name":"Brown Sugar Boba"},
+{"name":"Caramel Milk"},
+{"name":"Classic Boba"},
+{"name":"Coconut Milk"},
+{"name":"Coffee"},
+{"name":"Taro Boba"},
+{"name":"Vanilla Boba"},
+{"name":"Lilac (Grape)"},
+{"name":"Dew Drop-Honeydew"},
+{"name":"Strawberry-Rosey Rush"},
+{"name":"Banana Breeze"},
+{"name":"Lotus-Bliss"},
+{"name":"Matcha-Emerald"},
+{"name":"Chocolate Delight"},
+{"name":"Oreoreo"},
+{"name":"Piñata-Pineapple"},
+{"name":"Pudding (Custard)"},
+{"name":"Xenotherev"},
+{"name":"H2O2"},
+{"name":"Lemon Ice Tea"},
+{"name":"Chicken Shawarma"},
+{"name":"Beef Shawarma"}
+]
+}
+]

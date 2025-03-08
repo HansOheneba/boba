@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, session, flash
 import os
+import requests
 from models import (
     create_order,
     get_orders,
@@ -19,6 +20,13 @@ import string
 from werkzeug.utils import secure_filename
 from flask import current_app
 from functools import wraps
+from config import Config
+
+
+HUBTEL_CLIENT_ID = Config.HUBTEL_CLIENT_ID
+HUBTEL_CLIENT_SECRET = Config.HUBTEL_CLIENT_SECRET
+HUBTEL_SENDER_ID = Config.HUBTEL_SENDER_ID
+HUBTEL_API_URL = "https://smsc.hubtel.com/v1/messages/send"
 
 
 # Create a Blueprint named "app"
@@ -27,7 +35,7 @@ app = Blueprint("app", __name__)
 
 def generate_order_number():
     chars = string.ascii_lowercase + string.digits
-    return "boba-" + "".join(random.choice(chars) for _ in range(4))
+    return "bb-" + "".join(random.choice(chars) for _ in range(4))
 
 
 def login_required(view):
@@ -40,6 +48,79 @@ def login_required(view):
         return view(*args, **kwargs)
 
     return wrapped_view
+
+
+def format_order_details(customer_name, order_details):
+    # Map product names to their respective emojis
+    product_icons = {
+        "Blueberry Boba": "🧋",
+        "Brown Sugar Boba": "🧋",
+        "Caramel Milk": "🧋",
+        "Classic Boba": "🧋",
+        "Coconut Milk": "🧋",
+        "Coffee": "🧋",
+        "Taro Boba": "🧋",
+        "Vanilla Boba": "🧋",
+        "Lilac (Grape)": "🧋",
+        "Dew Drop-Honeydew": "🧋",
+        "Strawberry-Rosey Rush": "🧋",
+        "Banana Breeze": "🧋",
+        "Lotus-Bliss": "🧋",
+        "Matcha-Emerald": "🧋",
+        "Chocolate Delight": "🧋",
+        "Oreoreo": "🧋",
+        "Piñata-Pineapple": "🧋",
+        "Pudding (Custard)": "🧋",
+        "Xenotherev": "🧋",
+        "H2O2": "🧋",
+        "Lemon Ice Tea": "☕",  
+        "Chicken Shawarma": "🍗",
+        "Beef Shawarma": "🍔",
+    }
+
+    # Process and format each item in the order
+    items = order_details.split(", ")
+    formatted_items = "\n".join(
+        [
+            f"{product_icons.get(item.strip().split(' (')[0], '🧋')} {item.strip()}"  # Strip spaces & remove sizes
+            for item in items
+        ]
+    )
+
+    # Final SMS message
+    sms_message = f"""Hello {customer_name}, \n\n  
+🛍️ Your order has been placed!  
+
+{formatted_items}  
+
+Your order is being processed. you should hear from us shortly.
+"""
+
+    return sms_message
+
+
+def format_phone_number(phone):
+    """Convert local Ghana phone numbers (059XXXXXXX) to international format (23359XXXXXXX)."""
+    if phone.startswith("0"):
+        return "233" + phone[1:]  # Replace leading "0" with "233"
+    return phone
+
+
+def send_sms_hubtel(to, message):
+    """Send an SMS using Hubtel API"""
+    url = f"{HUBTEL_API_URL}?clientsecret={HUBTEL_CLIENT_SECRET}&clientid={HUBTEL_CLIENT_ID}&from={HUBTEL_SENDER_ID}&to={to}&content={message}"
+
+    try:
+        response = requests.get(url)
+        response_data = response.json()
+
+        if response.status_code == 200 and response_data.get("status") == "Success":
+            print(f"✅ SMS sent successfully to {to}")
+        else:
+            print(f"❌ Failed to send SMS: {response_data}")
+
+    except Exception as e:
+        print(f"❌ Error sending SMS: {e}")
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -97,6 +178,10 @@ def index():
             total,
             order_number,
         )
+        customer_name = f"{name}"
+        formatted_message = format_order_details(customer_name, order_details)
+
+        send_sms_hubtel(phone, formatted_message)
         return redirect(
             url_for("app.order_confirmation", total=total, order_number=order_number)
         )
