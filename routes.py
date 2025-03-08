@@ -93,7 +93,7 @@ def format_order_details(customer_name, order_details):
 
 {formatted_items}  
 
-Your order is being processed. you should hear from us shortly.
+Your order is being processed. \n You should hear from us shortly.
 """
 
     return sms_message
