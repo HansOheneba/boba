@@ -13,6 +13,7 @@ from models import (
     add_product,
     update_product,
     delete_product,
+    update_payment_method,
 )
 from werkzeug.security import check_password_hash
 import random
@@ -73,7 +74,7 @@ def format_order_details(customer_name, order_details):
         "Pudding (Custard)": "🧋",
         "Xenotherev": "🧋",
         "H2O2": "🧋",
-        "Lemon Ice Tea": "☕",  
+        "Lemon Ice Tea": "☕",
         "Chicken Shawarma": "🍗",
         "Beef Shawarma": "🍔",
     }
@@ -128,23 +129,18 @@ def index():
     all_products = get_products()
     boba_items = [
         product
-        for product 
-        in all_products
-        if product["category"] == "Bubble Tea" 
-        and product["in_stock"]
+        for product in all_products
+        if product["category"] == "Bubble Tea" and product["in_stock"]
     ]
     ice_tea_items = [
-        product 
-        for product in all_products 
-        if product["category"] == "Ice Tea" 
-        and product["in_stock"]
+        product
+        for product in all_products
+        if product["category"] == "Ice Tea" and product["in_stock"]
     ]
     shawarma_items = [
-        product 
-        for product 
-        in all_products 
-        if product["category"] == "Shawarma" 
-        and product["in_stock"]
+        product
+        for product in all_products
+        if product["category"] == "Shawarma" and product["in_stock"]
     ]
 
     if request.method == "POST":
@@ -157,7 +153,9 @@ def index():
         total = request.form.get("total")
         boba_toppings = request.form.get("boba_toppings")
         shawarma_type = request.form.get("shawarma_type")
+        payment_method = request.form.get("payment_method", "paid")
         order_number = generate_order_number()
+        print("Received payment method:", payment_method)
 
         if not name or not location or not order_details or not phone:
             return "All fields are required", 400
@@ -177,16 +175,22 @@ def index():
             email,
             total,
             order_number,
+            payment_method,
         )
         customer_name = f"{name}"
         formatted_message = format_order_details(customer_name, order_details)
 
-        send_sms_hubtel(phone, formatted_message)
+        # send_sms_hubtel(phone, formatted_message)
         return redirect(
             url_for("app.order_confirmation", total=total, order_number=order_number)
         )
 
-    return render_template("index.html", boba_items=boba_items, ice_tea_items=ice_tea_items, shawarma_items=shawarma_items)
+    return render_template(
+        "index.html",
+        boba_items=boba_items,
+        ice_tea_items=ice_tea_items,
+        shawarma_items=shawarma_items,
+    )
 
 
 @app.route("/order-confirmation")
@@ -270,6 +274,7 @@ def admin():
 
     return render_template("admin.html", orders=orders)
 
+
 UPLOAD_FOLDER = "static/img/"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
 
@@ -310,4 +315,15 @@ def admin_products():
 @app.route("/admin/delete_product/<int:product_id>", methods=["POST"])
 def delete_product_route(product_id):
     delete_product(product_id)
-    return redirect(url_for("admin_products"))
+    return redirect(url_for("app.admin_products"))
+
+
+@app.route("/update-payment", methods=["POST"])
+def update_payment():
+    data = request.json
+    order_number = data.get("order_number")
+    payment_method = data.get("payment_method")
+
+    update_payment_method(order_number, payment_method)
+
+    return {"message": "Payment updated successfully"}, 200

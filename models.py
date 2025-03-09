@@ -1,7 +1,7 @@
 import pymysql
 from config import Config
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from datetime import datetime, timedelta
 
 
 def get_db_connection():
@@ -35,12 +35,20 @@ def get_admin_by_username(username):
 
 
 def create_order(
-    name, location, order_details, preferences, phone, email, total, order_number
+    name,
+    location,
+    order_details,
+    preferences,
+    phone,
+    email,
+    total,
+    order_number,
+    payment_method,
 ):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO orders (name, location, order_details, preferences, phone, email, total, order_number, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        "INSERT INTO orders (name, location, order_details, preferences, phone, email, total, order_number,payment_method, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (
             name,
             location,
@@ -50,6 +58,7 @@ def create_order(
             email,
             total,
             order_number,
+            payment_method,
             "pending",
         ),
     )
@@ -62,21 +71,37 @@ def get_orders(status=None):
     cursor = conn.cursor(pymysql.cursors.DictCursor)
 
     # Base query
-    query = "SELECT * FROM orders"
+    query = (
+        "SELECT *, TIMESTAMPDIFF(SECOND, created_at, NOW()) as seconds_ago FROM orders"
+    )
 
-    # Add status filter if provided
+    # Add WHERE condition properly
     if status:
         query += " WHERE status = %s"
+        cursor.execute(query + " ORDER BY id DESC", (status,))
+    else:
+        cursor.execute(query + " ORDER BY id DESC")
 
-    # Sort by latest first (assuming `id` is auto-incremented)
-    query += " ORDER BY id DESC"
-
-    # Execute the query
-    cursor.execute(query, (status,) if status else ())
     orders = cursor.fetchall()
-
     conn.close()
+
+    # Convert time to human-readable format
+    for order in orders:
+        order["time_ago"] = format_time_ago(order["seconds_ago"])
+
     return orders
+
+
+def format_time_ago(seconds):
+    """Convert seconds into a short, readable time format."""
+    if seconds < 60:
+        return "Just now"
+    elif seconds < 3600:
+        return f"{seconds // 60} mins ago"
+    elif seconds < 86400:
+        return f"{seconds // 3600} hrs ago"
+    else:
+        return f"{seconds // 86400} days ago"
 
 
 def update_order_status(order_id, status):
@@ -142,5 +167,17 @@ def delete_product(product_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("DELETE FROM products WHERE id=%s", (product_id,))
+    conn.commit()
+    conn.close()
+
+
+def update_payment_method(order_number, payment_method):
+    """Update the payment method for a specific order."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE orders SET payment_method=%s WHERE order_number=%s",
+        (payment_method, order_number),
+    )
     conn.commit()
     conn.close()

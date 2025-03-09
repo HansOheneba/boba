@@ -1,37 +1,35 @@
-{% extends "base.html" %}
-
-{% block content %}
-  <form action="/" method="POST" id="order-form">
-    <div class="mt-4">
-      <div class="flex justify-between items-center">
-        <h2 class="text-lg text-white font-semibold">Milk Tea</h2>
-        <div class="text-purple-500 flex items-center gap-2">
-          <p>scroll</p>
-          <i class="fa-solid fa-arrow-right pr-5 bounce-side"></i>
-        </div>
-      </div>
-      <div class="overflow-x-auto whitespace-nowrap flex gap-4 mt-4 p-2">
-        <div class="grid grid-flow-col grid-rows-3 gap-2">
-          <!-- Boba Items -->
-          {% for boba in boba_items %}
-            <div
-              class="flex items-center justify-center relative bg-[#161618] text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48 bg-[url({{ url_for('static', filename=boba.image) }})] bg-cover bg-top"
-              x-bind:class="{ 'border-green-500': selectedBobaType === '{{ boba.name }}' }"
-              @click="selectBobaType('{{ boba.name }}')"
-            >
-              <div class="absolute inset-0 bg-black bg-opacity-10 rounded-lg"></div>
-              <p class="font-bold relative z-10">{{ boba.name }}</p>
-            </div>
-          {% endfor %}
-        </div>
+{% extends "base.html" %} {% block content %}
+<form action="/" method="POST" id="order-form">
+  <div class="mt-4">
+    <div class="flex justify-between items-center">
+      <h2 class="text-lg text-white font-semibold">Milk Tea</h2>
+      <div class="text-purple-500 flex items-center gap-2">
+        <p>scroll</p>
+        <i class="fa-solid fa-arrow-right pr-5 bounce-side"></i>
       </div>
     </div>
+    <div class="overflow-x-auto whitespace-nowrap flex gap-4 mt-4 p-2">
+      <div class="grid grid-flow-col grid-rows-3 gap-2">
+        <!-- Boba Items -->
+        {% for boba in boba_items %}
+        <div
+          class="flex items-center justify-center relative bg-[#161618] text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48 bg-[url({{ url_for('static', filename=boba.image) }})] bg-cover bg-top"
+          x-bind:class="{ 'border-green-500': selectedBobaType === '{{ boba.name }}' }"
+          @click="selectBobaType('{{ boba.name }}')"
+        >
+          <div class="absolute inset-0 bg-black bg-opacity-10 rounded-lg"></div>
+          <p class="font-bold relative z-10">{{ boba.name }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
 
-    <!-- Ice Tea Section -->
- <div class="mt-4 text-sm">
-  <h2 class="text-lg font-semibold">Ice Tea</h2>
-  <div class="grid grid-cols-2 gap-4 mt-4 text-white">
-    {% for ice_tea in ice_tea_items %}
+  <!-- Ice Tea Section -->
+  <div class="mt-4 text-sm">
+    <h2 class="text-lg font-semibold">Ice Tea</h2>
+    <div class="grid grid-cols-2 gap-4 mt-4 text-white">
+      {% for ice_tea in ice_tea_items %}
       <button
         type="button"
         class="h-20 p-4 text-lg rounded-lg font-bold bg-[url({{ url_for('static', filename=ice_tea.image) }})] bg-cover bg-center"
@@ -39,15 +37,15 @@
       >
         <p class="z-10 text-white brightness-100">{{ ice_tea.name }}</p>
       </button>
-    {% endfor %}
+      {% endfor %}
+    </div>
   </div>
-</div>
 
-    <!-- Shawarma Section -->
+  <!-- Shawarma Section -->
   <div class="mt-4 text-sm">
-  <h2 class="text-lg font-semibold">Shawarma</h2>
-  <div class="grid grid-cols-2 gap-4 mt-4 text-white">
-    {% for shawarma in shawarma_items %}
+    <h2 class="text-lg font-semibold">Shawarma</h2>
+    <div class="grid grid-cols-2 gap-4 mt-4 text-white">
+      {% for shawarma in shawarma_items %}
       <button
         type="button"
         class="h-20 p-4 text-lg rounded-lg font-bold bg-[url({{ url_for('static', filename=shawarma.image) }})] bg-cover bg-center"
@@ -55,11 +53,18 @@
       >
         <p class="z-10 text-white brightness-100">{{ shawarma.name }}</p>
       </button>
-    {% endfor %}
+      {% endfor %}
+    </div>
   </div>
-</div>
 
-    <!-- Cart and Form -->
-    {% include 'partials/cart.html' %}
-  </form>
+  <input
+    type="hidden"
+    name="payment_method"
+    id="payment_method"
+    value="on_delivery"
+  />
+
+  <!-- Cart and Form -->
+  {% include 'partials/cart.html' %}
+</form>
 {% endblock %}

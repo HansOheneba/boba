@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html  lang="en"
+<html
+  lang="en"
   x-data="{
     showModal: false,
     showToppingsModal: false,
@@ -24,7 +25,8 @@
     selectedBobaQuantity: 1,
     selectedShawarmaQuantity: 1,
     selectedIceTeaQuantity: 1,
-    selectedIceTeaSize: 'Medium'
+    selectedIceTeaSize: 'Medium',
+    payment_method: 'paid',
   }"
   x-init="window.addEventListener('load', () => { isLoading = false; })"
 >
@@ -53,11 +55,17 @@
       rel="stylesheet"
     />
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js"
+      defer
+    ></script>
     <script src="https://js.paystack.co/v1/inline.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/styles.css') }}"
+    />
     <!-- <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script> -->
-      <script>
+    <script>
       let cart = [];
 
       function selectBobaType(type) {
@@ -132,7 +140,6 @@
         document.querySelector("[x-data]").__x.$data.selectedIceTeaQuantity = 1;
         document.querySelector("[x-data]").__x.$data.showIceTeaModal = true;
       }
-
       function addIceTea() {
         const size =
           document.querySelector("[x-data]").__x.$data.selectedIceTeaSize;
@@ -208,7 +215,7 @@
 
       function generateOrderNumber() {
         const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-        let result = "boba-";
+        let result = "bb-";
         for (let i = 0; i < 4; i++) {
           result += chars.charAt(Math.floor(Math.random() * chars.length));
         }
@@ -231,20 +238,54 @@
         }
       }
 
+      function updatePaymentMethod(method) {
+        selectedPaymentMethod = method;
+        document.getElementById("payment_method").value = method;
+      }
+
+      function handleOrderConfirmation() {
+        let paymentMethod = document.getElementById("payment_method").value;
+
+        if (paymentMethod === "on_delivery") {
+          document.querySelector("#order-form").submit();
+        } else {
+          payWithPaystack();
+        }
+      }
+
       function payWithPaystack() {
+        const orderNumber =
+          document.querySelector("[x-data]").__x.$data.orderNumber;
+
         const handler = PaystackPop.setup({
-          key: 'pk_test_ab9e41a1a26c75b8f9834facfc309cb860ae3330', // Replace with your Paystack public key
+          key: "pk_test_ab9e41a1a26c75b8f9834facfc309cb860ae3330",
           email: document.querySelector("[x-data]").__x.$data.email,
-          amount: document.querySelector("[x-data]").__x.$data.total * 100, // Amount in kobo
-          currency: 'GHS',
-          ref: document.querySelector("[x-data]").__x.$data.orderNumber,
-          callback: function(response) {
-            // Payment successful, submit the form
-            document.querySelector('form').submit();
+          amount: document.querySelector("[x-data]").__x.$data.total * 100,
+          currency: "GHS",
+          ref: orderNumber,
+          callback: function (response) {
+            console.log("Payment successful:", response);
+
+            fetch("/update-payment", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                order_number: orderNumber,
+                payment_method: "paid",
+              }),
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                console.log("Payment method updated:", data);
+                document.querySelector("#order-form").submit();
+              })
+              .catch((err) => console.error("Error updating payment:", err));
           },
-          onClose: function() {
-            alert('Payment cancelled');
-          }
+          onClose: function () {
+            alert("Payment cancelled");
+          },
         });
         handler.openIframe();
       }
@@ -293,20 +334,23 @@
     <!-- Loading Animation -->
     {% include 'partials/loading.html' %}
 
-    <div class="max-w-md mx-auto bg-black shadow-lg rounded-lg overflow-hidden mt-2 font-[quicksand]" x-show="!isLoading">
+    <div
+      class="max-w-md mx-auto bg-black shadow-lg rounded-lg overflow-hidden mt-2 font-[quicksand]"
+      x-show="!isLoading"
+    >
       <div class="p-4">
-        <img class="h-24 mx-auto mb-10" src="{{ url_for('static', filename='img/logo.png') }}" alt="logo" />
+        <img
+          class="h-24 mx-auto mb-10"
+          src="{{ url_for('static', filename='img/logo.png') }}"
+          alt="logo"
+        />
         {% block content %}{% endblock %}
       </div>
     </div>
 
     <!-- Modals -->
-    {% include 'partials/modal_toppings.html' %}
-    {% include 'partials/modal_shawarma.html' %}
-    {% include 'partials/modal_ice_tea.html' %}
-    {% include 'partials/modal_confirmation.html' %}
-
-
-    
+    {% include 'partials/modal_toppings.html' %} {% include
+    'partials/modal_shawarma.html' %} {% include 'partials/modal_ice_tea.html'
+    %} {% include 'partials/modal_confirmation.html' %}
   </body>
 </html>

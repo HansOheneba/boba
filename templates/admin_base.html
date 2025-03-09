@@ -287,6 +287,28 @@
             localStorage.setItem("email", this.value);
           });
       });
+
+  document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("button[data-loader]").forEach((button) => {
+    button.addEventListener("click", function (event) {
+      if (button.disabled) return;
+
+      event.preventDefault(); // Prevent default submission (we handle it manually)
+
+      button.disabled = true;
+      button.querySelector(".button-text").textContent = "Processing...";
+      button.querySelector(".loader").classList.remove("hidden");
+
+      // ✅ Find the nearest form and submit it
+      const form = button.closest("form");
+      if (form) {
+        form.submit();
+      }
+    });
+  });
+});
+
+
     </script>
   </head>
  <body class="bg-white text-black relative">
