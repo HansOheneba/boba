@@ -180,7 +180,7 @@ def index():
         customer_name = f"{name}"
         formatted_message = format_order_details(customer_name, order_details)
 
-        # send_sms_hubtel(phone, formatted_message)
+        send_sms_hubtel(phone, formatted_message)
         return redirect(
             url_for("app.order_confirmation", total=total, order_number=order_number)
         )
