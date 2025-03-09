@@ -14,6 +14,7 @@ from models import (
     update_product,
     delete_product,
     update_payment_method,
+    upload_image_to_imagekit,
 )
 from werkzeug.security import check_password_hash
 import random
@@ -275,36 +276,29 @@ def admin():
     return render_template("admin.html", orders=orders)
 
 
-UPLOAD_FOLDER = "static/img/"
-ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg"}
-
-
-def allowed_file(filename):
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
-
-
 @app.route("/admin/products", methods=["GET", "POST"])
 @login_required
 def admin_products():
     if request.method == "POST":
         product_id = request.form.get("product_id")  # If editing
-
         name = request.form["name"]
         category = request.form["category"]
         in_stock = request.form.get("in_stock") == "on"
 
-        # File handling
-        file = request.files["image"]
-        image_path = None
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(current_app.config["UPLOAD_FOLDER"], filename))
-            image_path = f"img/{filename}"
+        file = request.files.get("image")  # Get the uploaded file
+        image_url = None
+        if file and file.filename:# Ensure file is uploaded
+            print(file)
+            image_url = upload_image_to_imagekit(file)  # Upload to ImageKit
+            if image_url:
+                print(f"Image uploaded successfully: {image_url}")
+            else:
+                print("Image upload failed.")
 
-        if product_id:  # Edit existing product
-            update_product(product_id, name, category, in_stock, image_path)
-        else:  # Add new product
-            add_product(name, image_path, category, in_stock)
+        if product_id:  # If updating a product
+            update_product(product_id, name, category, in_stock, image_url)
+        else:  # If adding a new product
+            add_product(name, image_url, category, in_stock)
 
         return redirect(url_for("app.admin_products"))
 

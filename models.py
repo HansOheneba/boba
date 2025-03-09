@@ -2,6 +2,42 @@ import pymysql
 from config import Config
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
+from imagekitio import ImageKit
+from werkzeug.datastructures import FileStorage
+
+imagekit = ImageKit(
+    private_key=Config.IMAGEKIT_PRIVATE_KEY,
+    public_key=Config.IMAGEKIT_PUBLIC_KEY,
+    url_endpoint=Config.IMAGEKIT_URL_ENDPOINT,
+)
+
+
+def upload_image_to_imagekit(file: FileStorage):
+    try:
+        # Read file as bytes
+        file_bytes = file.read()
+
+        response = imagekit.upload_file(
+            file=file_bytes,  # Pass bytes directly
+            file_name="img",  # Ensure filename
+        )
+
+        # Ensure correct response type
+        image_url = getattr(response, "url", None)
+        if not image_url:
+            print("Error: No URL returned from ImageKit")
+            return None
+
+        print("Upload Successful! Image URL:", image_url)
+        return image_url
+
+    except Exception as e:
+        print("Upload Failed! Error:", str(e))
+        return None
+
+
+with open("C:\\Users\\hanso\\Pictures\\shots.jpg", "rb") as test_file:
+    upload_image_to_imagekit(test_file)
 
 
 def get_db_connection():
@@ -130,27 +166,31 @@ def get_products():
     return products
 
 
-def add_product(name, image, category, in_stock):
-    """Add a new product to the database."""
+def add_product(name, image_url, category, in_stock):
+    """Add a new product to the database with ImageKit URL."""
     conn = get_db_connection()
     cursor = conn.cursor()
+
+    if not image_url:
+        print("Warning: Image URL is empty before inserting into DB!")
+
     cursor.execute(
         "INSERT INTO products (name, image, category, in_stock) VALUES (%s, %s, %s, %s)",
-        (name, image, category, in_stock),
+        (name, image_url, category, in_stock),
     )
     conn.commit()
     conn.close()
 
 
-def update_product(product_id, name, category, in_stock, image=None):
-    """Update a product’s details, including optional image update."""
+def update_product(product_id, name, category, in_stock, image_url=None):
+    """Update a product’s details, including optional ImageKit URL update."""
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    if image:
+    if image_url:  # Only update image if a new one is provided
         cursor.execute(
             "UPDATE products SET name=%s, category=%s, in_stock=%s, image=%s WHERE id=%s",
-            (name, category, in_stock, image, product_id),
+            (name, category, in_stock, image_url, product_id),
         )
     else:
         cursor.execute(
