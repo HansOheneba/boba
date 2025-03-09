@@ -1,0 +1,190 @@
+{% extends "admin_base.html" %} {% block content %}
+<div class="p-4 bg-white text-black">
+  <h2 class="text-2xl font-bold mb-4">Manage Products</h2>
+
+  <!-- Add Product Button -->
+  <div class="flex justify-between items-center mb-6">
+    <!-- Add Product Button -->
+    <button
+      onclick="openModal()"
+      class="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
+    >
+      <i class="fa-solid fa-plus"></i>
+      <span>Add Product</span>
+    </button>
+
+    <!-- Back to Orders Button -->
+    <a
+      href="/admin"
+      class="flex items-center space-x-2 border border-blue-600 text-blue-600 px-4 py-2 rounded-lg shadow-md hover:bg-blue-100 transition"
+    >
+      <i class="fa-solid fa-arrow-left"></i>
+      <span>Back to Orders</span>
+    </a>
+  </div>
+
+  <!-- Product List -->
+  <div class="overflow-x-auto mt-4">
+    <table class="w-full border-collapse border border-gray-300 text-left">
+      <thead>
+        <tr class="bg-gray-800 text-white">
+          <th class="p-2">Name</th>
+          <th class="p-2">Category</th>
+          <th class="p-2">Image</th>
+          <th class="p-2">Status</th>
+          <th class="p-2">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for product in products %}
+        <tr class="border border-gray-300 text-left">
+          <td class="p-2">{{ product.name }}</td>
+          <td class="p-2">{{ product.category }}</td>
+          <td class="p-2">
+            <img
+              src="{{ url_for('static', filename=product.image) }}"
+              class="h-12 mx-auto"
+            />
+          </td>
+          <td class="p-2 font-semibold text-sm">
+            <span
+              class="px-2 py-1 rounded-full {% if product.in_stock %} bg-green-200 text-green-700 {% else %} bg-red-200 text-red-700 {% endif %}"
+            >
+              {{ "In Stock" if product.in_stock else "Out of Stock" }}
+            </span>
+          </td>
+
+          <td class="p-2 flex space-x-2">
+            <!-- Edit Button -->
+            <button
+              onclick="editProduct('{{ product.id }}', '{{ product.name }}', '{{ product.category }}', '{{ product.in_stock }}', '{{ url_for('static', filename=product.image) }}')"
+              class="flex items-center space-x-1 bg-yellow-500 text-white px-2 py-1 rounded-md text-xs shadow-md hover:bg-yellow-600 transition"
+            >
+              <i class="fa-solid fa-pen"></i>
+              <span>Edit</span>
+            </button>
+
+            <!-- Delete Button (Form Wrapped for Inline Display) -->
+            <form
+              action="/admin/delete_product/{{ product.id }}"
+              method="POST"
+              onsubmit="return confirm('Delete this product?')"
+              class="inline"
+            >
+              <button
+                type="submit"
+                class="flex items-center space-x-1 bg-red-500 text-white px-2 py-1 rounded-md text-xs shadow-md hover:bg-red-600 transition"
+              >
+                <i class="fa-solid fa-trash"></i>
+                <span>Delete</span>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add/Edit Product Modal -->
+<div
+  id="productModal"
+  class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 hidden text-black"
+>
+  <div class="bg-white p-6 rounded-lg w-96">
+    <h3 class="text-xl font-semibold mb-4">Add/Edit Product</h3>
+    <form
+      action="/admin/products"
+      method="POST"
+      enctype="multipart/form-data"
+      class="text-left"
+    >
+      <input type="hidden" name="product_id" id="product_id" />
+
+      <label class="block">Name:</label>
+      <input
+        type="text"
+        name="name"
+        id="name"
+        class="border p-2 w-full mb-2"
+        required
+      />
+
+      <label class="block">Category:</label>
+      <select
+        name="category"
+        id="category"
+        class="border p-2 w-full mb-2"
+        required
+      >
+        <option value="Bubble Tea">Bubble Tea</option>
+        <option value="Ice Tea">Ice Tea</option>
+        <option value="Shawarma">Shawarma</option>
+      </select>
+
+      <label class="block">Current Image:</label>
+      <img id="currentImage" src="" class="h-16 mx-auto mb-2 hidden" />
+
+      <label class="block">New Image (Optional):</label>
+      <input
+        type="file"
+        name="image"
+        id="image"
+        class="border p-2 w-full mb-2"
+      />
+
+      <label class="block">
+        <input type="checkbox" name="in_stock" id="in_stock" /> In Stock
+      </label>
+
+      <div class="mt-4 flex justify-end gap-2">
+        <button
+          type="button"
+          onclick="closeModal()"
+          class="bg-gray-500 text-white px-4 py-2 rounded"
+        >
+          Cancel
+        </button>
+      <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded flex items-center justify-center gap-2" 
+  data-loader>
+  <span class="button-text">Save Product</span>
+  <span class="loader hidden animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
+</button>
+
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  function openModal() {
+    document.getElementById("productModal").classList.remove("hidden");
+  }
+
+  function closeModal() {
+    document.getElementById("productModal").classList.add("hidden");
+    document.getElementById("product_id").value = "";
+    document.getElementById("name").value = "";
+    document.getElementById("category").value = "";
+    document.getElementById("image").value = "";
+    document.getElementById("in_stock").checked = false;
+    document.getElementById("currentImage").src = "";
+    document.getElementById("currentImage").classList.add("hidden");
+  }
+
+  function editProduct(id, name, category, inStock, imageUrl) {
+    document.getElementById("product_id").value = id;
+    document.getElementById("name").value = name;
+    document.getElementById("category").value = category;
+    document.getElementById("in_stock").checked =
+      inStock === "True" || inStock === "true" || inStock === true;
+
+    // Update image preview
+    document.getElementById("currentImage").src = imageUrl;
+    document.getElementById("currentImage").classList.remove("hidden");
+
+    openModal();
+  }
+</script>
+{% endblock %}

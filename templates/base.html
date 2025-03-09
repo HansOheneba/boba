@@ -1,5 +1,35 @@
 <!DOCTYPE html>
-<html lang="en" x-data="appState">
+<html
+  lang="en"
+  x-data="{
+    showModal: false,
+    showToppingsModal: false,
+    showShawarmaModal: false,
+    showIceTeaModal: false,
+    total: 0,
+    orderNumber: '',
+    name: localStorage.getItem('name') || '',
+    location: localStorage.getItem('location') || '',
+    preferences: '',  // Use preferences instead of notes
+    phone: localStorage.getItem('phone') || '',
+    email: localStorage.getItem('email') || '', 
+    selectedBoba: '',
+    selectedShawarma: '',
+    selectedShawarmaType: '',
+    selectedBobaType: '',
+    selectedIceTeaType: '',
+    isLoading: true,
+    selectedBobaSize: 'Large',
+    selectedBobaTopping: 'No Toppings',
+    disableToppings: false,
+    selectedBobaQuantity: 1,
+    selectedShawarmaQuantity: 1,
+    selectedIceTeaQuantity: 1,
+    selectedIceTeaSize: 'Medium',
+    payment_method: 'paid',
+  }"
+  x-init="window.addEventListener('load', () => { isLoading = false; })"
+>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -25,26 +55,302 @@
       rel="stylesheet"
     />
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js"
+      defer
+    ></script>
     <script src="https://js.paystack.co/v1/inline.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
-    <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/styles.css') }}"
+    />
+    <!-- <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script> -->
+    <script>
+      let cart = [];
+
+      function selectBobaType(type) {
+        document.querySelector("[x-data]").__x.$data.selectedBobaType = type;
+        document.querySelector("[x-data]").__x.$data.selectedBobaSize = "Large";
+        document.querySelector("[x-data]").__x.$data.selectedBobaTopping =
+          "No Toppings";
+        document.querySelector("[x-data]").__x.$data.selectedBobaQuantity = 1;
+        document.querySelector("[x-data]").__x.$data.disableToppings = false;
+        document.querySelector("[x-data]").__x.$data.showToppingsModal = true;
+      }
+
+      function addToppings() {
+        const size =
+          document.querySelector("[x-data]").__x.$data.selectedBobaSize;
+        const topping =
+          document.querySelector("[x-data]").__x.$data.selectedBobaTopping;
+        const quantity =
+          document.querySelector("[x-data]").__x.$data.selectedBobaQuantity;
+        const selectedBobaType =
+          document.querySelector("[x-data]").__x.$data.selectedBobaType;
+        let price = size === "Large" ? 40 : 30; // Default price for large with toppings
+
+        if (size === "Medium") {
+          price = 30; // Price for medium with no toppings
+          addToCart(selectedBobaType + " (" + size + ")", price, quantity);
+        } else {
+          addToCart(
+            selectedBobaType + " (" + size + ") with " + topping,
+            price,
+            quantity
+          );
+        }
+
+        document.querySelector("[x-data]").__x.$data.showToppingsModal = false;
+      }
+
+      function selectShawarmaType(type) {
+        document.querySelector("[x-data]").__x.$data.selectedShawarmaType =
+          type;
+        document.querySelector(
+          "[x-data]"
+        ).__x.$data.selectedShawarmaQuantity = 1;
+        document.querySelector("[x-data]").__x.$data.showShawarmaModal = true;
+      }
+
+      function addShawarma() {
+        const size = document.querySelector(
+          'input[name="shawarma_size"]:checked'
+        ).value;
+        const quantity =
+          document.querySelector("[x-data]").__x.$data.selectedShawarmaQuantity;
+        const selectedShawarmaType =
+          document.querySelector("[x-data]").__x.$data.selectedShawarmaType;
+        let price =
+          size === "Medium"
+            ? selectedShawarmaType.includes("Chicken")
+              ? 35
+              : 40
+            : selectedShawarmaType.includes("Chicken")
+            ? 45
+            : 50;
+
+        addToCart(selectedShawarmaType + " (" + size + ")", price, quantity);
+        document.querySelector("[x-data]").__x.$data.showShawarmaModal = false;
+      }
+
+      function selectIceTeaType(type) {
+        document.querySelector("[x-data]").__x.$data.selectedIceTeaType = type;
+        document.querySelector("[x-data]").__x.$data.selectedIceTeaSize =
+          "Medium";
+        document.querySelector("[x-data]").__x.$data.selectedIceTeaQuantity = 1;
+        document.querySelector("[x-data]").__x.$data.showIceTeaModal = true;
+      }
+      function addIceTea() {
+        const size =
+          document.querySelector("[x-data]").__x.$data.selectedIceTeaSize;
+        const quantity =
+          document.querySelector("[x-data]").__x.$data.selectedIceTeaQuantity;
+        const selectedIceTeaType =
+          document.querySelector("[x-data]").__x.$data.selectedIceTeaType;
+        let price = size === "Large" ? 40 : 30; // Default price for large
+
+        addToCart(selectedIceTeaType + " (" + size + ")", price, quantity);
+        document.querySelector("[x-data]").__x.$data.showIceTeaModal = false;
+      }
+
+      function addToCart(item, price, quantity = 1) {
+        let existingItem = cart.find((cartItem) => cartItem.name === item);
+        if (existingItem) {
+          existingItem.quantity += quantity;
+        } else {
+          cart.push({ name: item, price: price, quantity: quantity });
+        }
+        updateCart();
+      }
+
+      function removeFromCart(index) {
+        if (cart[index].quantity > 1) {
+          cart[index].quantity -= 1;
+        } else {
+          cart.splice(index, 1);
+        }
+        updateCart();
+      }
+
+      function updateCart() {
+        let cartList = document.getElementById("cart");
+        cartList.innerHTML = "";
+        let total = 0;
+        cart.forEach((item, index) => {
+          let li = document.createElement("li");
+          li.innerHTML = `${
+            item.name
+          } <span style="font-weight: bold; color: #ff9fe5;">x${
+            item.quantity
+          }</span> - <span style="font-weight: bold; color: #ff9fe5;">${
+            item.price * item.quantity
+          } GHS</span>`;
+          li.classList.add("cursor-pointer", "hover:text-red-500");
+          li.onclick = () => removeFromCart(index);
+          let removeButton = document.createElement("span");
+          removeButton.textContent = " x";
+          removeButton.classList.add("text-red-500", "cursor-pointer", "ml-2");
+          removeButton.onclick = () => removeFromCart(index);
+          li.appendChild(removeButton);
+          cartList.appendChild(li);
+          total += item.price * item.quantity;
+        });
+        document.getElementById("total").textContent = total;
+        document.getElementById("total-input").value = total;
+        document.getElementById("order-input").value = cart
+          .map((item) => `${item.name} x${item.quantity}`)
+          .join(", ");
+
+        if (total > 0) {
+          document.getElementById("total-container").classList.remove("hidden");
+        } else {
+          document.getElementById("total-container").classList.add("hidden");
+        }
+
+        // Update the order summary in the modal
+        document.getElementById("order-summary").textContent = cart
+          .map((item) => `${item.name} x${item.quantity}`)
+          .join(", ");
+      }
+
+      function generateOrderNumber() {
+        const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        let result = "bb-";
+        for (let i = 0; i < 4; i++) {
+          result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+      }
+
+      function validateForm() {
+        const form = document.getElementById("order-form");
+        if (form.checkValidity() && cart.length > 0) {
+          document.querySelector("[x-data]").__x.$data.showModal = true;
+          document.querySelector("[x-data]").__x.$data.total =
+            document.getElementById("total").textContent;
+          document.querySelector("[x-data]").__x.$data.orderNumber =
+            generateOrderNumber();
+        } else {
+          form.reportValidity();
+          if (cart.length === 0) {
+            alert("Please select at least one item.");
+          }
+        }
+      }
+
+      function updatePaymentMethod(method) {
+        selectedPaymentMethod = method;
+        document.getElementById("payment_method").value = method;
+      }
+
+      function handleOrderConfirmation() {
+        let paymentMethod = document.getElementById("payment_method").value;
+
+        if (paymentMethod === "on_delivery") {
+          document.querySelector("#order-form").submit();
+        } else {
+          payWithPaystack();
+        }
+      }
+
+      function payWithPaystack() {
+        const orderNumber =
+          document.querySelector("[x-data]").__x.$data.orderNumber;
+
+        const handler = PaystackPop.setup({
+          key: "pk_test_ab9e41a1a26c75b8f9834facfc309cb860ae3330",
+          email: document.querySelector("[x-data]").__x.$data.email,
+          amount: document.querySelector("[x-data]").__x.$data.total * 100,
+          currency: "GHS",
+          ref: orderNumber,
+          callback: function (response) {
+            console.log("Payment successful:", response);
+
+            fetch("/update-payment", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                order_number: orderNumber,
+                payment_method: "paid",
+              }),
+            })
+              .then((res) => res.json())
+              .then((data) => {
+                console.log("Payment method updated:", data);
+                document.querySelector("#order-form").submit();
+              })
+              .catch((err) => console.error("Error updating payment:", err));
+          },
+          onClose: function () {
+            alert("Payment cancelled");
+          },
+        });
+        handler.openIframe();
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        // Retrieve stored values from local storage
+        const storedName = localStorage.getItem("name");
+        const storedLocation = localStorage.getItem("location");
+        const storedPhone = localStorage.getItem("phone");
+        const storedEmail = localStorage.getItem("email");
+
+        if (storedName)
+          document.querySelector("[name='name']").value = storedName;
+        if (storedLocation)
+          document.querySelector("[name='location']").value = storedLocation;
+        if (storedPhone)
+          document.querySelector("[name='phone']").value = storedPhone;
+        if (storedEmail)
+          document.querySelector("[name='email']").value = storedEmail;
+
+        // Store values in local storage on input change
+        document
+          .querySelector("[name='name']")
+          .addEventListener("input", function () {
+            localStorage.setItem("name", this.value);
+          });
+        document
+          .querySelector("[name='location']")
+          .addEventListener("input", function () {
+            localStorage.setItem("location", this.value);
+          });
+        document
+          .querySelector("[name='phone']")
+          .addEventListener("input", function () {
+            localStorage.setItem("phone", this.value);
+          });
+        document
+          .querySelector("[name='email']")
+          .addEventListener("input", function () {
+            localStorage.setItem("email", this.value);
+          });
+      });
+    </script>
   </head>
   <body class="bg-[black] text-white">
     <!-- Loading Animation -->
     {% include 'partials/loading.html' %}
 
-    <div class="max-w-md mx-auto bg-black shadow-lg rounded-lg overflow-hidden mt-2 font-[quicksand]" x-show="!isLoading">
+    <div
+      class="max-w-md mx-auto bg-black shadow-lg rounded-lg overflow-hidden mt-2 font-[quicksand]"
+      x-show="!isLoading"
+    >
       <div class="p-4">
-        <img class="h-24 mx-auto mb-10" src="{{ url_for('static', filename='img/logo.png') }}" alt="logo" />
+        <img
+          class="h-24 mx-auto mb-10"
+          src="{{ url_for('static', filename='img/logo.png') }}"
+          alt="logo"
+        />
         {% block content %}{% endblock %}
       </div>
     </div>
 
     <!-- Modals -->
-    {% include 'partials/modal_toppings.html' %}
-    {% include 'partials/modal_shawarma.html' %}
-    {% include 'partials/modal_ice_tea.html' %}
-    {% include 'partials/modal_confirmation.html' %}
+    {% include 'partials/modal_toppings.html' %} {% include
+    'partials/modal_shawarma.html' %} {% include 'partials/modal_ice_tea.html'
+    %} {% include 'partials/modal_confirmation.html' %}
   </body>
 </html>

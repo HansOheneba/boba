@@ -1,0 +1,62 @@
+<div class="mt-4">
+  <h2 class="text-lg font-semibold">Your Order</h2>
+  <ul id="cart" class="list-disc pl-4 text-xs text-gray-300"></ul>
+  <div id="total-container" class="mt-2 text-right font-bold hidden text-white">
+    Total: <span id="total">0</span> GHS
+  </div>
+  <input type="hidden" name="order" id="order-input" />
+  <input type="hidden" name="total" id="total-input" />
+
+  <input
+    type="text"
+    name="name"
+    placeholder="Enter your name"
+    required
+    class="w-full p-3 mt-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
+    x-model="name"
+  />
+
+  <input
+    type="text"
+    name="location"
+    placeholder="Enter your location"
+    required
+    class="w-full p-3 mt-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
+    x-model="location"
+  />
+
+  <textarea
+    name="notes"
+    placeholder="Any special requests?"
+    class="w-full p-3 mt-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
+    x-model="preferences"
+  ></textarea>
+
+  <input
+    type="text"
+    name="phone"
+    placeholder="Enter your phone number"
+    required
+    class="w-full p-3 mt-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
+    x-model="phone"
+  />
+
+  <input
+    type="email"
+    name="email"
+    placeholder="Enter your email"
+    required
+    class="w-full p-3 mt-3 bg-[#1C1C1E] text-gray-300 border border-gray-600 rounded-lg shadow-sm focus:ring-2 focus:ring-[#007AFF] focus:outline-none transition"
+    x-model="email"
+  />
+
+  
+
+  <button
+    type="button"
+    class="mt-5 w-full bg-purple-800 text-white p-3 rounded-lg shadow-md hover:bg-purple-950 focus:ring-2 focus:ring-purple-500 transition"
+    @click="validateForm()"
+  >
+    Place Order
+  </button>
+</div>
