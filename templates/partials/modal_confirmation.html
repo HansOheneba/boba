@@ -1,6 +1,6 @@
 <div
   x-show="showModal"
-  class="fixed z-50 inset-0 flex items-center justify-center bg-black bg-opacity-70 p-4"
+  class="fixed z-50 inset-0 flex items-center justify-center bg-black bg-opacity-70 p-4 overflow-y-auto"
   x-transition:enter="transition ease-out duration-300"
   x-transition:enter-start="opacity-0 scale-90"
   x-transition:enter-end="opacity-100 scale-100"
@@ -12,7 +12,7 @@
 <script>document.addEventListener("DOMContentLoaded", () => document.getElementById("paid").checked = document.getElementById("payment_method").value = "paid");
 </script>
   <div
-    class="bg-[#12091A] border border-gray-700 p-6 rounded-xl shadow-lg max-w-sm w-full"
+    class="bg-[#12091A] border border-gray-700 p-6 rounded-xl shadow-lg max-w-sm w-full max-h-[80vh] overflow-y-auto"
   >
     <h2 class="text-xl font-bold text-gray-300 text-center">
       Confirm Your Order
