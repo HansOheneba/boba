@@ -28,7 +28,9 @@
   <!-- Ice Tea Section -->
   <div class="mt-4 text-sm">
     <h2 class="text-lg font-semibold">Ice Tea</h2>
-    <div class="grid grid-cols-2 gap-4 mt-4 text-white">
+    <div
+      class="grid {% if ice_tea_items|length == 1 %}grid-cols-1{% else %}grid-cols-2{% endif %} gap-4 mt-4 text-white"
+    >
       {% for ice_tea in ice_tea_items %}
       <button
         type="button"
