@@ -1,2 +1,5 @@
 .vercel
 .env
+/cloudinary
+/venv
+/__pycache__
