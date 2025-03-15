@@ -141,7 +141,22 @@ def update_order_status(order_id, status):
 
 
 def confirm_order(order_id):
-    update_order_status(order_id, "confirmed")
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+
+    # Fetch order details before updating status
+    cursor.execute(
+        "SELECT name, phone, order_number FROM orders WHERE id=%s", (order_id,)
+    )
+    order = cursor.fetchone()
+
+    if order:
+        # Update status to confirmed
+        cursor.execute("UPDATE orders SET status='confirmed' WHERE id=%s", (order_id,))
+        conn.commit()
+
+    conn.close()
+    return order  # Return order details to use in SMS
 
 
 def cancel_order(order_id):

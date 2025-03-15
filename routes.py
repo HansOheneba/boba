@@ -251,20 +251,37 @@ def admin():
         action = request.form.get("action")
 
         if action == "confirm":
-            confirm_order(order_id)
+            order = confirm_order(order_id)  # Get order details
+            if order:
+                # Format SMS
+                customer_name = order["name"]
+                customer_phone = order["phone"]
+                order_number = order["order_number"]
+
+                message = f"""Heyyy {customer_name}, 
+your order is ready for delivery! 
+A rider will call you soon. 📞  
+
+🛍️ Order Reference: {order_number}
+
+Your taste buds are in for a treat! 😋🎉  
+
+Need help? Chat with us on WhatsApp: (https://wa.me/233592076527)  
+"""
+
+                # Send SMS
+                send_sms_hubtel(customer_phone, message)
+
         elif action == "cancel":
             cancel_order(order_id)
 
         return redirect("/admin")
 
-    # Handle filtering and search
     status_filter = request.args.get("status", "")
     search_query = request.args.get("search", "")
 
-    # Fetch orders sorted by latest first
     orders = get_orders(status=status_filter)
 
-    # Filter by search query
     if search_query:
         orders = [
             order
