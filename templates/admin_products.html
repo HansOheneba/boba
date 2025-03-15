@@ -41,10 +41,7 @@
           <td class="p-2">{{ product.name }}</td>
           <td class="p-2">{{ product.category }}</td>
           <td class="p-2">
-            <img
-              src="{{ url_for('static', filename=product.image) }}"
-              class="h-12 mx-auto"
-            />
+            <img src="{{ product.image }}" class="h-12 mx-auto" />
           </td>
           <td class="p-2 font-semibold text-sm">
             <span
@@ -57,7 +54,7 @@
           <td class="p-2 flex space-x-2">
             <!-- Edit Button -->
             <button
-              onclick="editProduct('{{ product.id }}', '{{ product.name }}', '{{ product.category }}', '{{ product.in_stock }}', '{{ url_for('static', filename=product.image) }}')"
+              onclick="editProduct('{{ product.id }}', '{{ product.name }}', '{{ product.category }}', '{{ product.in_stock }}', '{{ product.image }}')"
               class="flex items-center space-x-1 bg-yellow-500 text-white px-2 py-1 rounded-md text-xs shadow-md hover:bg-yellow-600 transition"
             >
               <i class="fa-solid fa-pen"></i>
@@ -146,12 +143,16 @@
         >
           Cancel
         </button>
-      <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded flex items-center justify-center gap-2" 
-  data-loader>
-  <span class="button-text">Save Product</span>
-  <span class="loader hidden animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"></span>
-</button>
-
+        <button
+          type="submit"
+          class="bg-green-500 text-white px-4 py-2 rounded flex items-center justify-center gap-2"
+          data-loader
+        >
+          <span class="button-text">Save Product</span>
+          <span
+            class="loader hidden animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"
+          ></span>
+        </button>
       </div>
     </form>
   </div>

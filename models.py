@@ -2,6 +2,34 @@ import pymysql
 from config import Config
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
+from werkzeug.datastructures import FileStorage
+import cloudinary
+import cloudinary.uploader
+import os
+from dotenv import load_dotenv
+
+# Load environment variables and configure Cloudinary
+load_dotenv()
+cloudinary.config(cloudinary_url=os.getenv("CLOUDINARY_URL"))
+
+
+def upload_image_to_cloudinary(file: FileStorage):
+    try:
+        # Upload file to Cloudinary
+        result = cloudinary.uploader.upload(file)
+
+        # Get the secure URL from the result
+        image_url = result.get("secure_url")
+        if not image_url:
+            print("Error: No URL returned from Cloudinary")
+            return None
+
+        print("Upload Successful! Image URL:", image_url)
+        return image_url
+
+    except Exception as e:
+        print("Upload Failed! Error:", str(e))
+        return None
 
 
 def get_db_connection():
@@ -121,36 +149,40 @@ def cancel_order(order_id):
 
 
 def get_products():
-    """Fetch all products from the database."""
+    """Fetch all active (non-deleted) products from the database."""
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    cursor.execute("SELECT * FROM products ORDER BY id")
+    cursor.execute("SELECT * FROM products WHERE deleted = 0 ORDER BY id")
     products = cursor.fetchall()
     conn.close()
     return products
 
 
-def add_product(name, image, category, in_stock):
-    """Add a new product to the database."""
+def add_product(name, image_url, category, in_stock):
+    """Add a new product to the database with ImageKit URL."""
     conn = get_db_connection()
     cursor = conn.cursor()
+
+    if not image_url:
+        print("Warning: Image URL is empty before inserting into DB!")
+
     cursor.execute(
         "INSERT INTO products (name, image, category, in_stock) VALUES (%s, %s, %s, %s)",
-        (name, image, category, in_stock),
+        (name, image_url, category, in_stock),
     )
     conn.commit()
     conn.close()
 
 
-def update_product(product_id, name, category, in_stock, image=None):
-    """Update a product’s details, including optional image update."""
+def update_product(product_id, name, category, in_stock, image_url=None):
+    """Update a product’s details, including optional ImageKit URL update."""
     conn = get_db_connection()
     cursor = conn.cursor()
 
-    if image:
+    if image_url:  # Only update image if a new one is provided
         cursor.execute(
             "UPDATE products SET name=%s, category=%s, in_stock=%s, image=%s WHERE id=%s",
-            (name, category, in_stock, image, product_id),
+            (name, category, in_stock, image_url, product_id),
         )
     else:
         cursor.execute(
@@ -163,10 +195,10 @@ def update_product(product_id, name, category, in_stock, image=None):
 
 
 def delete_product(product_id):
-    """Delete a product from the database."""
+    """Soft delete a product by setting its deleted flag to 1."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM products WHERE id=%s", (product_id,))
+    cursor.execute("UPDATE products SET deleted = 1 WHERE id = %s", (product_id,))
     conn.commit()
     conn.close()
 
