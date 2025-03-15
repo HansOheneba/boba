@@ -14,7 +14,7 @@ from models import (
     update_product,
     delete_product,
     update_payment_method,
-    upload_image_to_imagekit,
+    upload_image_to_cloudinary,  # Updated function name
 )
 from werkzeug.security import check_password_hash
 import random
@@ -287,9 +287,9 @@ def admin_products():
 
         file = request.files.get("image")  # Get the uploaded file
         image_url = None
-        if file and file.filename:# Ensure file is uploaded
+        if file and file.filename:  # Ensure file is uploaded
             print(file)
-            image_url = upload_image_to_imagekit(file)  # Upload to ImageKit
+            image_url = upload_image_to_cloudinary(file)  # Updated function call
             if image_url:
                 print(f"Image uploaded successfully: {image_url}")
             else:

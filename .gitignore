@@ -1,2 +1,6 @@
 .vercel
 .env
+.qodo
+/cloudinary
+/venv
+/__pycache__

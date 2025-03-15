@@ -2,30 +2,26 @@ import pymysql
 from config import Config
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
-from imagekitio import ImageKit
 from werkzeug.datastructures import FileStorage
+import cloudinary
+import cloudinary.uploader
+import os
+from dotenv import load_dotenv
 
-imagekit = ImageKit(
-    private_key=Config.IMAGEKIT_PRIVATE_KEY,
-    public_key=Config.IMAGEKIT_PUBLIC_KEY,
-    url_endpoint=Config.IMAGEKIT_URL_ENDPOINT,
-)
+# Load environment variables and configure Cloudinary
+load_dotenv()
+cloudinary.config(cloudinary_url=os.getenv("CLOUDINARY_URL"))
 
 
-def upload_image_to_imagekit(file: FileStorage):
+def upload_image_to_cloudinary(file: FileStorage):
     try:
-        # Read file as bytes
-        file_bytes = file.read()
+        # Upload file to Cloudinary
+        result = cloudinary.uploader.upload(file)
 
-        response = imagekit.upload_file(
-            file=file_bytes,  # Pass bytes directly
-            file_name="img",  # Ensure filename
-        )
-
-        # Ensure correct response type
-        image_url = getattr(response, "url", None)
+        # Get the secure URL from the result
+        image_url = result.get("secure_url")
         if not image_url:
-            print("Error: No URL returned from ImageKit")
+            print("Error: No URL returned from Cloudinary")
             return None
 
         print("Upload Successful! Image URL:", image_url)
@@ -34,10 +30,6 @@ def upload_image_to_imagekit(file: FileStorage):
     except Exception as e:
         print("Upload Failed! Error:", str(e))
         return None
-
-
-with open("C:\\Users\\hanso\\Pictures\\shots.jpg", "rb") as test_file:
-    upload_image_to_imagekit(test_file)
 
 
 def get_db_connection():
@@ -157,10 +149,10 @@ def cancel_order(order_id):
 
 
 def get_products():
-    """Fetch all products from the database."""
+    """Fetch all active (non-deleted) products from the database."""
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
-    cursor.execute("SELECT * FROM products ORDER BY id")
+    cursor.execute("SELECT * FROM products WHERE deleted = 0 ORDER BY id")
     products = cursor.fetchall()
     conn.close()
     return products
@@ -203,10 +195,10 @@ def update_product(product_id, name, category, in_stock, image_url=None):
 
 
 def delete_product(product_id):
-    """Delete a product from the database."""
+    """Soft delete a product by setting its deleted flag to 1."""
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("DELETE FROM products WHERE id=%s", (product_id,))
+    cursor.execute("UPDATE products SET deleted = 1 WHERE id = %s", (product_id,))
     conn.commit()
     conn.close()
 
