@@ -258,7 +258,7 @@
           document.querySelector("[x-data]").__x.$data.orderNumber;
 
         const handler = PaystackPop.setup({
-          key: "pk_test_ab9e41a1a26c75b8f9834facfc309cb860ae3330",
+          key: "pk_live_3150cee8b21f82183bc1ff19f02179708931904e",
           email: document.querySelector("[x-data]").__x.$data.email,
           amount: document.querySelector("[x-data]").__x.$data.total * 100,
           currency: "GHS",
@@ -282,9 +282,6 @@
                 document.querySelector("#order-form").submit();
               })
               .catch((err) => console.error("Error updating payment:", err));
-          },
-          onClose: function () {
-            alert("Payment cancelled");
           },
         });
         handler.openIframe();
@@ -338,7 +335,7 @@
       class="max-w-md mx-auto bg-black shadow-lg rounded-lg overflow-hidden mt-2 font-[quicksand]"
       x-show="!isLoading"
     >
-      <div class="p-4">
+      <div class="p-2">
         <img
           class="h-24 mx-auto mb-10"
           src="{{ url_for('static', filename='img/logo.png') }}"

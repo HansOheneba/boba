@@ -89,12 +89,11 @@ def format_order_details(customer_name, order_details):
     )
 
     # Final SMS message
-    sms_message = f"""Hello {customer_name}, \n\n  
-🛍️ Your order has been placed!  
+    sms_message = f"""Hello {customer_name}, Your order for: 
 
 {formatted_items}  
 
-Your order is being processed. \n You should hear from us shortly.
+Has been placed and is being processed. You should hear from us shortly.
 """
 
     return sms_message
