@@ -13,7 +13,7 @@
         <!-- Boba Items -->
         {% for boba in boba_items %}
         <div
-          class="flex items-center justify-center relative bg-[#161618] text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48 bg-[url({{ url_for('static', filename=boba.image) }})] bg-cover bg-top"
+          class="flex items-center justify-center relative bg-[#161618] text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48 bg-[url({{ boba.image }})] bg-cover bg-top"
           x-bind:class="{ 'border-green-500': selectedBobaType === '{{ boba.name }}' }"
           @click="selectBobaType('{{ boba.name }}')"
         >
@@ -34,7 +34,7 @@
       {% for ice_tea in ice_tea_items %}
       <button
         type="button"
-        class="h-20 p-4 text-lg rounded-lg font-bold bg-[url({{ url_for('static', filename=ice_tea.image) }})] bg-cover bg-center"
+        class="h-20 p-4 text-lg rounded-lg font-bold bg-[url({{ ice_tea.image }})] bg-cover bg-center"
         onclick="selectIceTeaType('{{ ice_tea.name }}')"
       >
         <p class="z-10 text-white brightness-100">{{ ice_tea.name }}</p>
@@ -50,7 +50,7 @@
       {% for shawarma in shawarma_items %}
       <button
         type="button"
-        class="h-20 p-4 text-lg rounded-lg font-bold bg-[url({{ url_for('static', filename=shawarma.image) }})] bg-cover bg-center"
+        class="h-20 p-4 text-lg rounded-lg font-bold bg-[url({{ shawarma.image }})] bg-cover bg-center"
         onclick="selectShawarmaType('{{ shawarma.name }}')"
       >
         <p class="z-10 text-white brightness-100">{{ shawarma.name }}</p>
