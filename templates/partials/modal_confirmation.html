@@ -223,4 +223,15 @@
     // Call the original confirmation function
     handleOrderConfirmation();
   }
+
+  // Add a function to reset the button state if payment is cancelled
+  function resetOrderButton() {
+    const button = document.getElementById("confirm-order-button");
+    button.disabled = false;
+    button.querySelector(".button-text").textContent = "Confirm";
+    button.querySelector(".loader").classList.add("hidden");
+  }
+
+  // Make the reset function globally available
+  window.resetOrderButton = resetOrderButton;
 </script>

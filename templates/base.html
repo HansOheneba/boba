@@ -253,15 +253,23 @@
         }
       }
 
-      function payWithPaystack() {
-        const orderNumber =
-          document.querySelector("[x-data]").__x.$data.orderNumber;
+     function payWithPaystack() {
+    const orderNumber = document.querySelector("[x-data]").__x.$data.orderNumber;
+    let originalTotal = parseFloat(document.querySelector("[x-data]").__x.$data.total);
+    
+    // Calculate the new total (adding 2%)
+    let paystackCharge = originalTotal * 0.02;
+    let newTotal = originalTotal + paystackCharge; // Keep the decimals
 
-        const handler = PaystackPop.setup({
-          key: "pk_live_3150cee8b21f82183bc1ff19f02179708931904e",
-          email: document.querySelector("[x-data]").__x.$data.email,
-          amount: document.querySelector("[x-data]").__x.$data.total * 100,
-          currency: "GHS",
+    console.log(`Original Total: ${originalTotal.toFixed(2)} GHS`);
+    console.log(`Paystack Fee (2%): ${paystackCharge.toFixed(2)} GHS`);
+    console.log(`Final Total to Pay: ${newTotal.toFixed(2)} GHS`);
+
+    const handler = PaystackPop.setup({
+        key: "pk_live_3150cee8b21f82183bc1ff19f02179708931904e",
+        email: document.querySelector("[x-data]").__x.$data.email,
+        amount: (newTotal * 100).toFixed(0), // Convert to kobo and remove decimals
+        currency: "GHS",
           ref: orderNumber,
           callback: function (response) {
             console.log("Payment successful:", response);
@@ -283,7 +291,14 @@
               })
               .catch((err) => console.error("Error updating payment:", err));
           },
+          onClose: function () {
+            // Reset the button state when payment is cancelled
+            if (window.resetOrderButton) {
+              window.resetOrderButton();
+            }
+          },
         });
+
         handler.openIframe();
       }
 
