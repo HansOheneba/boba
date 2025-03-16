@@ -265,7 +265,7 @@
     let originalTotal = parseFloat(document.querySelector("[x-data]").__x.$data.total);
     
     // Calculate the new total (adding 2%)
-    let paystackCharge = originalTotal * 0.03;
+    let paystackCharge = originalTotal * 0.02;
     let newTotal = originalTotal + paystackCharge; // Keep the decimals
 
     const handler = PaystackPop.setup({
