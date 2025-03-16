@@ -10,54 +10,75 @@
     </div>
     <div class="overflow-x-auto whitespace-nowrap flex gap-4 mt-4">
       <div class="grid grid-flow-col grid-rows-3 gap-2">
+       <!-- {% for boba in boba_items %}
+        <div 
+  class="w-64 h-64 bg-cover bg-top rounded-lg"
+  style="background-image: url('{{boba.image}}');"
+>
+</div>
+{% endfor %} -->
+
         <!-- Boba Items -->
-        {% for boba in boba_items %}
-        <div
-          class="flex items-center justify-center relative bg-[#161618] text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48 bg-[url({{ boba.image }})] bg-cover bg-top"
-          x-bind:class="{ 'border-green-500': selectedBobaType === '{{ boba.name }}' }"
-          @click="selectBobaType('{{ boba.name }}')"
-        >
-          <div class="absolute inset-0 bg-black bg-opacity-10 rounded-lg"></div>
-          <p class="font-bold relative z-10">{{ boba.name }}</p>
-        </div>
-        {% endfor %}
+       {% for boba in boba_items %}
+    <div
+      class="relative text-white p-6 rounded-lg shadow-lg text-center cursor-pointer w-48"
+      x-bind:class="{ 'border-green-500': selectedBobaType === '{{ boba.name }}' }"
+      @click="selectBobaType('{{ boba.name }}')"
+    >
+      <!-- Background Layer -->
+      <div class="absolute inset-0 bg-[#161618] rounded-lg"></div>
+      <div
+        class="absolute inset-0 bg-cover bg-top rounded-lg"
+        style="background-image: url('{{ boba.image }}');"
+      ></div>
+
+      <div class="relative z-10">
+        <p class="font-bold">{{ boba.name }}</p>
+      </div>
+    </div>
+{% endfor %}
+
       </div>
     </div>
   </div>
 
-  <!-- Ice Tea Section -->
-  <div class="mt-4 text-sm">
-    <h2 class="text-lg font-semibold">Ice Tea</h2>
-    <div
-      class="grid {% if ice_tea_items|length == 1 %}grid-cols-1{% else %}grid-cols-2{% endif %} gap-4 mt-4 text-white"
+ <!-- Ice Tea Section -->
+<div class="mt-4 text-sm">
+  <h2 class="text-lg font-semibold">Ice Tea</h2>
+  <div
+    class="grid {% if ice_tea_items|length == 1 %}grid-cols-1{% else %}grid-cols-2{% endif %} gap-4 mt-4 text-white"
+  >
+    {% for ice_tea in ice_tea_items %}
+    <button
+      type="button"
+      class="h-20 p-4 text-lg rounded-lg font-bold bg-cover bg-center"
+      style="background-image: url('{{ ice_tea.image }}');"
+      onclick="selectIceTeaType('{{ ice_tea.name }}')"
     >
-      {% for ice_tea in ice_tea_items %}
-      <button
-        type="button"
-        class="h-20 p-4 text-lg rounded-lg font-bold bg-[url({{ ice_tea.image }})] bg-cover bg-center"
-        onclick="selectIceTeaType('{{ ice_tea.name }}')"
-      >
-        <p class="z-10 text-white brightness-100">{{ ice_tea.name }}</p>
-      </button>
-      {% endfor %}
-    </div>
+      <p class="z-10 text-white brightness-100">{{ ice_tea.name }}</p>
+    </button>
+    {% endfor %}
   </div>
+</div>
 
-  <!-- Shawarma Section -->
-  <div class="mt-4 text-sm">
-    <h2 class="text-lg font-semibold">Shawarma</h2>
-    <div class="grid grid-cols-2 gap-4 mt-4 text-white">
-      {% for shawarma in shawarma_items %}
-      <button
-        type="button"
-        class="h-20 p-4 text-lg rounded-lg font-bold bg-[url({{ shawarma.image }})] bg-cover bg-center"
-        onclick="selectShawarmaType('{{ shawarma.name }}')"
-      >
-        <p class="z-10 text-white brightness-100">{{ shawarma.name }}</p>
-      </button>
-      {% endfor %}
-    </div>
+
+<!-- Shawarma Section -->
+<div class="mt-4 text-sm">
+  <h2 class="text-lg font-semibold">Shawarma</h2>
+  <div class="grid grid-cols-2 gap-4 mt-4 text-white">
+    {% for shawarma in shawarma_items %}
+    <button
+      type="button"
+      class="h-20 p-4 text-lg rounded-lg font-bold bg-cover bg-center"
+      style="background-image: url('{{ shawarma.image }}');"
+      onclick="selectShawarmaType('{{ shawarma.name }}')"
+    >
+      <p class="z-10 text-white brightness-100">{{ shawarma.name }}</p>
+    </button>
+    {% endfor %}
   </div>
+</div>
+
 
   <input
     type="hidden"

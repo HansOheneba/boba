@@ -11,5 +11,9 @@ app.config["UPLOAD_FOLDER"] = "static/img/"
 # Register routes
 app.register_blueprint(routes_app)
 
+
+
+
+
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5001)

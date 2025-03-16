@@ -31,6 +31,8 @@
   x-init="window.addEventListener('load', () => { isLoading = false; })"
 >
   <head>
+    
+    
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
@@ -54,7 +56,6 @@
       href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playwrite+US+Trad:wght@100..400&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&family=Satisfy&display=swap"
       rel="stylesheet"
     />
-    <script src="https://cdn.tailwindcss.com"></script>
     <script
       src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js"
       defer
@@ -64,6 +65,12 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/styles.css') }}"
     />
+     <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/output.css') }}"
+    />
+
+    
     <!-- <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script> -->
     <script>
       let cart = [];
@@ -258,12 +265,8 @@
     let originalTotal = parseFloat(document.querySelector("[x-data]").__x.$data.total);
     
     // Calculate the new total (adding 2%)
-    let paystackCharge = originalTotal * 0.02;
+    let paystackCharge = originalTotal * 0.03;
     let newTotal = originalTotal + paystackCharge; // Keep the decimals
-
-    console.log(`Original Total: ${originalTotal.toFixed(2)} GHS`);
-    console.log(`Paystack Fee (2%): ${paystackCharge.toFixed(2)} GHS`);
-    console.log(`Final Total to Pay: ${newTotal.toFixed(2)} GHS`);
 
     const handler = PaystackPop.setup({
         key: "pk_live_3150cee8b21f82183bc1ff19f02179708931904e",
@@ -341,6 +344,7 @@
           });
       });
     </script>
+
   </head>
   <body class="bg-[black] text-white">
     <!-- Loading Animation -->
@@ -364,5 +368,6 @@
     {% include 'partials/modal_toppings.html' %} {% include
     'partials/modal_shawarma.html' %} {% include 'partials/modal_ice_tea.html'
     %} {% include 'partials/modal_confirmation.html' %}
+    
   </body>
 </html>
