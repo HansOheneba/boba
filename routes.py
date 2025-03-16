@@ -143,9 +143,6 @@ def index():
         if product["category"] == "Shawarma" and product["in_stock"]
     ]
     
-    for item in all_products:
-        print(f"Image URL for {item['name']}: {item['image']}")
-
     if request.method == "POST":
         name = request.form.get("name")
         location = request.form.get("location")
