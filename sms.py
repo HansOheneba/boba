@@ -3,7 +3,6 @@ from imagekitio import ImageKit
 # Initialize ImageKit (Replace with your credentials)
 imagekit = ImageKit(
     public_key="public_10G6VDSuQJSnLoUKAyprzW40zSU=",
-    private_key="private_gtpcuffnC1Iz/ccE1JpA9b4Hrts=",
     url_endpoint="https://ik.imagekit.io/xenodinger/bubblebliss/",
 )
 
