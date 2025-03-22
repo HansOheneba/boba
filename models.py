@@ -228,14 +228,3 @@ def update_payment_method(order_number, payment_method):
     )
     conn.commit()
     conn.close()
-
-
-def get_order_by_number(order_number):
-    """Get order by order number"""
-    conn = get_db_connection()
-    cursor = conn.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM orders WHERE order_number = %s", (order_number,))
-    order = cursor.fetchone()
-    cursor.close()
-    conn.close()
-    return order

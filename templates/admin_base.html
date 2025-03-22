@@ -1,6 +1,5 @@
 <!DOCTYPE html>
-<html
-  lang="en"
+<html  lang="en"
   x-data="{
     showModal: false,
     showToppingsModal: false,
@@ -53,21 +52,15 @@
       href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playwrite+US+Trad:wght@100..400&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&family=Satisfy&display=swap"
       rel="stylesheet"
     />
-    <link
+     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/output.css') }}"
     />
-    <script
-      src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js"
-      defer
-    ></script>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
     <script src="https://js.paystack.co/v1/inline.js"></script>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/styles.css') }}"
-    />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
     <!-- <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script> -->
-    <script>
+      <script>
       let cart = [];
 
       function selectBobaType(type) {
@@ -241,155 +234,22 @@
         }
       }
 
-      function payWithHubtel() {
-        const orderNumber = document.querySelector("[x-data]").__x.$data.orderNumber;
-        const total = parseFloat(document.querySelector("[x-data]").__x.$data.total);
-        const email = document.querySelector("[x-data]").__x.$data.email;
-        const name = document.querySelector("[name='name']").value;
-        const phone = document.querySelector("[name='phone']").value;
-
-        // First fetch merchant account number from server
-        fetch("/get-payment-config")
-          .then(res => res.json())
-          .then(config => {
-            // Prepare data for Hubtel API
-            const hubtelData = {
-              totalAmount: total,
-              description: "Boba order payment: " + orderNumber,
-              callbackUrl: window.location.origin + "/admin/hubtel-callback",
-              returnUrl: window.location.origin + "/admin/order-complete",
-              merchantAccountNumber: config.merchantAccountNumber,
-              cancellationUrl: window.location.origin + "/admin/order-cancelled",
-              clientReference: orderNumber,
-              payeeName: name,
-              payeeMobileNumber: phone,
-              payeeEmail: email
-            };
-
-            // Call backend to initiate Hubtel payment
-            return fetch("/initiate-hubtel-payment", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(hubtelData),
-            });
-          })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.responseCode === "0000") {
-              // Create iframe for checkout
-              const iframe = document.createElement("iframe");
-              iframe.src = data.data.checkoutDirectUrl;
-              iframe.style.width = "100%";
-              iframe.style.height = "600px";
-              iframe.style.border = "none";
-
-              // Create modal for iframe
-              const modal = document.createElement("div");
-              modal.style.position = "fixed";
-              modal.style.top = "0";
-              modal.style.left = "0";
-              modal.style.width = "100%";
-              modal.style.height = "100%";
-              modal.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
-              modal.style.zIndex = "9999";
-              modal.style.display = "flex";
-              modal.style.justifyContent = "center";
-              modal.style.alignItems = "center";
-
-              // Add close button
-              const closeBtn = document.createElement("button");
-              closeBtn.innerHTML = "×";
-              closeBtn.style.position = "absolute";
-              closeBtn.style.top = "10px";
-              closeBtn.style.right = "10px";
-              closeBtn.style.backgroundColor = "#fff";
-              closeBtn.style.border = "none";
-              closeBtn.style.borderRadius = "50%";
-              closeBtn.style.width = "30px";
-              closeBtn.style.height = "30px";
-              closeBtn.style.fontSize = "20px";
-              closeBtn.style.cursor = "pointer";
-              closeBtn.onclick = function () {
-                document.body.removeChild(modal);
-              };
-
-              // Create iframe container
-              const iframeContainer = document.createElement("div");
-              iframeContainer.style.width = "90%";
-              iframeContainer.style.maxWidth = "600px";
-              iframeContainer.style.backgroundColor = "#fff";
-              iframeContainer.style.borderRadius = "5px";
-              iframeContainer.style.padding = "20px";
-              iframeContainer.style.position = "relative";
-
-              iframeContainer.appendChild(iframe);
-              modal.appendChild(closeBtn);
-              modal.appendChild(iframeContainer);
-              document.body.appendChild(modal);
-
-              // Check payment status periodically
-              let checkCount = 0;
-              const maxChecks = 20;
-              const checkInterval = 10000; // 10 seconds
-
-              const checkPaymentStatus = function () {
-                if (checkCount >= maxChecks) return;
-
-                fetch(`/check-payment-status?clientReference=${orderNumber}`)
-                  .then((res) => res.json())
-                  .then((statusData) => {
-                    if (statusData.data && statusData.data.status === "Paid") {
-                      // Payment successful, submit form
-                      document.body.removeChild(modal);
-                      // Update payment method before redirecting
-                      fetch("/update-payment", {
-                        method: "POST",
-                        headers: {
-                          "Content-Type": "application/json",
-                        },
-                        body: JSON.stringify({
-                          order_number: orderNumber,
-                          payment_method: "paid",
-                        }),
-                      })
-                        .then((res) => res.json())
-                        .then((data) => {
-                          console.log("Payment method updated:", data);
-                          document.querySelector("form").submit();
-                        })
-                        .catch((err) =>
-                          console.error("Error updating payment:", err)
-                        );
-                    } else if (
-                      statusData.data &&
-                      statusData.data.status === "Cancelled"
-                    ) {
-                      document.body.removeChild(modal);
-                    } else {
-                      checkCount++;
-                      setTimeout(checkPaymentStatus, checkInterval);
-                    }
-                  })
-                  .catch((err) => {
-                    console.error("Error checking payment status:", err);
-                    checkCount++;
-                    setTimeout(checkPaymentStatus, checkInterval);
-                  });
-              };
-
-              // Start checking payment status after a delay
-              setTimeout(checkPaymentStatus, checkInterval);
-            } else {
-              console.error("Failed to initiate payment:", data);
-              alert("Failed to initiate payment. Please try again.");
-            }
-          })
-          .catch((err) => {
-            console.error("Error initiating payment:", err);
-            alert("Failed to initiate payment. Please try again.");
-          });
+      function payWithPaystack() {
+        const handler = PaystackPop.setup({
+          key: 'pk_test_ab9e41a1a26c75b8f9834facfc309cb860ae3330', // Replace with your Paystack public key
+          email: document.querySelector("[x-data]").__x.$data.email,
+          amount: document.querySelector("[x-data]").__x.$data.total * 100, // Amount in kobo
+          currency: 'GHS',
+          ref: document.querySelector("[x-data]").__x.$data.orderNumber,
+          callback: function(response) {
+            // Payment successful, submit the form
+            document.querySelector('form').submit();
+          },
+          onClose: function() {
+            alert('Payment cancelled');
+          }
+        });
+        handler.openIframe();
       }
 
       document.addEventListener("DOMContentLoaded", function () {
@@ -431,54 +291,47 @@
           });
       });
 
-      document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll("button[data-loader]").forEach((button) => {
-          button.addEventListener("click", function (event) {
-            if (button.disabled) return;
+  document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll("button[data-loader]").forEach((button) => {
+    button.addEventListener("click", function (event) {
+      if (button.disabled) return;
 
-            event.preventDefault(); // Prevent default submission (we handle it manually)
+      event.preventDefault(); // Prevent default submission (we handle it manually)
 
-            button.disabled = true;
-            button.querySelector(".button-text").textContent = "Processing...";
-            button.querySelector(".loader").classList.remove("hidden");
+      button.disabled = true;
+      button.querySelector(".button-text").textContent = "Processing...";
+      button.querySelector(".loader").classList.remove("hidden");
 
-            // ✅ Find the nearest form and submit it
-            const form = button.closest("form");
-            if (form) {
-              form.submit();
-            }
-          });
-        });
-      });
+      // ✅ Find the nearest form and submit it
+      const form = button.closest("form");
+      if (form) {
+        form.submit();
+      }
+    });
+  });
+});
+
+
     </script>
   </head>
-  <body class="bg-white text-black relative">
-    <!-- Logout Button -->
-    <div class="absolute top-4 right-4 md:right-10">
-      <a
-        href="/logout"
-        class="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition"
-      >
-        <i class="fa-solid fa-right-from-bracket text-lg"></i>
-        <span class="hidden md:inline text-sm font-medium">Logout</span>
-      </a>
-    </div>
+ <body class="bg-white text-black relative">
+  <!-- Logout Button -->
+  <div class="absolute top-4 right-4 md:right-10">
+    <a href="/logout" class="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition">
+      <i class="fa-solid fa-right-from-bracket text-lg"></i>
+      <span class="hidden md:inline text-sm font-medium">Logout</span>
+    </a>
+  </div>
 
-    <!-- Loading Animation -->
-    {% include 'partials/loading.html' %}
+  <!-- Loading Animation -->
+  {% include 'partials/loading.html' %}
 
-    <div
-      class="max-w-screen-md lg:max-w-screen xl:max-w-screen-xl mx-auto rounded-lg overflow-hidden mt-2 font-[quicksand]"
-      x-show="!isLoading"
-    >
-      <div class="text-center">
-        <img
-          class="h-24 md:h-32 lg:h-40 mx-auto mb-10"
-          src="{{ url_for('static', filename='img/logo.jpg') }}"
-          alt="logo"
-        />
-        {% block content %}{% endblock %}
-      </div>
+  <div class="max-w-screen-md lg:max-w-screen xl:max-w-screen-xl mx-auto rounded-lg overflow-hidden mt-2 font-[quicksand]" x-show="!isLoading">
+    <div class="text-center">
+      <img class="h-24 md:h-32 lg:h-40 mx-auto mb-10" src="{{ url_for('static', filename='img/logo.jpg') }}" alt="logo" />
+      {% block content %}{% endblock %}
     </div>
-  </body>
+  </div>
+</body>
+
 </html>
