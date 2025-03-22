@@ -27,8 +27,37 @@
     selectedIceTeaQuantity: 1,
     selectedIceTeaSize: 'Medium',
     payment_method: 'paid',
+    cart: JSON.parse(localStorage.getItem('cart') || '[]'),
+    
+    init() {
+      this.$watch('cart', (value) => {
+        localStorage.setItem('cart', JSON.stringify(value));
+        this.calculateTotal();
+      });
+    },
+    
+    addToCart(item) {
+      this.cart.push(item);
+    },
+    
+    removeFromCart(index) {
+      this.cart.splice(index, 1);
+    },
+    
+    clearCart() {
+      this.cart = [];
+      localStorage.removeItem('cart');
+      this.total = 0;
+    },
+    
+    calculateTotal() {
+      this.total = this.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    }
   }"
-  x-init="window.addEventListener('load', () => { isLoading = false; })"
+  x-init="window.addEventListener('load', () => { 
+    isLoading = false; 
+    updateCart(); // Add this to update the cart display on page load
+  })"
 >
   <head>
     
@@ -73,8 +102,6 @@
     
     <!-- <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script> -->
     <script>
-      let cart = [];
-
       function selectBobaType(type) {
         document.querySelector("[x-data]").__x.$data.selectedBobaType = type;
         document.querySelector("[x-data]").__x.$data.selectedBobaSize = "Large";
@@ -161,29 +188,59 @@
       }
 
       function addToCart(item, price, quantity = 1) {
-        let existingItem = cart.find((cartItem) => cartItem.name === item);
+        // Get Alpine's cart array
+        const alpineCart = document.querySelector("[x-data]").__x.$data.cart;
+        
+        // Find existing item
+        let existingItem = alpineCart.find((cartItem) => cartItem.name === item);
+        
         if (existingItem) {
           existingItem.quantity += quantity;
         } else {
-          cart.push({ name: item, price: price, quantity: quantity });
+          alpineCart.push({ name: item, price: price, quantity: quantity });
         }
+        
+        // Save to localStorage
+        localStorage.setItem('cart', JSON.stringify(alpineCart));
+        
         updateCart();
+        
+        // Log when item is added to cart
+        console.log('Item added to cart:', { name: item, price, quantity });
+        console.log('Current cart:', alpineCart);
       }
 
       function removeFromCart(index) {
-        if (cart[index].quantity > 1) {
-          cart[index].quantity -= 1;
+        // Get Alpine's cart array
+        const alpineCart = document.querySelector("[x-data]").__x.$data.cart;
+        
+        if (alpineCart[index].quantity > 1) {
+          alpineCart[index].quantity -= 1;
         } else {
-          cart.splice(index, 1);
+          alpineCart.splice(index, 1);
         }
+        
+        // Save to localStorage
+        localStorage.setItem('cart', JSON.stringify(alpineCart));
+        
         updateCart();
+        
+        // Log when item is removed from cart
+        console.log('Item removed from cart at index:', index);
+        console.log('Current cart:', alpineCart);
       }
 
       function updateCart() {
+        // Get Alpine's cart array
+        const alpineCart = document.querySelector("[x-data]").__x.$data.cart;
+        
         let cartList = document.getElementById("cart");
+        if (!cartList) return; // Cart might not be loaded yet
+        
         cartList.innerHTML = "";
         let total = 0;
-        cart.forEach((item, index) => {
+        
+        alpineCart.forEach((item, index) => {
           let li = document.createElement("li");
           li.innerHTML = `${
             item.name
@@ -197,27 +254,43 @@
           let removeButton = document.createElement("span");
           removeButton.textContent = " x";
           removeButton.classList.add("text-red-500", "cursor-pointer", "ml-2");
-          removeButton.onclick = () => removeFromCart(index);
+          removeButton.onclick = (e) => {
+            e.stopPropagation();
+            removeFromCart(index);
+          };
           li.appendChild(removeButton);
           cartList.appendChild(li);
           total += item.price * item.quantity;
         });
-        document.getElementById("total").textContent = total;
-        document.getElementById("total-input").value = total;
-        document.getElementById("order-input").value = cart
+        
+        const totalElement = document.getElementById("total");
+        const totalInputElement = document.getElementById("total-input");
+        const orderInputElement = document.getElementById("order-input");
+        const totalContainerElement = document.getElementById("total-container");
+        const orderSummaryElement = document.getElementById("order-summary");
+        
+        if (totalElement) totalElement.textContent = total;
+        if (totalInputElement) totalInputElement.value = total;
+        if (orderInputElement) orderInputElement.value = alpineCart
           .map((item) => `${item.name} x${item.quantity}`)
           .join(", ");
 
-        if (total > 0) {
-          document.getElementById("total-container").classList.remove("hidden");
-        } else {
-          document.getElementById("total-container").classList.add("hidden");
+        if (totalContainerElement) {
+          if (total > 0) {
+            totalContainerElement.classList.remove("hidden");
+          } else {
+            totalContainerElement.classList.add("hidden");
+          }
         }
 
-        // Update the order summary in the modal
-        document.getElementById("order-summary").textContent = cart
-          .map((item) => `${item.name} x${item.quantity}`)
-          .join(", ");
+        if (orderSummaryElement) {
+          orderSummaryElement.textContent = alpineCart
+            .map((item) => `${item.name} x${item.quantity}`)
+            .join(", ");
+        }
+        
+        // Update Alpine's total
+        document.querySelector("[x-data]").__x.$data.total = total;
       }
 
       function generateOrderNumber() {
@@ -255,6 +328,9 @@
 
         if (paymentMethod === "on_delivery") {
           document.querySelector("#order-form").submit();
+          // Clear cart after successful order
+          document.querySelector("[x-data]").__x.$data.cart = [];
+          localStorage.removeItem('cart');
         } else {
           payWithPaystack();
         }
@@ -290,6 +366,9 @@
               .then((res) => res.json())
               .then((data) => {
                 console.log("Payment method updated:", data);
+                // Clear cart after successful payment
+                document.querySelector("[x-data]").__x.$data.cart = [];
+                localStorage.removeItem('cart');
                 document.querySelector("#order-form").submit();
               })
               .catch((err) => console.error("Error updating payment:", err));
@@ -342,6 +421,9 @@
           .addEventListener("input", function () {
             localStorage.setItem("email", this.value);
           });
+        
+        // Initialize cart display from localStorage on page load
+        updateCart();
       });
     </script>
 
