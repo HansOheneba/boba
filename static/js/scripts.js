@@ -1,15 +1,15 @@
 // Cart persistence functions
 function saveCartToLocalStorage(cart) {
-  localStorage.setItem('cart', JSON.stringify(cart));
+  localStorage.setItem("cart", JSON.stringify(cart));
 }
 
 function getCartFromLocalStorage() {
-  const cartData = localStorage.getItem('cart');
+  const cartData = localStorage.getItem("cart");
   return cartData ? JSON.parse(cartData) : [];
 }
 
 function clearCartFromLocalStorage() {
-  localStorage.removeItem('cart');
+  localStorage.removeItem("cart");
 }
 
 document.addEventListener("alpine:init", () => {
@@ -76,12 +76,12 @@ document.addEventListener("alpine:init", () => {
       }
 
       this.cart.push({
-        type: 'boba',
+        type: "boba",
         name: selectedBobaType,
         size: size,
         topping: topping,
         quantity: quantity,
-        price: price
+        price: price,
       });
 
       saveCartToLocalStorage(this.cart);

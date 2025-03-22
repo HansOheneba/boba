@@ -60,8 +60,6 @@
   })"
 >
   <head>
-    
-    
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
@@ -94,12 +92,11 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/styles.css') }}"
     />
-     <link
+    <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/output.css') }}"
     />
 
-    
     <!-- <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script> -->
     <script>
       function selectBobaType(type) {
@@ -190,56 +187,58 @@
       function addToCart(item, price, quantity = 1) {
         // Get Alpine's cart array
         const alpineCart = document.querySelector("[x-data]").__x.$data.cart;
-        
+
         // Find existing item
-        let existingItem = alpineCart.find((cartItem) => cartItem.name === item);
-        
+        let existingItem = alpineCart.find(
+          (cartItem) => cartItem.name === item
+        );
+
         if (existingItem) {
           existingItem.quantity += quantity;
         } else {
           alpineCart.push({ name: item, price: price, quantity: quantity });
         }
-        
+
         // Save to localStorage
-        localStorage.setItem('cart', JSON.stringify(alpineCart));
-        
+        localStorage.setItem("cart", JSON.stringify(alpineCart));
+
         updateCart();
-        
+
         // Log when item is added to cart
-        console.log('Item added to cart:', { name: item, price, quantity });
-        console.log('Current cart:', alpineCart);
+        console.log("Item added to cart:", { name: item, price, quantity });
+        console.log("Current cart:", alpineCart);
       }
 
       function removeFromCart(index) {
         // Get Alpine's cart array
         const alpineCart = document.querySelector("[x-data]").__x.$data.cart;
-        
+
         if (alpineCart[index].quantity > 1) {
           alpineCart[index].quantity -= 1;
         } else {
           alpineCart.splice(index, 1);
         }
-        
+
         // Save to localStorage
-        localStorage.setItem('cart', JSON.stringify(alpineCart));
-        
+        localStorage.setItem("cart", JSON.stringify(alpineCart));
+
         updateCart();
-        
+
         // Log when item is removed from cart
-        console.log('Item removed from cart at index:', index);
-        console.log('Current cart:', alpineCart);
+        console.log("Item removed from cart at index:", index);
+        console.log("Current cart:", alpineCart);
       }
 
       function updateCart() {
         // Get Alpine's cart array
         const alpineCart = document.querySelector("[x-data]").__x.$data.cart;
-        
+
         let cartList = document.getElementById("cart");
         if (!cartList) return; // Cart might not be loaded yet
-        
+
         cartList.innerHTML = "";
         let total = 0;
-        
+
         alpineCart.forEach((item, index) => {
           let li = document.createElement("li");
           li.innerHTML = `${
@@ -262,18 +261,20 @@
           cartList.appendChild(li);
           total += item.price * item.quantity;
         });
-        
+
         const totalElement = document.getElementById("total");
         const totalInputElement = document.getElementById("total-input");
         const orderInputElement = document.getElementById("order-input");
-        const totalContainerElement = document.getElementById("total-container");
+        const totalContainerElement =
+          document.getElementById("total-container");
         const orderSummaryElement = document.getElementById("order-summary");
-        
+
         if (totalElement) totalElement.textContent = total;
         if (totalInputElement) totalInputElement.value = total;
-        if (orderInputElement) orderInputElement.value = alpineCart
-          .map((item) => `${item.name} x${item.quantity}`)
-          .join(", ");
+        if (orderInputElement)
+          orderInputElement.value = alpineCart
+            .map((item) => `${item.name} x${item.quantity}`)
+            .join(", ");
 
         if (totalContainerElement) {
           if (total > 0) {
@@ -288,7 +289,7 @@
             .map((item) => `${item.name} x${item.quantity}`)
             .join(", ");
         }
-        
+
         // Update Alpine's total
         document.querySelector("[x-data]").__x.$data.total = total;
       }
@@ -330,25 +331,28 @@
           document.querySelector("#order-form").submit();
           // Clear cart after successful order
           document.querySelector("[x-data]").__x.$data.cart = [];
-          localStorage.removeItem('cart');
+          localStorage.removeItem("cart");
         } else {
           payWithPaystack();
         }
       }
 
-     function payWithPaystack() {
-    const orderNumber = document.querySelector("[x-data]").__x.$data.orderNumber;
-    let originalTotal = parseFloat(document.querySelector("[x-data]").__x.$data.total);
-    
-    // Calculate the new total (adding 2%)
-    let paystackCharge = originalTotal * 0.02;
-    let newTotal = originalTotal + paystackCharge; // Keep the decimals
- 
-    const handler = PaystackPop.setup({
-        key: "pk_live_3150cee8b21f82183bc1ff19f02179708931904e",
-        email: document.querySelector("[x-data]").__x.$data.email,
-        amount: (newTotal * 100).toFixed(0), // Convert to kobo and remove decimals
-        currency: "GHS",
+      function payWithPaystack() {
+        const orderNumber =
+          document.querySelector("[x-data]").__x.$data.orderNumber;
+        let originalTotal = parseFloat(
+          document.querySelector("[x-data]").__x.$data.total
+        );
+
+        // Calculate the new total (adding 2%)
+        let paystackCharge = originalTotal * 0.02;
+        let newTotal = originalTotal + paystackCharge; // Keep the decimals
+
+        const handler = PaystackPop.setup({
+          key: "pk_live_3150cee8b21f82183bc1ff19f02179708931904e",
+          email: document.querySelector("[x-data]").__x.$data.email,
+          amount: (newTotal * 100).toFixed(0), // Convert to kobo and remove decimals
+          currency: "GHS",
           ref: orderNumber,
           callback: function (response) {
             console.log("Payment successful:", response);
@@ -368,7 +372,7 @@
                 console.log("Payment method updated:", data);
                 // Clear cart after successful payment
                 document.querySelector("[x-data]").__x.$data.cart = [];
-                localStorage.removeItem('cart');
+                localStorage.removeItem("cart");
                 document.querySelector("#order-form").submit();
               })
               .catch((err) => console.error("Error updating payment:", err));
@@ -421,12 +425,11 @@
           .addEventListener("input", function () {
             localStorage.setItem("email", this.value);
           });
-        
+
         // Initialize cart display from localStorage on page load
         updateCart();
       });
     </script>
-
   </head>
   <body class="bg-[black] text-white">
     <!-- Loading Animation -->
@@ -450,6 +453,5 @@
     {% include 'partials/modal_toppings.html' %} {% include
     'partials/modal_shawarma.html' %} {% include 'partials/modal_ice_tea.html'
     %} {% include 'partials/modal_confirmation.html' %}
-    
   </body>
 </html>
