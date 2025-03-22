@@ -31,8 +31,6 @@
   x-init="window.addEventListener('load', () => { isLoading = false; })"
 >
   <head>
-    
-    
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
@@ -65,12 +63,11 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/styles.css') }}"
     />
-     <link
+    <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/output.css') }}"
     />
 
-    
     <!-- <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script> -->
     <script>
       let cart = [];
@@ -154,7 +151,7 @@
           document.querySelector("[x-data]").__x.$data.selectedIceTeaQuantity;
         const selectedIceTeaType =
           document.querySelector("[x-data]").__x.$data.selectedIceTeaType;
-        let price = size === "Large" ? 40 : 30; // Default price for large
+        let price = size === "Large" ? 40 : 1; // Default price for large
 
         addToCart(selectedIceTeaType + " (" + size + ")", price, quantity);
         document.querySelector("[x-data]").__x.$data.showIceTeaModal = false;
@@ -250,59 +247,193 @@
         document.getElementById("payment_method").value = method;
       }
 
-      function handleOrderConfirmation() {
-        let paymentMethod = document.getElementById("payment_method").value;
+      function payWithHubtel() {
+        const orderNumber =
+          document.querySelector("[x-data]").__x.$data.orderNumber;
+        let originalTotal = parseFloat(
+          document.querySelector("[x-data]").__x.$data.total
+        );
+        const email = document.querySelector("[x-data]").__x.$data.email;
+        const name = document.querySelector("[name='name']").value;
+        const phone = document.querySelector("[name='phone']").value;
 
-        if (paymentMethod === "on_delivery") {
-          document.querySelector("#order-form").submit();
-        } else {
-          payWithPaystack();
+        // Store original button state and create reset function
+        const orderButton = document.getElementById("confirm-order-button");
+        const originalButtonText = orderButton
+          ? orderButton.innerHTML
+          : "Confirm Order";
+
+        if (orderButton) {
+          orderButton.disabled = true;
+          orderButton.innerHTML = "Processing...";
         }
-      }
 
-     function payWithPaystack() {
-    const orderNumber = document.querySelector("[x-data]").__x.$data.orderNumber;
-    let originalTotal = parseFloat(document.querySelector("[x-data]").__x.$data.total);
-    
-    // Calculate the new total (adding 2%)
-    let paystackCharge = originalTotal * 0.02;
-    let newTotal = originalTotal + paystackCharge; // Keep the decimals
- 
-    const handler = PaystackPop.setup({
-        key: "pk_live_3150cee8b21f82183bc1ff19f02179708931904e",
-        email: document.querySelector("[x-data]").__x.$data.email,
-        amount: (newTotal * 100).toFixed(0), // Convert to kobo and remove decimals
-        currency: "GHS",
-          ref: orderNumber,
-          callback: function (response) {
-            console.log("Payment successful:", response);
+        window.resetOrderButton = function () {
+          if (orderButton) {
+            orderButton.disabled = false;
+            orderButton.innerHTML = originalButtonText;
+          }
+        };
 
-            fetch("/update-payment", {
+        // First fetch merchant account number from server
+        fetch("/get-payment-config")
+          .then((res) => res.json())
+          .then((config) => {
+            // Prepare data for Hubtel API
+            const hubtelData = {
+              totalAmount: originalTotal,
+              description: "Boba order payment: " + orderNumber,
+              callbackUrl: window.location.origin + "/hubtel-callback",
+              returnUrl: window.location.origin + "/order-complete",
+              merchantAccountNumber: config.merchantAccountNumber,
+              cancellationUrl: window.location.origin + "/order-cancelled",
+              clientReference: orderNumber,
+              payeeName: name,
+              payeeMobileNumber: phone,
+              payeeEmail: email,
+            };
+
+            // Call backend to initiate Hubtel payment
+            return fetch("/initiate-hubtel-payment", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({
-                order_number: orderNumber,
-                payment_method: "paid",
-              }),
-            })
-              .then((res) => res.json())
-              .then((data) => {
-                console.log("Payment method updated:", data);
-                document.querySelector("#order-form").submit();
-              })
-              .catch((err) => console.error("Error updating payment:", err));
-          },
-          onClose: function () {
-            // Reset the button state when payment is cancelled
-            if (window.resetOrderButton) {
+              body: JSON.stringify(hubtelData),
+            });
+          })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.responseCode === "0000") {
+              // Create iframe for checkout
+              const iframe = document.createElement("iframe");
+              iframe.src = data.data.checkoutDirectUrl;
+              iframe.style.width = "100%";
+              iframe.style.height = "600px";
+              iframe.style.border = "none";
+
+              // Create modal container
+              const modal = document.createElement("div");
+              modal.style.position = "fixed";
+              modal.style.top = "0";
+              modal.style.left = "0";
+              modal.style.width = "100%";
+              modal.style.height = "100%";
+              modal.style.backgroundColor = "rgba(0, 0, 0, 0.7)";
+              modal.style.zIndex = "9999";
+              modal.style.display = "flex";
+              modal.style.justifyContent = "center";
+              modal.style.alignItems = "center";
+
+              // Create close button
+              const closeBtn = document.createElement("button");
+              closeBtn.innerHTML = "X";
+              closeBtn.style.position = "absolute";
+              closeBtn.style.top = "10px";
+              closeBtn.style.right = "10px";
+              closeBtn.style.backgroundColor = "#fff";
+              closeBtn.style.border = "none";
+              closeBtn.style.borderRadius = "50%";
+              closeBtn.style.width = "30px";
+              closeBtn.style.height = "30px";
+              closeBtn.style.fontSize = "20px";
+              closeBtn.style.cursor = "pointer";
+              closeBtn.onclick = function () {
+                document.body.removeChild(modal);
+                window.resetOrderButton();
+              };
+
+              // Create iframe container
+              const iframeContainer = document.createElement("div");
+              iframeContainer.style.width = "90%";
+              iframeContainer.style.maxWidth = "600px";
+              iframeContainer.style.backgroundColor = "#fff";
+              iframeContainer.style.borderRadius = "5px";
+              iframeContainer.style.padding = "20px";
+              iframeContainer.style.position = "relative";
+
+              iframeContainer.appendChild(iframe);
+              modal.appendChild(closeBtn);
+              modal.appendChild(iframeContainer);
+              document.body.appendChild(modal);
+
+              // We need to periodically check the transaction status
+              // since we may not get a direct notification from the iframe
+              let checkCount = 0;
+              const maxChecks = 20;
+              const checkInterval = 10000; // 10 seconds
+
+              const checkPaymentStatus = function () {
+                if (checkCount >= maxChecks) return;
+
+                fetch(`/check-payment-status?clientReference=${orderNumber}`)
+                  .then((res) => res.json())
+                  .then((statusData) => {
+                    if (statusData.data && statusData.data.status === "Paid") {
+                      // Payment successful, update order status
+                      fetch("/update-payment", {
+                        method: "POST",
+                        headers: {
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          order_number: orderNumber,
+                          payment_method: "paid",
+                        }),
+                      })
+                        .then((res) => res.json())
+                        .then((data) => {
+                          console.log("Payment method updated:", data);
+                          document.body.removeChild(modal);
+                          // Redirect to order confirmation page instead of submitting form
+                          window.location.href = `/order-confirmation?total=${originalTotal}&order_number=${orderNumber}`;
+                        })
+                        .catch((err) =>
+                          console.error("Error updating payment:", err)
+                        );
+                    } else if (
+                      statusData.data &&
+                      statusData.data.status === "Cancelled"
+                    ) {
+                      document.body.removeChild(modal);
+                      window.resetOrderButton();
+                    } else {
+                      checkCount++;
+                      setTimeout(checkPaymentStatus, checkInterval);
+                    }
+                  })
+                  .catch((err) => {
+                    console.error("Error checking payment status:", err);
+                    checkCount++;
+                    setTimeout(checkPaymentStatus, checkInterval);
+                  });
+              };
+
+              // Start checking payment status after a delay
+              setTimeout(checkPaymentStatus, checkInterval);
+            } else {
+              console.error("Failed to initiate payment:", data);
+              alert("Failed to initiate payment. Please try again.");
               window.resetOrderButton();
             }
-          },
-        });
+          })
+          .catch((err) => {
+            console.error("Error initiating payment:", err);
+            alert("Failed to initiate payment. Please try again.");
+            window.resetOrderButton();
+          });
+      }
 
-        handler.openIframe();
+      function handleOrderConfirmation() {
+        const paymentMethod = document.querySelector(
+          'input[name="payment_method"]:checked'
+        ).value;
+
+        if (paymentMethod === "on_delivery") {
+          document.querySelector("#order-form").submit();
+        } else {
+          payWithHubtel();
+        }
       }
 
       document.addEventListener("DOMContentLoaded", function () {
@@ -344,7 +475,6 @@
           });
       });
     </script>
-
   </head>
   <body class="bg-[black] text-white">
     <!-- Loading Animation -->
@@ -368,6 +498,5 @@
     {% include 'partials/modal_toppings.html' %} {% include
     'partials/modal_shawarma.html' %} {% include 'partials/modal_ice_tea.html'
     %} {% include 'partials/modal_confirmation.html' %}
-    
   </body>
 </html>

@@ -1,6 +1,7 @@
 from flask import Flask, session, flash, redirect, url_for
 from routes import app as routes_app
 from config import Config
+from hubtel_payment import hubtel_bp
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -10,6 +11,7 @@ app.config.from_object(Config)
 app.config["UPLOAD_FOLDER"] = "static/img/"
 # Register routes
 app.register_blueprint(routes_app)
+app.register_blueprint(hubtel_bp)
 
 
 

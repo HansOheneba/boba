@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
 import os
 import requests
 from models import (
@@ -197,6 +197,35 @@ def index():
 def order_confirmation():
     total = request.args.get("total")
     order_number = request.args.get("order_number")
+    
+    # Check if this order exists in the database
+    from models import get_order_by_number
+    order = get_order_by_number(order_number)
+    
+    # If the order doesn't exist in the database but we have an order number
+    # (likely from a Hubtel payment callback), create it now
+    if not order and order_number:
+        # Get user details from session if available
+        name = session.get("name", "")
+        location = session.get("location", "")
+        phone = session.get("phone", "")
+        email = session.get("email", "")
+        order_details = session.get("order_details", "")
+        
+        # Create the order with the payment method set to 'paid'
+        from models import create_order
+        create_order(
+            name,
+            location,
+            order_details,
+            "",  # notes
+            phone,
+            email,
+            total,
+            order_number,
+            "paid",  # payment_method
+        )
+    
     return render_template(
         "order_confirmation.html", total=total, order_number=order_number
     )
@@ -337,3 +366,11 @@ def update_payment():
     update_payment_method(order_number, payment_method)
 
     return {"message": "Payment updated successfully"}, 200
+
+
+@app.route('/get-payment-config')
+def get_payment_config():
+    """Return Hubtel merchant account number for frontend"""
+    return jsonify({
+        'merchantAccountNumber': Config.HUBTEL_MERCHANT_ACCOUNT
+    })
