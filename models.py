@@ -13,6 +13,8 @@ load_dotenv()
 cloudinary.config(cloudinary_url=os.getenv("CLOUDINARY_URL"))
 
 
+
+
 def upload_image_to_cloudinary(file: FileStorage):
     try:
         # Upload file to Cloudinary

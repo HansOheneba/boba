@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, session, flash
-import os
+from flask import Blueprint, render_template, request, redirect, url_for, session, flash, jsonify
+from urllib.parse import urljoin
 import requests
+import json  # Add this missing import
 from models import (
     create_order,
     get_orders,
@@ -23,6 +24,7 @@ from werkzeug.utils import secure_filename
 from flask import current_app
 from functools import wraps
 from config import Config
+import base64
 
 
 HUBTEL_CLIENT_ID = Config.HUBTEL_CLIENT_ID
@@ -33,6 +35,101 @@ HUBTEL_API_URL = "https://smsc.hubtel.com/v1/messages/send"
 
 # Create a Blueprint named "app"
 app = Blueprint("app", __name__)
+
+# print("Mercant:",Config.HUBTEL_MERCHANT_ACCOUNT)
+
+def initiate_hubtel_payment(
+    total_amount,
+    description,
+    callback_url,
+    return_url,
+    client_reference,
+    customer_name=None,
+    customer_phone=None,
+    customer_email=None,
+):
+    """Initiate Hubtel payment with bb-xxxx reference according to official Hubtel documentation"""
+    # Debug configuration
+    Config.print_hubtel_config()
+    
+    # Format the API credentials - remove any whitespace
+    api_id = Config.HUBTEL_API_ID.strip() if Config.HUBTEL_API_ID else ""
+    api_key = Config.HUBTEL_API_KEY.strip() if Config.HUBTEL_API_KEY else ""
+    merchant_account = Config.HUBTEL_MERCHANT_ACCOUNT.strip() if Config.HUBTEL_MERCHANT_ACCOUNT else ""
+    
+    # Create auth string exactly as required by Hubtel
+    auth_string = f"{api_id}:{api_key}"
+    basic_auth = base64.b64encode(auth_string.encode()).decode('utf-8')
+    
+    # Prepare headers
+    headers = {
+        "Accept": "application/json",
+        "Content-Type": "application/json",
+        "Authorization": f"Basic {basic_auth}",
+        "Cache-Control": "no-cache"
+    }
+    
+    # Prepare payload
+    payload = {
+        "totalAmount": float(total_amount),
+        "description": description,
+        "callbackUrl": callback_url,
+        "returnUrl": return_url,
+        "merchantAccountNumber": merchant_account,
+        "cancellationUrl": return_url,
+        "clientReference": client_reference
+    }
+
+    # Add optional parameters if provided
+    if customer_name:
+        payload["payeeName"] = customer_name
+    if customer_phone:
+        payload["payeeMobileNumber"] = customer_phone
+    if customer_email:
+        payload["payeeEmail"] = customer_email
+
+    try:
+        print(f"Making Hubtel API request to: {Config.HUBTEL_CHECKOUT_URL}")
+        print(f"Payload: {json.dumps(payload)}")
+        
+        response = requests.post(
+            Config.HUBTEL_CHECKOUT_URL,
+            json=payload,
+            headers=headers
+        )
+        
+        print(f"Response Status: {response.status_code}")
+        print(f"Response Body: {response.text}")
+        
+        if response.status_code == 401:
+            print("Authentication failed. Check your Hubtel API credentials.")
+            return None
+        
+        response.raise_for_status()
+        
+        response_data = response.json()
+        return response_data.get("data", {}).get("checkoutDirectUrl")
+        
+    except requests.exceptions.RequestException as e:
+        print(f"Error: {e}")
+        return None
+
+
+def check_hubtel_payment_status(client_reference):
+    """Check payment status using bb-xxxx reference"""
+    auth_string = f"{Config.HUBTEL_API_ID}:{Config.HUBTEL_API_KEY}"
+    basic_auth = base64.b64encode(auth_string.encode()).decode()
+
+    headers = {"Authorization": f"Basic {basic_auth}"}
+
+    try:
+        url = f"{Config.HUBTEL_STATUS_URL}/{Config.HUBTEL_MERCHANT_ACCOUNT}/transactions/status?clientReference={client_reference}"
+        response = requests.get(url, headers=headers)
+        response.raise_for_status()
+        return response.json().get("data", {})
+    except Exception as e:
+        print(f"Hubtel status check failed: {e}")
+        return None
 
 
 def generate_order_number():
@@ -337,3 +434,54 @@ def update_payment():
     update_payment_method(order_number, payment_method)
 
     return {"message": "Payment updated successfully"}, 200
+
+
+@app.route("/hubtel-payment", methods=["POST"])
+def hubtel_payment():
+    data = request.json
+    order_number = data.get("order_number")  # Your bb-xxxx format
+    total = data.get("total")
+    name = data.get("name")
+    phone = data.get("phone")
+    email = data.get("email")
+
+    if not order_number or not total:
+        return jsonify({"error": "Missing required parameters"}), 400
+
+    # Generate callback and return URLs
+    base_url = request.host_url.rstrip("/")
+    callback_url = urljoin(base_url, url_for("app.hubtel_callback"))
+    return_url = urljoin(
+        base_url,
+        url_for("app.order_confirmation", order_number=order_number, total=total),
+    )
+
+    checkout_url = initiate_hubtel_payment(
+        total_amount=total,
+        description=f"Order {order_number}",
+        callback_url=callback_url,
+        return_url=return_url,
+        client_reference=order_number, 
+        customer_name=name,
+        customer_phone=phone,
+        customer_email=email,
+    )
+
+    if not checkout_url:
+        return jsonify({"error": "Payment initiation failed"}), 500
+
+    return jsonify({"checkout_url": checkout_url})
+
+
+@app.route("/hubtel-callback", methods=["POST"])
+def hubtel_callback():
+    """Handle Hubtel payment notifications"""
+    data = request.json
+    client_reference = data.get("clientReference")
+    status = data.get("status", "").lower()
+
+    if status == "success" and client_reference:
+        update_payment_method(client_reference, "paid")
+        # Optional: Send confirmation SMS/email
+
+    return jsonify({"status": "received"}), 200
