@@ -31,8 +31,6 @@
   x-init="window.addEventListener('load', () => { isLoading = false; })"
 >
   <head>
-    
-    
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link
@@ -65,13 +63,11 @@
       rel="stylesheet"
       href="{{ url_for('static', filename='css/styles.css') }}"
     />
-     <link
+    <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/output.css') }}"
     />
 
-    
-    <!-- <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script> -->
     <script>
       let cart = [];
 
@@ -130,7 +126,7 @@
         let price =
           size === "Medium"
             ? selectedShawarmaType.includes("Chicken")
-              ? 35
+              ? 1
               : 40
             : selectedShawarmaType.includes("Chicken")
             ? 45
@@ -147,6 +143,7 @@
         document.querySelector("[x-data]").__x.$data.selectedIceTeaQuantity = 1;
         document.querySelector("[x-data]").__x.$data.showIceTeaModal = true;
       }
+
       function addIceTea() {
         const size =
           document.querySelector("[x-data]").__x.$data.selectedIceTeaSize;
@@ -250,29 +247,48 @@
         document.getElementById("payment_method").value = method;
       }
 
-      function handleOrderConfirmation() {
-        let paymentMethod = document.getElementById("payment_method").value;
+      function disableButtonAndConfirm() {
+        const button = document.getElementById("confirm-order-button");
 
-        if (paymentMethod === "on_delivery") {
-          document.querySelector("#order-form").submit();
-        } else {
-          payWithPaystack();
-        }
+        // If button is already disabled, prevent double submission
+        if (button.disabled) return;
+
+        // Disable the button
+        button.disabled = true;
+
+        // Update visual appearance
+        button.querySelector(".button-text").textContent = "Processing...";
+        button.querySelector(".loader").classList.remove("hidden");
+
+        // Call the original confirmation function
+        handleOrderConfirmation();
       }
 
-     function payWithPaystack() {
-    const orderNumber = document.querySelector("[x-data]").__x.$data.orderNumber;
-    let originalTotal = parseFloat(document.querySelector("[x-data]").__x.$data.total);
-    
-    // Calculate the new total (adding 2%)
-    let paystackCharge = originalTotal * 0.02;
-    let newTotal = originalTotal + paystackCharge; // Keep the decimals
+      function resetOrderButton() {
+        const button = document.getElementById("confirm-order-button");
+        button.disabled = false;
+        button.querySelector(".button-text").textContent = "Confirm";
+        button.querySelector(".loader").classList.add("hidden");
+      }
 
-    const handler = PaystackPop.setup({
-        key: "pk_live_3150cee8b21f82183bc1ff19f02179708931904e",
-        email: document.querySelector("[x-data]").__x.$data.email,
-        amount: (newTotal * 100).toFixed(0), // Convert to kobo and remove decimals
-        currency: "GHS",
+      window.resetOrderButton = resetOrderButton;
+
+      function payWithPaystack() {
+        const orderNumber =
+          document.querySelector("[x-data]").__x.$data.orderNumber;
+        let originalTotal = parseFloat(
+          document.querySelector("[x-data]").__x.$data.total
+        );
+
+        // Calculate the new total (adding 2%)
+        let paystackCharge = originalTotal * 0.02;
+        let newTotal = originalTotal + paystackCharge;
+
+        const handler = PaystackPop.setup({
+          key: "pk_live_3150cee8b21f82183bc1ff19f02179708931904e",
+          email: document.querySelector("[x-data]").__x.$data.email,
+          amount: (newTotal * 100).toFixed(0),
+          currency: "GHS",
           ref: orderNumber,
           callback: function (response) {
             console.log("Payment successful:", response);
@@ -295,77 +311,96 @@
               .catch((err) => console.error("Error updating payment:", err));
           },
           onClose: function () {
-            // Reset the button state when payment is cancelled
-            if (window.resetOrderButton) {
-              window.resetOrderButton();
-            }
+            resetOrderButton();
           },
         });
 
         handler.openIframe();
       }
-      function handleOrderConfirmation() {
-    const paymentMethod = document.getElementById("payment_method").value;
-    const orderData = {
-        order_number: document.querySelector("[x-data]").__x.$data.orderNumber, // bb-xxxx
-        total: document.querySelector("[x-data]").__x.$data.total,
-        name: document.querySelector("[x-data]").__x.$data.name,
-        phone: document.querySelector("[x-data]").__x.$data.phone,
-        email: document.querySelector("[x-data]").__x.$data.email
-    };
 
-    if (paymentMethod === "on_delivery") {
-        document.querySelector("#order-form").submit();
-    } 
-    else if (paymentMethod === "hubtel") {
-        payWithHubtel(orderData);
-    } 
-    else {
-        payWithPaystack();
-    }
-}
+      function payWithHubtel(orderData) {
+        // Show loading state
+        document.querySelector("[x-data]").__x.$data.isLoading = true;
 
-function payWithHubtel(orderData) {
-    // Show loading state
-    document.querySelector("[x-data]").__x.$data.isLoading = true;
-    
-    fetch("/hubtel-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderData)
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.checkout_url) {
-            // Create payment iframe modal
-            const modal = document.createElement("div");
-            modal.className = "fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center";
-            modal.innerHTML = `
-                <div class="relative w-full max-w-2xl h-[80vh]">
-                    <button @click="closeModal" class="absolute top-4 right-4 text-white text-3xl z-50">×</button>
-                    <iframe src="${data.checkout_url}" class="w-full h-full border-none rounded-lg"></iframe>
-                </div>
-            `;
-            
-            // Close handler
-            modal.querySelector("button").addEventListener("click", () => {
+        fetch("/hubtel-payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(orderData),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.checkout_url) {
+              // Create payment iframe modal
+              const modal = document.createElement("div");
+               modal.className =
+          "fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center";
+        modal.innerHTML = `
+          <div class="relative w-full h-full ">
+            <button class="absolute top-4 right-4 text-black text-3xl z-50">x</button>
+            <iframe 
+              src="${data.checkout_url}" 
+              class="w-full h-full border-none rounded-lg mt-5"
+              allowfullscreen
+            ></iframe>
+          </div>
+        `;
+
+              // Close handler
+              modal.querySelector("button").addEventListener("click", () => {
                 document.body.removeChild(modal);
                 document.querySelector("[x-data]").__x.$data.isLoading = false;
-            });
-            
-            document.body.appendChild(modal);
-        } else {
-            alert("Payment initialization failed");
-            document.querySelector("[x-data]").__x.$data.isLoading = false;
-        }
-    })
-    .catch(err => {
-        console.error("Payment error:", err);
-        alert("Payment processing failed");
-        document.querySelector("[x-data]").__x.$data.isLoading = false;
-    });
-}
+                resetOrderButton();
+              });
 
+              document.body.appendChild(modal);
+            } else {
+              alert("Payment initialization failed");
+              document.querySelector("[x-data]").__x.$data.isLoading = false;
+              resetOrderButton();
+            }
+          })
+          .catch((err) => {
+            console.error("Payment error:", err);
+            alert("Payment processing failed");
+            document.querySelector("[x-data]").__x.$data.isLoading = false;
+            resetOrderButton();
+          });
+      }
+
+      function checkHubtelPaymentStatus(clientReference) {
+        return fetch(`/hubtel-status?clientReference=${clientReference}`)
+          .then((res) => res.json())
+          .then((data) => {
+            if (data.status === "Paid") {
+              return true;
+            }
+            return false;
+          })
+          .catch((err) => {
+            console.error("Status check failed:", err);
+            return false;
+          });
+      }
+
+      function handleOrderConfirmation() {
+        const paymentMethod = document.getElementById("payment_method").value;
+        const orderData = {
+          order_number:
+            document.querySelector("[x-data]").__x.$data.orderNumber,
+          total: document.querySelector("[x-data]").__x.$data.total,
+          name: document.querySelector("[x-data]").__x.$data.name,
+          phone: document.querySelector("[x-data]").__x.$data.phone,
+          email: document.querySelector("[x-data]").__x.$data.email,
+        };
+
+        if (paymentMethod === "on_delivery") {
+          document.querySelector("#order-form").submit();
+        } else if (paymentMethod === "hubtel") {
+          payWithHubtel(orderData);
+        } else {
+          payWithPaystack();
+        }
+      }
 
       document.addEventListener("DOMContentLoaded", function () {
         // Retrieve stored values from local storage
@@ -406,7 +441,6 @@ function payWithHubtel(orderData) {
           });
       });
     </script>
-
   </head>
   <body class="bg-[black] text-white">
     <!-- Loading Animation -->
@@ -430,6 +464,5 @@ function payWithHubtel(orderData) {
     {% include 'partials/modal_toppings.html' %} {% include
     'partials/modal_shawarma.html' %} {% include 'partials/modal_ice_tea.html'
     %} {% include 'partials/modal_confirmation.html' %}
-    
   </body>
 </html>
