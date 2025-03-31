@@ -627,6 +627,32 @@ def hubtel_callback():
             print(f"Updating payment method for order: {client_reference}")
             update_payment_method(client_reference, "paid")
             print("Order payment status updated to 'paid'")
+
+            # Get all orders and find the specific order by order_number
+            all_orders = get_orders()
+            matching_orders = [
+                order
+                for order in all_orders
+                if order["order_number"] == client_reference
+            ]
+
+            if matching_orders:
+                order = matching_orders[0]
+                customer_name = order["name"]
+                customer_phone = order["phone"]
+                order_details = order["order_details"]
+
+                # Format the SMS message
+                formatted_message = format_order_details(customer_name, order_details)
+
+                # Send the confirmation SMS
+                print(f"Sending order confirmation SMS to {customer_phone}")
+                send_sms_hubtel(customer_phone, formatted_message)
+                print("Confirmation SMS sent successfully!")
+            else:
+                print(
+                    f"WARNING: Could not find order with reference {client_reference} for SMS confirmation"
+                )
         else:
             print("WARNING: No ClientReference found in transaction data")
 
