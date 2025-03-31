@@ -217,32 +217,30 @@
           .join(", ");
       }
 
-  
-
-   function validateForm() {
-    const form = document.getElementById("order-form");
-    if (form.checkValidity() && cart.length > 0) {
-        // Fetch order number from backend
-        fetch("/generate-order-number")
-            .then(response => response.json())
-            .then(data => {
-                document.querySelector("[x-data]").__x.$data.showModal = true;
-                document.querySelector("[x-data]").__x.$data.total =
-                    document.getElementById("total").textContent;
-                document.querySelector("[x-data]").__x.$data.orderNumber = 
-                    data.order_number;
+      function validateForm() {
+        const form = document.getElementById("order-form");
+        if (form.checkValidity() && cart.length > 0) {
+          // Fetch order number from backend
+          fetch("/generate-order-number")
+            .then((response) => response.json())
+            .then((data) => {
+              document.querySelector("[x-data]").__x.$data.showModal = true;
+              document.querySelector("[x-data]").__x.$data.total =
+                document.getElementById("total").textContent;
+              document.querySelector("[x-data]").__x.$data.orderNumber =
+                data.order_number;
             })
-            .catch(error => {
-                console.error("Error generating order number:", error);
-                alert("Error generating order number. Please try again.");
+            .catch((error) => {
+              console.error("Error generating order number:", error);
+              alert("Error generating order number. Please try again.");
             });
-    } else {
-        form.reportValidity();
-        if (cart.length === 0) {
+        } else {
+          form.reportValidity();
+          if (cart.length === 0) {
             alert("Please select at least one item.");
+          }
         }
-    }
-}
+      }
 
       function updatePaymentMethod(method) {
         selectedPaymentMethod = method;
@@ -274,7 +272,7 @@
       }
 
       window.resetOrderButton = resetOrderButton;
-/*
+      /*
       function payWithPaystack() {
         const orderNumber =
           document.querySelector("[x-data]").__x.$data.orderNumber;
@@ -321,77 +319,97 @@
       }
       */
 
-function payWithHubtel(orderData) {
-    fetch("/hubtel-payment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderData),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (!data.checkout_url) throw new Error("No checkout URL received");
-        
-        // Redirect directly to Hubtel instead of using iframe
-        window.location.href = data.checkout_url;
-    })
-    .catch(error => {
-        console.error("Payment error:", error);
-        alert("Payment initialization failed: " + error.message);
-        resetOrderButton();
-    });
-}
+      function payWithHubtel(orderData) {
+        // Add payment_method to indicate this will be paid
+        orderData.payment_method = "paid";
 
-function handleOrderConfirmation() {
-    const paymentMethod = document.getElementById("payment_method").value;
-    const orderData = {
-        order_number: document.querySelector("[x-data]").__x.$data.orderNumber,
-        total: document.querySelector("[x-data]").__x.$data.total,
-        name: document.querySelector("[x-data]").__x.$data.name,
-        phone: document.querySelector("[x-data]").__x.$data.phone,
-        email: document.querySelector("[x-data]").__x.$data.email,
-    };
+        // First update payment status to paid
+        fetch("/update-payment", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            order_number: orderData.order_number,
+            payment_method: "paid",
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            console.log("Payment method updated:", data);
 
-    // Save form data to localStorage before proceeding
-    localStorage.setItem('pendingOrder', JSON.stringify({
-        name: orderData.name,
-        location: document.querySelector("[x-data]").__x.$data.location,
-        phone: orderData.phone,
-        email: orderData.email,
-        order: document.getElementById("order-input").value,
-        preferences: document.querySelector("[x-data]").__x.$data.preferences,
-        total: orderData.total,
-        order_number: orderData.order_number
-    }));
+            // Now proceed with Hubtel payment
+            return fetch("/hubtel-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(orderData),
+            });
+          })
+          .then((response) => response.json())
+          .then((data) => {
+            if (!data.checkout_url) throw new Error("No checkout URL received");
 
-    if (paymentMethod === "on_delivery") {
-        document.querySelector("#order-form").submit();
-    } 
-    else if (paymentMethod === "hubtel") {
-        payWithHubtel(orderData);
-    } 
-    else if (paymentMethod === "paystack") {
-        payWithPaystack();
-    }
-    else {
-        resetOrderButton();
-        alert("Please select a valid payment method");
-    }
-}
+            // Redirect directly to Hubtel instead of using iframe
+            window.location.href = data.checkout_url;
+          })
+          .catch((error) => {
+            console.error("Payment error:", error);
+            alert("Payment initialization failed: " + error.message);
+            resetOrderButton();
+          });
+      }
 
-function checkHubtelPaymentStatus(clientReference) {
-    return fetch(`/hubtel-status?client_reference=${clientReference}`)
-        .then(res => res.json())
-        .then(data => {
+      function handleOrderConfirmation() {
+        const paymentMethod = document.getElementById("payment_method").value;
+        const orderData = {
+          order_number:
+            document.querySelector("[x-data]").__x.$data.orderNumber,
+          total: document.querySelector("[x-data]").__x.$data.total,
+          name: document.querySelector("[x-data]").__x.$data.name,
+          phone: document.querySelector("[x-data]").__x.$data.phone,
+          email: document.querySelector("[x-data]").__x.$data.email,
+        };
+
+        // Save form data to localStorage before proceeding
+        localStorage.setItem(
+          "pendingOrder",
+          JSON.stringify({
+            name: orderData.name,
+            location: document.querySelector("[x-data]").__x.$data.location,
+            phone: orderData.phone,
+            email: orderData.email,
+            order: document.getElementById("order-input").value,
+            preferences:
+              document.querySelector("[x-data]").__x.$data.preferences,
+            total: orderData.total,
+            order_number: orderData.order_number,
+          })
+        );
+
+        if (paymentMethod === "on_delivery") {
+          document.querySelector("#order-form").submit();
+        } else if (paymentMethod === "hubtel") {
+          payWithHubtel(orderData);
+        } else if (paymentMethod === "paystack") {
+          payWithPaystack();
+        } else {
+          resetOrderButton();
+          alert("Please select a valid payment method");
+        }
+      }
+
+      function checkHubtelPaymentStatus(clientReference) {
+        return fetch(`/hubtel-status?client_reference=${clientReference}`)
+          .then((res) => res.json())
+          .then((data) => {
             if (data.status === "success" || data.data?.Status === "Success") {
-                return true;
+              return true;
             }
             return false;
-        })
-        .catch(err => {
+          })
+          .catch((err) => {
             console.error("Status check failed:", err);
             return false;
-        });
-}
+          });
+      }
       document.addEventListener("DOMContentLoaded", function () {
         // Retrieve stored values from local storage
         const storedName = localStorage.getItem("name");

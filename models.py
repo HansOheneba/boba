@@ -148,7 +148,6 @@ def create_order(
     order_details,
     preferences,
     phone,
-    email,
     total,
     order_number,
     payment_method,
@@ -156,14 +155,13 @@ def create_order(
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO orders (name, location, order_details, preferences, phone, email, total, order_number,payment_method, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        "INSERT INTO orders (name, location, order_details, preferences, phone, total, order_number,payment_method, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (
             name,
             location,
             order_details,
             preferences,
             phone,
-            email,
             total,
             order_number,
             payment_method,

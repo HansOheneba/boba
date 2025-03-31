@@ -65,7 +65,6 @@ def initiate_hubtel_payment(
     client_reference,
     customer_name=None,
     customer_phone=None,
-    customer_email=None,
 ):
     """Initiate Hubtel payment with bb-xxxx reference according to official Hubtel documentation"""
     # Debug configuration
@@ -104,8 +103,6 @@ def initiate_hubtel_payment(
         payload["payeeName"] = customer_name
     if customer_phone:
         payload["payeeMobileNumber"] = customer_phone
-    if customer_email:
-        payload["payeeEmail"] = customer_email
 
     try:
         print(f"Making Hubtel API request to: {Config.HUBTEL_CHECKOUT_URL}")
@@ -272,7 +269,6 @@ def index():
         order_details = request.form.get("order")
         notes = request.form.get("notes")
         phone = request.form.get("phone")
-        email = request.form.get("email")
         total = request.form.get("total")
         boba_toppings = request.form.get("boba_toppings")
         shawarma_type = request.form.get("shawarma_type")
@@ -295,7 +291,6 @@ def index():
             order_details,
             notes,
             phone,
-            email,
             total,
             order_number,
             payment_method,
@@ -469,7 +464,6 @@ def hubtel_payment():
     total = data.get("total")
     name = data.get("name")
     phone = data.get("phone")
-    email = data.get("email")
 
     if not order_number or not total:
         return jsonify({"error": "Missing required parameters"}), 400
@@ -508,8 +502,6 @@ def hubtel_payment():
         payload["payeeName"] = name
     if phone:
         payload["payeeMobileNumber"] = phone
-    if email:
-        payload["payeeEmail"] = email
 
     try:
         # Log the full request details
@@ -534,7 +526,7 @@ def hubtel_payment():
         response.raise_for_status()
 
         response_data = response.json()
-        checkout_url = response_data.get("data", {}).get("checkoutDirectUrl")
+        checkout_url = response_data.get("data", {}).get("checkoutUrl")
 
         if not checkout_url:
             return jsonify({"error": "No checkout URL received"}), 500
@@ -550,60 +542,70 @@ def hubtel_payment():
 def hubtel_callback():
     """Handle Hubtel payment notifications"""
     print("\n============ HUBTEL CALLBACK RECEIVED ============")
-    
+
     try:
         # Print the raw request data
         raw_data = request.get_data(as_text=True)
         print(f"Raw request data: {raw_data}")
-        
+
         # Parse the JSON data
         data = request.json
         print(f"Parsed JSON: {json.dumps(data, indent=2)}")
-        
+
         # Validate required fields
         required_fields = ["ResponseCode", "Status", "Data"]
         if not all(field in data for field in required_fields):
             missing = [f for f in required_fields if f not in data]
             print(f"Missing required fields in main payload: {missing}")
-            return jsonify({"error": "Missing required fields", "missing": missing}), 400
+            return (
+                jsonify({"error": "Missing required fields", "missing": missing}),
+                400,
+            )
 
         if data["ResponseCode"] != "0000" or data["Status"].lower() != "success":
-            print(f"Transaction unsuccessful: ResponseCode={data['ResponseCode']}, Status={data['Status']}")
+            print(
+                f"Transaction unsuccessful: ResponseCode={data['ResponseCode']}, Status={data['Status']}"
+            )
             return jsonify({"error": "Unsuccessful transaction"}), 400
 
         transaction_data = data["Data"]
         print(f"Transaction data extracted: {json.dumps(transaction_data, indent=2)}")
-        
+
         # Validate transaction data
         required_transaction_fields = [
-            "CheckoutId", 
-            "SalesInvoiceId", 
-            "ClientReference", 
+            "CheckoutId",
+            "SalesInvoiceId",
+            "ClientReference",
             "Amount",
-            "CustomerPhoneNumber", 
-            "PaymentDetails", 
-            "Status", 
-            "Description"
+            "CustomerPhoneNumber",
+            "PaymentDetails",
+            "Status",
+            "Description",
         ]
-        
-        missing_fields = [f for f in required_transaction_fields if f not in transaction_data]
+
+        missing_fields = [
+            f for f in required_transaction_fields if f not in transaction_data
+        ]
         if missing_fields:
             print(f"Missing transaction data fields: {missing_fields}")
             # Continue processing anyway but log the issue
-        
+
         # Extract payment details for logging
         payment_details = transaction_data.get("PaymentDetails", {})
         print(f"Payment details: {json.dumps(payment_details, indent=2)}")
-        
+
         try:
             # Save transaction to database
             print("Attempting to save transaction to database...")
-            
+
             # Call the save_transaction_record function with proper parameters
-            payment_details_str = json.dumps(payment_details) if payment_details else "{}"
-            
+            payment_details_str = (
+                json.dumps(payment_details) if payment_details else "{}"
+            )
+
             # Using the correct version of save_transaction_record
             from models import save_transaction_record
+
             save_transaction_record(
                 transaction_data.get("CheckoutId", ""),
                 transaction_data.get("SalesInvoiceId", ""),
@@ -611,14 +613,14 @@ def hubtel_callback():
                 transaction_data.get("Amount", 0),
                 transaction_data.get("CustomerPhoneNumber", ""),
                 payment_details_str,
-                transaction_data.get("Description", "")
+                transaction_data.get("Description", ""),
             )
             print("Transaction saved successfully to database!")
-            
+
         except Exception as db_error:
             print(f"DATABASE ERROR: Failed to save transaction: {str(db_error)}")
             # Continue processing anyway to update the order status
-        
+
         # Update order status if ClientReference matches an order_number
         client_reference = transaction_data.get("ClientReference", "")
         if client_reference:
@@ -634,6 +636,7 @@ def hubtel_callback():
     except Exception as e:
         print(f"CRITICAL ERROR processing Hubtel callback: {str(e)}")
         import traceback
+
         print(traceback.format_exc())
         print("============ HUBTEL CALLBACK PROCESSING FAILED ============\n")
         return jsonify({"status": "error", "message": str(e)}), 500
