@@ -295,10 +295,20 @@ def index():
             order_number,
             payment_method,
         )
-        customer_name = f"{name}"
-        formatted_message = format_order_details(customer_name, order_details)
 
-        send_sms_hubtel(phone, formatted_message)
+        # Only send SMS if it's a pay-on-delivery order
+        # For online payments, SMS will be sent by the hubtel_callback function
+        if payment_method == "on_delivery":
+            customer_name = f"{name}"
+            formatted_message = format_order_details(customer_name, order_details)
+            print(f"Sending SMS for pay-on-delivery order to {phone}")
+            send_sms_hubtel(phone, formatted_message)
+            print(f"SMS sent successfully for pay-on-delivery order {order_number}")
+        else:
+            print(
+                f"Skipping immediate SMS for online payment order {order_number} (will be sent on payment completion)"
+            )
+
         return redirect(
             url_for("app.order_confirmation", total=total, order_number=order_number)
         )
