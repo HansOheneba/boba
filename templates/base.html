@@ -26,7 +26,7 @@
     selectedShawarmaQuantity: 1,
     selectedIceTeaQuantity: 1,
     selectedIceTeaSize: 'Medium',
-    payment_method: 'paid',
+    payment_method: 'hubtel',
   }"
   x-init="window.addEventListener('load', () => { isLoading = false; })"
 >
@@ -217,30 +217,32 @@
           .join(", ");
       }
 
-      function generateOrderNumber() {
-        const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-        let result = "bb-";
-        for (let i = 0; i < 4; i++) {
-          result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return result;
-      }
+  
 
-      function validateForm() {
-        const form = document.getElementById("order-form");
-        if (form.checkValidity() && cart.length > 0) {
-          document.querySelector("[x-data]").__x.$data.showModal = true;
-          document.querySelector("[x-data]").__x.$data.total =
-            document.getElementById("total").textContent;
-          document.querySelector("[x-data]").__x.$data.orderNumber =
-            generateOrderNumber();
-        } else {
-          form.reportValidity();
-          if (cart.length === 0) {
+   function validateForm() {
+    const form = document.getElementById("order-form");
+    if (form.checkValidity() && cart.length > 0) {
+        // Fetch order number from backend
+        fetch("/generate-order-number")
+            .then(response => response.json())
+            .then(data => {
+                document.querySelector("[x-data]").__x.$data.showModal = true;
+                document.querySelector("[x-data]").__x.$data.total =
+                    document.getElementById("total").textContent;
+                document.querySelector("[x-data]").__x.$data.orderNumber = 
+                    data.order_number;
+            })
+            .catch(error => {
+                console.error("Error generating order number:", error);
+                alert("Error generating order number. Please try again.");
+            });
+    } else {
+        form.reportValidity();
+        if (cart.length === 0) {
             alert("Please select at least one item.");
-          }
         }
-      }
+    }
+}
 
       function updatePaymentMethod(method) {
         selectedPaymentMethod = method;
@@ -272,7 +274,7 @@
       }
 
       window.resetOrderButton = resetOrderButton;
-
+/*
       function payWithPaystack() {
         const orderNumber =
           document.querySelector("[x-data]").__x.$data.orderNumber;
@@ -317,96 +319,79 @@
 
         handler.openIframe();
       }
+      */
 
-      function payWithHubtel(orderData) {
-        // Show loading state
-        document.querySelector("[x-data]").__x.$data.isLoading = true;
+function payWithHubtel(orderData) {
+    fetch("/hubtel-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderData),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.checkout_url) throw new Error("No checkout URL received");
+        
+        // Redirect directly to Hubtel instead of using iframe
+        window.location.href = data.checkout_url;
+    })
+    .catch(error => {
+        console.error("Payment error:", error);
+        alert("Payment initialization failed: " + error.message);
+        resetOrderButton();
+    });
+}
 
-        fetch("/hubtel-payment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(orderData),
-        })
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.checkout_url) {
-              // Create payment iframe modal
-              const modal = document.createElement("div");
-              modal.className =
-                "fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center";
+function handleOrderConfirmation() {
+    const paymentMethod = document.getElementById("payment_method").value;
+    const orderData = {
+        order_number: document.querySelector("[x-data]").__x.$data.orderNumber,
+        total: document.querySelector("[x-data]").__x.$data.total,
+        name: document.querySelector("[x-data]").__x.$data.name,
+        phone: document.querySelector("[x-data]").__x.$data.phone,
+        email: document.querySelector("[x-data]").__x.$data.email,
+    };
 
-              modal.innerHTML = `
-        <div class="relative w-full max-w-lg bg-white rounded-lg shadow-lg overflow-hidden">
-          <div class="flex justify-between items-center bg-gray-100 px-4 py-3">
-            <h2 class="text-lg font-semibold text-black">Complete Payment</h2>
-            <button id="closeModal" class="text-gray-600 hover:text-red-500 text-2xl">&times;</button>
-          </div>
-          <div class="relative w-full h-[500px] md:h-[600px]">
-            <iframe 
-              src="${data.checkout_url}" 
-              class="w-full h-full border-none"
-              allowfullscreen
-            ></iframe>
-          </div>
-        `;
+    // Save form data to localStorage before proceeding
+    localStorage.setItem('pendingOrder', JSON.stringify({
+        name: orderData.name,
+        location: document.querySelector("[x-data]").__x.$data.location,
+        phone: orderData.phone,
+        email: orderData.email,
+        order: document.getElementById("order-input").value,
+        preferences: document.querySelector("[x-data]").__x.$data.preferences,
+        total: orderData.total,
+        order_number: orderData.order_number
+    }));
 
-              // Close handler
-              modal.querySelector("button").addEventListener("click", () => {
-                document.body.removeChild(modal);
-                document.querySelector("[x-data]").__x.$data.isLoading = false;
-                resetOrderButton();
-              });
+    if (paymentMethod === "on_delivery") {
+        document.querySelector("#order-form").submit();
+    } 
+    else if (paymentMethod === "hubtel") {
+        payWithHubtel(orderData);
+    } 
+    else if (paymentMethod === "paystack") {
+        payWithPaystack();
+    }
+    else {
+        resetOrderButton();
+        alert("Please select a valid payment method");
+    }
+}
 
-              document.body.appendChild(modal);
-            } else {
-              alert("Payment initialization failed");
-              document.querySelector("[x-data]").__x.$data.isLoading = false;
-              resetOrderButton();
-            }
-          })
-          .catch((err) => {
-            console.error("Payment error:", err);
-            alert("Payment processing failed");
-            document.querySelector("[x-data]").__x.$data.isLoading = false;
-            resetOrderButton();
-          });
-      }
-
-      function checkHubtelPaymentStatus(clientReference) {
-        return fetch(`/hubtel-status?clientReference=${clientReference}`)
-          .then((res) => res.json())
-          .then((data) => {
-            if (data.status === "Paid") {
-              return true;
+function checkHubtelPaymentStatus(clientReference) {
+    return fetch(`/hubtel-status?client_reference=${clientReference}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.status === "success" || data.data?.Status === "Success") {
+                return true;
             }
             return false;
-          })
-          .catch((err) => {
+        })
+        .catch(err => {
             console.error("Status check failed:", err);
             return false;
-          });
-      }
-
-      function handleOrderConfirmation() {
-        const paymentMethod = document.getElementById("payment_method").value;
-        const orderData = {
-          order_number:
-            document.querySelector("[x-data]").__x.$data.orderNumber,
-          total: document.querySelector("[x-data]").__x.$data.total,
-          name: document.querySelector("[x-data]").__x.$data.name,
-          phone: document.querySelector("[x-data]").__x.$data.phone,
-          email: document.querySelector("[x-data]").__x.$data.email,
-        };
-
-        if (paymentMethod === "on_delivery") {
-          document.querySelector("#order-form").submit();
-        } else if (paymentMethod === "hubtel") {
-          payWithHubtel(orderData);
-        } else {
-          payWithPaystack();
-        }
-      }
-
+        });
+}
       document.addEventListener("DOMContentLoaded", function () {
         // Retrieve stored values from local storage
         const storedName = localStorage.getItem("name");

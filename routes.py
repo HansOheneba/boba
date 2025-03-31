@@ -11,6 +11,7 @@ from flask import (
 from urllib.parse import urljoin
 import requests
 import json  # Add this missing import
+import uuid  # Add uuid module for unique identifiers
 from models import (
     create_order,
     get_orders,
@@ -24,7 +25,9 @@ from models import (
     update_product,
     delete_product,
     update_payment_method,
-    upload_image_to_cloudinary,  # Updated function name
+    upload_image_to_cloudinary,
+    save_transaction_record,
+    get_transaction_by_reference,
 )
 from werkzeug.security import check_password_hash
 import random
@@ -45,13 +48,13 @@ api_id = Config.HUBTEL_API_ID
 api_key = Config.HUBTEL_API_KEY
 
 # api id and api key converted to base 65 like so api_id:api_key
-auth_string = f"{api_id}:{api_key}"
-basic_auth = base64.b64encode(auth_string.encode()).decode("utf-8")
+print(f"API ID: {api_id}")
+print(f"API KEY: {api_key}")
+credentials = f"{api_id}:{api_key}"
+basic_auth = base64.b64encode(credentials.encode()).decode()
 print(f"Basic Auth: {basic_auth}")
 # Create a Blueprint named "app"
 app = Blueprint("app", __name__)
-
-# print("Mercant:",Config.HUBTEL_MERCHANT_ACCOUNT)
 
 
 def initiate_hubtel_payment(
@@ -147,8 +150,9 @@ def check_hubtel_payment_status(client_reference):
 
 
 def generate_order_number():
-    chars = string.ascii_lowercase + string.digits
-    return "bb-" + "".join(random.choice(chars) for _ in range(4))
+
+    unique_id = str(uuid.uuid4()).replace("-", "")[:8]
+    return "bb-" + unique_id
 
 
 def login_required(view):
@@ -233,6 +237,14 @@ def send_sms_hubtel(to, message):
 
     except Exception as e:
         print(f"❌ Error sending SMS: {e}")
+
+
+@app.route("/generate-order-number")
+def generate_order_number_route():
+    """Generate a unique order number using UUID"""
+    unique_id = str(uuid.uuid4()).replace("-", "")[:8]  # First 8 chars of UUID
+    order_number = f"bb-{unique_id}"
+    return jsonify({"order_number": order_number})
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -487,7 +499,7 @@ def hubtel_payment():
         "callbackUrl": callback_url,
         "returnUrl": return_url,
         "merchantAccountNumber": Config.HUBTEL_MERCHANT_ACCOUNT,
-        "cancellationUrl": return_url,
+        "cancellationUrl": base_url,
         "clientReference": order_number,
     }
 
@@ -537,55 +549,155 @@ def hubtel_payment():
 @app.route("/hubtel-callback", methods=["POST"])
 def hubtel_callback():
     """Handle Hubtel payment notifications"""
-    data = request.json
-    client_reference = data.get("clientReference")
-    status = data.get("status", "").lower()
+    print("\n============ HUBTEL CALLBACK RECEIVED ============")
+    
+    try:
+        # Print the raw request data
+        raw_data = request.get_data(as_text=True)
+        print(f"Raw request data: {raw_data}")
+        
+        # Parse the JSON data
+        data = request.json
+        print(f"Parsed JSON: {json.dumps(data, indent=2)}")
+        
+        # Validate required fields
+        required_fields = ["ResponseCode", "Status", "Data"]
+        if not all(field in data for field in required_fields):
+            missing = [f for f in required_fields if f not in data]
+            print(f"Missing required fields in main payload: {missing}")
+            return jsonify({"error": "Missing required fields", "missing": missing}), 400
 
-    # Verify the payment status
-    if status == "success" and client_reference:
-        # Double-check with status API
-        auth_string = f"{Config.HUBTEL_API_ID}:{Config.HUBTEL_API_KEY}"
-        basic_auth = base64.b64encode(auth_string.encode()).decode()
-        headers = {"Authorization": f"Basic {basic_auth}"}
+        if data["ResponseCode"] != "0000" or data["Status"].lower() != "success":
+            print(f"Transaction unsuccessful: ResponseCode={data['ResponseCode']}, Status={data['Status']}")
+            return jsonify({"error": "Unsuccessful transaction"}), 400
 
+        transaction_data = data["Data"]
+        print(f"Transaction data extracted: {json.dumps(transaction_data, indent=2)}")
+        
+        # Validate transaction data
+        required_transaction_fields = [
+            "CheckoutId", 
+            "SalesInvoiceId", 
+            "ClientReference", 
+            "Amount",
+            "CustomerPhoneNumber", 
+            "PaymentDetails", 
+            "Status", 
+            "Description"
+        ]
+        
+        missing_fields = [f for f in required_transaction_fields if f not in transaction_data]
+        if missing_fields:
+            print(f"Missing transaction data fields: {missing_fields}")
+            # Continue processing anyway but log the issue
+        
+        # Extract payment details for logging
+        payment_details = transaction_data.get("PaymentDetails", {})
+        print(f"Payment details: {json.dumps(payment_details, indent=2)}")
+        
         try:
-            url = f"https://rmsc.hubtel.com/v1/merchantaccount/merchants/{Config.HUBTEL_MERCHANT_ACCOUNT}/transactions/status?clientReference={client_reference}"
-            verify_response = requests.get(url, headers=headers)
-            verify_response.raise_for_status()
+            # Save transaction to database
+            print("Attempting to save transaction to database...")
+            
+            # Call the save_transaction_record function with proper parameters
+            payment_details_str = json.dumps(payment_details) if payment_details else "{}"
+            
+            # Using the correct version of save_transaction_record
+            from models import save_transaction_record
+            save_transaction_record(
+                transaction_data.get("CheckoutId", ""),
+                transaction_data.get("SalesInvoiceId", ""),
+                transaction_data.get("ClientReference", ""),
+                transaction_data.get("Amount", 0),
+                transaction_data.get("CustomerPhoneNumber", ""),
+                payment_details_str,
+                transaction_data.get("Description", "")
+            )
+            print("Transaction saved successfully to database!")
+            
+        except Exception as db_error:
+            print(f"DATABASE ERROR: Failed to save transaction: {str(db_error)}")
+            # Continue processing anyway to update the order status
+        
+        # Update order status if ClientReference matches an order_number
+        client_reference = transaction_data.get("ClientReference", "")
+        if client_reference:
+            print(f"Updating payment method for order: {client_reference}")
+            update_payment_method(client_reference, "paid")
+            print("Order payment status updated to 'paid'")
+        else:
+            print("WARNING: No ClientReference found in transaction data")
 
-            verify_data = verify_response.json()
-            if verify_data.get("status") == "Paid":
-                update_payment_method(client_reference, "paid")
-                return jsonify({"status": "verified"}), 200
+        print("============ HUBTEL CALLBACK PROCESSING COMPLETED ============\n")
+        return jsonify({"status": "success"}), 200
 
-        except Exception as e:
-            print(f"Verification failed: {e}")
+    except Exception as e:
+        print(f"CRITICAL ERROR processing Hubtel callback: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        print("============ HUBTEL CALLBACK PROCESSING FAILED ============\n")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-    return jsonify({"status": "unverified"}), 400
 
-
+# routes.py - Updated Hubtel status check endpoint
 @app.route("/hubtel-status", methods=["GET"])
 def hubtel_status_check():
-    client_reference = request.args.get("clientReference")
+    """Check the status of a transaction with proper error handling"""
+    client_reference = request.args.get("client_reference")
     if not client_reference:
-        return jsonify({"error": "clientReference is required"}), 400
-
-    # Prepare auth header
-    auth_string = f"{Config.HUBTEL_API_ID}:{Config.HUBTEL_API_KEY}"
-    basic_auth = base64.b64encode(auth_string.encode()).decode()
-
-    headers = {"Authorization": f"Basic {basic_auth}"}
+        return jsonify({"error": "client_reference is required"}), 400
 
     try:
-        url = f"https://rmsc.hubtel.com/v1/merchantaccount/merchants/{Config.HUBTEL_MERCHANT_ACCOUNT}/transactions/status?clientReference={client_reference}"
-        response = requests.get(url, headers=headers)
+        # First check our database
+        transaction = get_transaction_by_reference(client_reference)
+        if transaction:
+            return jsonify(
+                {"status": "success", "data": transaction, "source": "database"}
+            )
+
+        # If not in database, check Hubtel API
+        auth_string = f"{Config.HUBTEL_API_ID}:{Config.HUBTEL_API_KEY}"
+        basic_auth = base64.b64encode(auth_string.encode()).decode()
+
+        headers = {"Authorization": f"Basic {basic_auth}", "Accept": "application/json"}
+
+        # Correct Hubtel status check URL format
+        url = f"https://api-txnstatus.hubtel.com/transactions/{Config.HUBTEL_MERCHANT_ACCOUNT}/status?clientReference={client_reference}"
+
+        print(f"Making Hubtel status check request to: {url}")
+        response = requests.get(url, headers=headers, timeout=10)
+
+        # Check for Hubtel API errors
+        if response.status_code == 403:
+            return (
+                jsonify(
+                    {
+                        "error": "Authentication failed",
+                        "details": "Invalid API credentials or merchant account",
+                    }
+                ),
+                403,
+            )
+
         response.raise_for_status()
 
         response_data = response.json()
+        transaction_data = response_data.get("data", {})
+
+        # Save to database if we got valid data
+        if transaction_data:
+            save_transaction_record(transaction_data)
+
         return jsonify(
-            {"status": response_data.get("status", "Unknown"), "data": response_data}
+            {"status": "success", "data": transaction_data, "source": "hubtel_api"}
         )
 
     except requests.exceptions.RequestException as e:
-        print(f"Hubtel status check error: {e}")
-        return jsonify({"error": "Status check failed"}), 500
+        print(f"Hubtel API error: {str(e)}")
+        return (
+            jsonify({"error": "Hubtel API request failed", "details": str(e)}),
+            502,
+        )  # Bad Gateway
+    except Exception as e:
+        print(f"Internal server error: {str(e)}")
+        return jsonify({"error": "Internal server error", "details": str(e)}), 500

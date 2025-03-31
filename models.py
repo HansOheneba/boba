@@ -13,8 +13,6 @@ load_dotenv()
 cloudinary.config(cloudinary_url=os.getenv("CLOUDINARY_URL"))
 
 
-
-
 def upload_image_to_cloudinary(file: FileStorage):
     try:
         # Upload file to Cloudinary
@@ -62,6 +60,86 @@ def get_admin_by_username(username):
     admin = cursor.fetchone()
     conn.close()
     return admin
+
+
+from typing import Dict, Any
+
+
+# Add this function to create the transactions table (run once)
+def create_transactions_table():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+    CREATE TABLE IF NOT EXISTS transactions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        checkout_id VARCHAR(255),
+        sales_invoice_id VARCHAR(255),
+        client_reference VARCHAR(255),
+        amount DECIMAL(10, 2),
+        customer_phone VARCHAR(20),
+        payment_type VARCHAR(50),
+        payment_channel VARCHAR(50),
+        description TEXT,
+        status VARCHAR(50),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        INDEX(client_reference),
+        INDEX(checkout_id)
+    )
+    """
+    )
+    conn.commit()
+    conn.close()
+
+
+# Update the save_transaction_record function
+def save_transaction_record(data: Dict[str, Any]):
+    """Save transaction details to the database"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = """
+    INSERT INTO transactions (
+        checkout_id, sales_invoice_id, client_reference, amount, 
+        customer_phone, payment_type, payment_channel, description, status
+    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+    """
+
+    payment_details = data.get("PaymentDetails", {})
+
+    params = (
+        data.get("CheckoutId"),
+        data.get("SalesInvoiceId"),
+        data.get("ClientReference"),
+        data.get("Amount"),
+        data.get("CustomerPhoneNumber"),
+        payment_details.get("PaymentType"),
+        payment_details.get("Channel"),
+        data.get("Description"),
+        data.get("Status"),
+    )
+
+    cursor.execute(query, params)
+    conn.commit()
+    conn.close()
+
+
+def get_transaction_by_reference(client_reference: str):
+    """Get transaction by client reference"""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute(
+        """
+    SELECT * FROM transactions 
+    WHERE client_reference = %s 
+    ORDER BY created_at DESC 
+    LIMIT 1
+    """,
+        (client_reference,),
+    )
+    transaction = cursor.fetchone()
+    conn.close()
+    return transaction
 
 
 def create_order(
@@ -228,5 +306,39 @@ def update_payment_method(order_number, payment_method):
         "UPDATE orders SET payment_method=%s WHERE order_number=%s",
         (payment_method, order_number),
     )
+    conn.commit()
+    conn.close()
+
+
+def save_transaction_record(
+    checkout_id,
+    sales_invoice_id,
+    client_reference,
+    amount,
+    customer_phone,
+    payment_details,
+    description,
+):
+    """Save transaction details to the database"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    query = """
+    INSERT INTO transactions (
+        checkout_id, sales_invoice_id, client_reference, amount, customer_phone, payment_details, description
+    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """
+
+    params = (
+        checkout_id,
+        sales_invoice_id,
+        client_reference,
+        amount,
+        customer_phone,
+        payment_details,
+        description,
+    )
+
+    cursor.execute(query, params)
     conn.commit()
     conn.close()
