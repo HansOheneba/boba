@@ -550,131 +550,79 @@ def hubtel_payment():
 
 @app.route("/hubtel-callback", methods=["POST"])
 def hubtel_callback():
-    """Handle Hubtel payment notifications"""
+    """Handle Hubtel payment notifications and store all data"""
     print("\n============ HUBTEL CALLBACK RECEIVED ============")
 
     try:
-        # Print the raw request data
+        # Capture raw request first
         raw_data = request.get_data(as_text=True)
         print(f"Raw request data: {raw_data}")
 
-        # Parse the JSON data
+        # Parse JSON data
         data = request.json
         print(f"Parsed JSON: {json.dumps(data, indent=2)}")
 
-        # Validate required fields
-        required_fields = ["ResponseCode", "Status", "Data"]
-        if not all(field in data for field in required_fields):
-            missing = [f for f in required_fields if f not in data]
-            print(f"Missing required fields in main payload: {missing}")
-            return (
-                jsonify({"error": "Missing required fields", "missing": missing}),
-                400,
-            )
+        # Validate we have basic structure
+        if not all(field in data for field in ["ResponseCode", "Status"]):
+            print("Missing required top-level fields")
+            return jsonify({"error": "Missing required fields"}), 400
 
-        if data["ResponseCode"] != "0000" or data["Status"].lower() != "success":
-            print(
-                f"Transaction unsuccessful: ResponseCode={data['ResponseCode']}, Status={data['Status']}"
-            )
-            return jsonify({"error": "Unsuccessful transaction"}), 400
-
-        transaction_data = data["Data"]
-        print(f"Transaction data extracted: {json.dumps(transaction_data, indent=2)}")
-
-        # Validate transaction data
-        required_transaction_fields = [
-            "CheckoutId",
-            "SalesInvoiceId",
-            "ClientReference",
-            "Amount",
-            "CustomerPhoneNumber",
-            "PaymentDetails",
-            "Status",
-            "Description",
-        ]
-
-        missing_fields = [
-            f for f in required_transaction_fields if f not in transaction_data
-        ]
-        if missing_fields:
-            print(f"Missing transaction data fields: {missing_fields}")
-            # Continue processing anyway but log the issue
-
-        # Extract payment details for logging
-        payment_details = transaction_data.get("PaymentDetails", {})
-        print(f"Payment details: {json.dumps(payment_details, indent=2)}")
-
+        # Save everything to database (including failed transactions)
         try:
-            # Save transaction to database
-            print("Attempting to save transaction to database...")
-
-            # Call the save_transaction_record function with proper parameters
-            payment_details_str = (
-                json.dumps(payment_details) if payment_details else "{}"
-            )
-
-            # Using the correct version of save_transaction_record
             from models import save_transaction_record
 
-            save_transaction_record(
-                transaction_data.get("CheckoutId", ""),
-                transaction_data.get("SalesInvoiceId", ""),
-                transaction_data.get("ClientReference", ""),
-                transaction_data.get("Amount", 0),
-                transaction_data.get("CustomerPhoneNumber", ""),
-                payment_details_str,
-                transaction_data.get("Description", ""),
-            )
-            print("Transaction saved successfully to database!")
-
+            save_transaction_record(data, raw_request=raw_data)
+            print("Transaction saved to database (all fields preserved)")
         except Exception as db_error:
-            print(f"DATABASE ERROR: Failed to save transaction: {str(db_error)}")
-            # Continue processing anyway to update the order status
+            print(f"DATABASE SAVE ERROR: {str(db_error)}")
+            import traceback
 
-        # Update order status if ClientReference matches an order_number
-        client_reference = transaction_data.get("ClientReference", "")
-        if client_reference:
-            print(f"Updating payment method for order: {client_reference}")
-            update_payment_method(client_reference, "paid")
-            print("Order payment status updated to 'paid'")
+            print(traceback.format_exc())
 
-            # Get all orders and find the specific order by order_number
-            all_orders = get_orders()
-            matching_orders = [
-                order
-                for order in all_orders
-                if order["order_number"] == client_reference
-            ]
+        # Only process successful transactions further
+        if (
+            data["ResponseCode"] == "0000"
+            and data.get("Status", "").lower() == "success"
+        ):
+            transaction_data = data.get("Data", {})
+            client_reference = transaction_data.get("ClientReference", "")
 
-            if matching_orders:
-                order = matching_orders[0]
-                customer_name = order["name"]
-                customer_phone = order["phone"]
-                order_details = order["order_details"]
+            if client_reference:
+                print(f"Processing successful payment for order: {client_reference}")
 
-                # Format the SMS message
-                formatted_message = format_order_details(customer_name, order_details)
+                try:
+                    # Update order status
+                    update_payment_method(client_reference, "paid")
+                    print("Order payment status updated to 'paid'")
 
-                # Send the confirmation SMS
-                print(f"Sending order confirmation SMS to {customer_phone}")
-                send_sms_hubtel(customer_phone, formatted_message)
-                print("Confirmation SMS sent successfully!")
-            else:
-                print(
-                    f"WARNING: Could not find order with reference {client_reference} for SMS confirmation"
-                )
-        else:
-            print("WARNING: No ClientReference found in transaction data")
+                    # Send confirmation if order exists
+                    all_orders = get_orders()
+                    matching_orders = [
+                        order
+                        for order in all_orders
+                        if order["order_number"] == client_reference
+                    ]
 
-        print("============ HUBTEL CALLBACK PROCESSING COMPLETED ============\n")
-        return jsonify({"status": "success"}), 200
+                    if matching_orders:
+                        order = matching_orders[0]
+                        formatted_message = format_order_details(
+                            order["name"], order["order_details"]
+                        )
+                        send_sms_hubtel(order["phone"], formatted_message)
+                        print("Confirmation SMS sent")
+                except Exception as processing_error:
+                    print(
+                        f"Error processing successful transaction: {str(processing_error)}"
+                    )
+
+        print("============ CALLBACK PROCESSING COMPLETE ============\n")
+        return jsonify({"status": "received"}), 200
 
     except Exception as e:
-        print(f"CRITICAL ERROR processing Hubtel callback: {str(e)}")
+        print(f"CRITICAL ERROR: {str(e)}")
         import traceback
 
         print(traceback.format_exc())
-        print("============ HUBTEL CALLBACK PROCESSING FAILED ============\n")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 

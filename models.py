@@ -38,6 +38,8 @@ def get_db_connection():
         user=Config.MYSQL_USER,
         password=Config.MYSQL_PASSWORD,
         database=Config.MYSQL_DB,
+        charset="utf8mb4",
+        cursorclass=pymysql.cursors.DictCursor,
     )
 
 
@@ -65,7 +67,6 @@ def get_admin_by_username(username):
 from typing import Dict, Any
 
 
-# Add this function to create the transactions table (run once)
 def create_transactions_table():
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -73,15 +74,26 @@ def create_transactions_table():
         """
     CREATE TABLE IF NOT EXISTS transactions (
         id INT AUTO_INCREMENT PRIMARY KEY,
+        
+        # Standard response fields
+        response_code VARCHAR(20),
+        status VARCHAR(50),
+        
+        # Transaction metadata
         checkout_id VARCHAR(255),
         sales_invoice_id VARCHAR(255),
         client_reference VARCHAR(255),
         amount DECIMAL(10, 2),
         customer_phone VARCHAR(20),
-        payment_type VARCHAR(50),
-        payment_channel VARCHAR(50),
         description TEXT,
-        status VARCHAR(50),
+        
+        # Payment details (stored as JSON)
+        payment_details JSON,
+        
+        # Raw data storage
+        raw_request TEXT,
+        full_response JSON,
+        
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         INDEX(client_reference),
         INDEX(checkout_id)
@@ -92,31 +104,41 @@ def create_transactions_table():
     conn.close()
 
 
-# Update the save_transaction_record function
-def save_transaction_record(data: Dict[str, Any]):
-    """Save transaction details to the database"""
+def save_transaction_record(callback_data: Dict[str, Any], raw_request: str = None):
+    """Save complete Hubtel callback details to database"""
     conn = get_db_connection()
     cursor = conn.cursor()
 
     query = """
     INSERT INTO transactions (
-        checkout_id, sales_invoice_id, client_reference, amount, 
-        customer_phone, payment_type, payment_channel, description, status
-    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        response_code,
+        status,
+        checkout_id,
+        sales_invoice_id,
+        client_reference,
+        amount,
+        customer_phone,
+        description,
+        payment_details,
+        raw_request,
+        full_response
+    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
     """
 
-    payment_details = data.get("PaymentDetails", {})
-
     params = (
-        data.get("CheckoutId"),
-        data.get("SalesInvoiceId"),
-        data.get("ClientReference"),
-        data.get("Amount"),
-        data.get("CustomerPhoneNumber"),
-        payment_details.get("PaymentType"),
-        payment_details.get("Channel"),
-        data.get("Description"),
-        data.get("Status"),
+        callback_data.get("ResponseCode"),
+        callback_data.get("Status"),
+        callback_data.get("Data", {}).get("CheckoutId"),
+        callback_data.get("Data", {}).get("SalesInvoiceId"),
+        callback_data.get("Data", {}).get("ClientReference"),
+        callback_data.get("Data", {}).get("Amount"),
+        callback_data.get("Data", {}).get("CustomerPhoneNumber"),
+        callback_data.get("Data", {}).get("Description"),
+        json.dumps(
+            callback_data.get("Data", {}).get("PaymentDetails", {})
+        ),  # Store as JSON
+        raw_request,
+        json.dumps(callback_data),  # Store entire response as JSON
     )
 
     cursor.execute(query, params)
