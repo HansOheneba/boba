@@ -135,11 +135,9 @@ def save_transaction_record(callback_data: Dict[str, Any], raw_request: str = No
         callback_data.get("Data", {}).get("Amount"),
         callback_data.get("Data", {}).get("CustomerPhoneNumber"),
         callback_data.get("Data", {}).get("Description"),
-        json.dumps(
-            callback_data.get("Data", {}).get("PaymentDetails", {})
-        ),  # Store as JSON
+        json.dumps(callback_data.get("Data", {}).get("PaymentDetails", {})),
         raw_request,
-        json.dumps(callback_data),  # Store entire response as JSON
+        json.dumps(callback_data),
     )
 
     cursor.execute(query, params)
@@ -327,39 +325,5 @@ def update_payment_method(order_number, payment_method):
         "UPDATE orders SET payment_method=%s WHERE order_number=%s",
         (payment_method, order_number),
     )
-    conn.commit()
-    conn.close()
-
-
-def save_transaction_record(
-    checkout_id,
-    sales_invoice_id,
-    client_reference,
-    amount,
-    customer_phone,
-    payment_details,
-    description,
-):
-    """Save transaction details to the database"""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-
-    query = """
-    INSERT INTO transactions (
-        checkout_id, sales_invoice_id, client_reference, amount, customer_phone, payment_details, description
-    ) VALUES (%s, %s, %s, %s, %s, %s, %s)
-    """
-
-    params = (
-        checkout_id,
-        sales_invoice_id,
-        client_reference,
-        amount,
-        customer_phone,
-        payment_details,
-        description,
-    )
-
-    cursor.execute(query, params)
     conn.commit()
     conn.close()
