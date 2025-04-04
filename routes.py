@@ -28,6 +28,8 @@ from models import (
     upload_image_to_cloudinary,
     save_transaction_record,
     get_transaction_by_reference,
+    get_transactions,
+    get_transaction_details,
 )
 from werkzeug.security import check_password_hash
 import random
@@ -688,3 +690,29 @@ def hubtel_status_check():
     except Exception as e:
         print(f"Internal server error: {str(e)}")
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
+
+
+@app.route("/admin/transactions", methods=["GET"])
+@login_required
+def admin_transactions():
+    """Admin view for transactions with Hubtel status check capability"""
+    search_query = request.args.get("search", "")
+    transactions = get_transactions(search_query)
+    return render_template("admin_transactions.html", transactions=transactions)
+
+
+@app.route("/admin/transaction-details/<int:transaction_id>", methods=["GET"])
+@login_required
+def transaction_details(transaction_id):
+    """Get detailed information for a specific transaction"""
+    transaction = get_transaction_details(transaction_id)
+    if not transaction:
+        return jsonify({"error": "Transaction not found"}), 404
+
+    # Convert raw JSON fields back to Python objects
+    if transaction.get("full_response"):
+        transaction["full_response"] = json.loads(transaction["full_response"])
+    if transaction.get("payment_details"):
+        transaction["payment_details"] = json.loads(transaction["payment_details"])
+
+    return jsonify(transaction)

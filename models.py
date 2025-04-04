@@ -327,3 +327,42 @@ def update_payment_method(order_number, payment_method):
     )
     conn.commit()
     conn.close()
+
+
+def get_transactions(search_query=None):
+    """Fetch all transactions with optional search filtering"""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+
+    if search_query:
+        cursor.execute(
+            """
+            SELECT * FROM transactions 
+            WHERE client_reference LIKE %s 
+            OR customer_phone LIKE %s
+            ORDER BY created_at DESC
+        """,
+            (f"%{search_query}%", f"%{search_query}%"),
+        )
+    else:
+        cursor.execute("SELECT * FROM transactions ORDER BY created_at DESC")
+
+    transactions = cursor.fetchall()
+    conn.close()
+
+    # Format the created_at time for display
+    for txn in transactions:
+        if txn["created_at"]:
+            txn["created_at"] = txn["created_at"].strftime("%Y-%m-%d %H:%M:%S")
+
+    return transactions
+
+
+def get_transaction_details(transaction_id):
+    """Get full details of a specific transaction"""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT * FROM transactions WHERE id = %s", (transaction_id,))
+    transaction = cursor.fetchone()
+    conn.close()
+    return transaction
