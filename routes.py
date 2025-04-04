@@ -480,7 +480,7 @@ def hubtel_payment():
 
     # Generate callback and return URLs
     base_url = request.host_url.rstrip("/")
-    callback_url = urljoin(base_url, url_for("app.hubtel_callback"))
+    callback_url = "http://order.bubbleblisscafe.com/hubtel-callback"
     return_url = urljoin(
         base_url,
         url_for("app.order_confirmation", order_number=order_number, total=total),
