@@ -472,6 +472,17 @@ def delete_product_route(product_id):
     return redirect(url_for("app.admin_products"))
 
 
+@app.route("/update-payment", methods=["POST"])
+def update_payment():
+    data = request.json
+    order_number = data.get("order_number")
+    payment_method = data.get("payment_method")
+
+    update_payment_status(order_number, payment_method)
+
+    return {"message": "Payment updated successfully"}, 200
+
+
 @app.route("/hubtel-payment", methods=["POST"])
 def hubtel_payment():
     data = request.json
