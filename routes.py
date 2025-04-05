@@ -24,12 +24,13 @@ from models import (
     add_product,
     update_product,
     delete_product,
-    update_payment_method,
     upload_image_to_cloudinary,
     save_transaction_record,
     get_transaction_by_reference,
     get_transactions,
     get_transaction_details,
+    get_order_by_reference,
+    update_payment_status,
 )
 from werkzeug.security import check_password_hash
 import random
@@ -150,7 +151,7 @@ def check_hubtel_payment_status(client_reference):
 
 def generate_order_number():
 
-    unique_id = str(uuid.uuid4()).replace("-", "")[:8]
+    unique_id = str(uuid.uuid4()).replace("-", "")[:5]
     return "bb-" + unique_id
 
 
@@ -241,7 +242,7 @@ def send_sms_hubtel(to, message):
 @app.route("/generate-order-number")
 def generate_order_number_route():
     """Generate a unique order number using UUID"""
-    unique_id = str(uuid.uuid4()).replace("-", "")[:8]  # First 8 chars of UUID
+    unique_id = str(uuid.uuid4()).replace("-", "")[:5]  # First 8 chars of UUID
     order_number = f"bb-{unique_id}"
     return jsonify({"order_number": order_number})
 
@@ -274,9 +275,9 @@ def index():
         total = request.form.get("total")
         boba_toppings = request.form.get("boba_toppings")
         shawarma_type = request.form.get("shawarma_type")
-        payment_method = request.form.get("payment_method", "paid")
+        payment_status = request.form.get("payment_method", "paid")
         order_number = generate_order_number()
-        print("Received payment method:", payment_method)
+        print("Received payment method:", payment_status)
 
         if not name or not location or not order_details or not phone:
             return "All fields are required", 400
@@ -287,6 +288,7 @@ def index():
         if shawarma_type:
             order_details += f", {shawarma_type}"
 
+        payment_status = "on_delivery" if payment_status == "on_delivery" else "pending_payment"
         create_order(
             name,
             location,
@@ -295,12 +297,12 @@ def index():
             phone,
             total,
             order_number,
-            payment_method,
+            payment_status,  
+            "pending"
         )
 
-        # Only send SMS if it's a pay-on-delivery order
-        # For online payments, SMS will be sent by the hubtel_callback function
-        if payment_method == "on_delivery":
+
+        if payment_status == "on_delivery":
             customer_name = f"{name}"
             formatted_message = format_order_details(customer_name, order_details)
             print(f"Sending SMS for pay-on-delivery order to {phone}")
@@ -458,17 +460,6 @@ def delete_product_route(product_id):
     return redirect(url_for("app.admin_products"))
 
 
-@app.route("/update-payment", methods=["POST"])
-def update_payment():
-    data = request.json
-    order_number = data.get("order_number")
-    payment_method = data.get("payment_method")
-
-    update_payment_method(order_number, payment_method)
-
-    return {"message": "Payment updated successfully"}, 200
-
-
 @app.route("/hubtel-payment", methods=["POST"])
 def hubtel_payment():
     data = request.json
@@ -571,8 +562,6 @@ def hubtel_callback():
 
         # Save everything to database (including failed transactions)
         try:
-            from models import save_transaction_record
-
             save_transaction_record(data, raw_request=raw_data)
             print("Transaction saved to database (all fields preserved)")
         except Exception as db_error:
@@ -587,35 +576,38 @@ def hubtel_callback():
             and data.get("Status", "").lower() == "success"
         ):
             transaction_data = data.get("Data", {})
-            client_reference = transaction_data.get("ClientReference", "")
+            order_number = transaction_data.get("ClientReference", "")
 
-            if client_reference:
-                print(f"Processing successful payment for order: {client_reference}")
+            if order_number:
+                print(f"Processing successful payment for order: {order_number}")
 
                 try:
-                    # Update order status
-                    update_payment_method(client_reference, "paid")
-                    print("Order payment status updated to 'paid'")
+                    # Update order payment method to 'paid'
+                    update_payment_status(order_number, "paid")
+                    print("Order payment method updated to 'paid'")
 
-                    # Send confirmation if order exists
-                    all_orders = get_orders()
-                    matching_orders = [
-                        order
-                        for order in all_orders
-                        if order["order_number"] == client_reference
-                    ]
+                    # Get complete order details from database
+                    order = get_order_by_reference(order_number)
 
-                    if matching_orders:
-                        order = matching_orders[0]
+                    if order:
+                        # Format and send SMS
+                        customer_name = order["name"]
+                        order_details = order["order_details"]
+                        phone = order["phone"]
                         formatted_message = format_order_details(
-                            order["name"], order["order_details"]
+                            customer_name, order_details
                         )
-                        send_sms_hubtel(order["phone"], formatted_message)
-                        print("Confirmation SMS sent")
+                        send_sms_hubtel(phone, formatted_message)
+                        print(f"SMS sent to {phone} for order {order_number}")
+                    else:
+                        print(f"Order {order_number} not found in database")
                 except Exception as processing_error:
                     print(
                         f"Error processing successful transaction: {str(processing_error)}"
                     )
+                    import traceback
+
+                    print(traceback.format_exc())
 
         print("============ CALLBACK PROCESSING COMPLETE ============\n")
         return jsonify({"status": "received"}), 200
