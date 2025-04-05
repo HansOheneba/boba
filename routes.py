@@ -301,8 +301,15 @@ def index():
         if payment_method == "on_delivery":
             customer_name = f"{name}"
             formatted_message = format_order_details(customer_name, order_details)
-            print(f"Sending SMS for pay-on-delivery order to {phone}")
-            send_sms_hubtel(phone, formatted_message)
+
+            # Format the phone number to international format
+            formatted_phone = format_phone_number(phone)
+            print(
+                f"Sending SMS for pay-on-delivery order to {formatted_phone} (original: {phone})"
+            )
+
+            # Send SMS with formatted phone number
+            send_sms_hubtel(formatted_phone, formatted_message)
             print(f"SMS sent successfully for pay-on-delivery order {order_number}")
         else:
             print(
@@ -396,9 +403,14 @@ Your taste buds are in for a treat! 😋🎉
 
 Need help? Chat with us on WhatsApp: (https://wa.me/233592076527)  
 """
+                # Format the phone number to international format
+                formatted_phone = format_phone_number(customer_phone)
+                print(
+                    f"Sending order ready SMS to {formatted_phone} (original: {customer_phone})"
+                )
 
-                # Send SMS
-                send_sms_hubtel(customer_phone, message)
+                # Send SMS with formatted phone number
+                send_sms_hubtel(formatted_phone, message)
 
         elif action == "cancel":
             cancel_order(order_id)
@@ -595,13 +607,21 @@ def hubtel_callback():
                     update_payment_method(client_reference, "paid")
                     print("Order payment status updated to 'paid'")
 
-                    # Send confirmation if order exists
-                    all_orders = get_orders()
-                    matching_orders = [
-                        order
-                        for order in all_orders
-                        if order["order_number"] == client_reference
-                    ]
+                # Format the phone number to international format
+                formatted_phone = format_phone_number(customer_phone)
+                print(
+                    f"Sending order confirmation SMS to {formatted_phone} (original: {customer_phone})"
+                )
+
+                # Send the confirmation SMS with formatted phone number
+                send_sms_hubtel(formatted_phone, formatted_message)
+                print("Confirmation SMS sent successfully!")
+            else:
+                print(
+                    f"WARNING: Could not find order with reference {client_reference} for SMS confirmation"
+                )
+        else:
+            print("WARNING: No ClientReference found in transaction data")
 
                     if matching_orders:
                         order = matching_orders[0]
