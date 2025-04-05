@@ -8,6 +8,7 @@ import cloudinary
 import cloudinary.uploader
 import os
 from dotenv import load_dotenv
+import pymysql.cursors
 
 # Load environment variables and configure Cloudinary
 load_dotenv()
@@ -171,12 +172,13 @@ def create_order(
     phone,
     total,
     order_number,
-    payment_method,
+    payment_status,
+    status="pending",
 ):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "INSERT INTO orders (name, location, order_details, preferences, phone, total, order_number,payment_method, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
+        "INSERT INTO orders (name, location, order_details, preferences, phone, total, order_number, payment_status, status) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)",
         (
             name,
             location,
@@ -185,8 +187,8 @@ def create_order(
             phone,
             total,
             order_number,
-            payment_method,
-            "pending",
+            payment_status,
+            status,
         ),
     )
     conn.commit()
@@ -315,15 +317,64 @@ def delete_product(product_id):
     cursor.execute("UPDATE products SET deleted = 1 WHERE id = %s", (product_id,))
     conn.commit()
     conn.close()
+    
+    
+def get_transactions(search_query=None):
+    """Fetch all transactions with optional search filtering"""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+
+    if search_query:
+        cursor.execute(
+            """
+            SELECT * FROM transactions 
+            WHERE client_reference LIKE %s 
+            OR customer_phone LIKE %s
+            ORDER BY created_at DESC
+        """,
+            (f"%{search_query}%", f"%{search_query}%"),
+        )
+    else:
+        cursor.execute("SELECT * FROM transactions ORDER BY created_at DESC")
+
+    transactions = cursor.fetchall()
+    conn.close()
+
+    # Format the created_at time for display
+    for txn in transactions:
+        if txn["created_at"]:
+            txn["created_at"] = txn["created_at"].strftime("%Y-%m-%d %H:%M:%S")
+
+    return transactions
 
 
-def update_payment_method(order_number, payment_method):
-    """Update the payment method for a specific order."""
+def get_transaction_details(transaction_id):
+    """Get full details of a specific transaction"""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT * FROM transactions WHERE id = %s", (transaction_id,))
+    transaction = cursor.fetchone()
+    conn.close()
+    return transaction
+
+
+def get_order_by_reference(order_number):
+    """Retrieve an order by its reference number"""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)  # Changed this line
+    cursor.execute("SELECT * FROM orders WHERE order_number = %s", (order_number,))
+    order = cursor.fetchone()
+    conn.close()
+    return order
+
+
+def update_payment_status(order_number, payment_status):
+    """Update the payment status of an order."""
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute(
-        "UPDATE orders SET payment_method=%s WHERE order_number=%s",
-        (payment_method, order_number),
+        "UPDATE orders SET payment_status=%s WHERE order_number=%s",
+        (payment_status, order_number),
     )
     conn.commit()
     conn.close()

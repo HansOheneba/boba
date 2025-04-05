@@ -1,0 +1,122 @@
+{% extends "admin_base.html" %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold text-gray-800 mb-6">Transaction Records</h1>
+    
+    <!-- Search Bar -->
+    <div class="mb-6 flex justify-center">
+        <form method="GET" action="{{ url_for('app.admin_transactions') }}" class="flex w-full max-w-lg">
+            <input type="text" name="search" placeholder="Search by reference or phone" 
+                   value="{{ request.args.get('search', '') }}"
+                   class="px-4 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full shadow-sm">
+            <button type="submit" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-r-lg shadow-md">
+                Search
+            </button>
+        </form>
+    </div>
+    
+    <!-- Transactions Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full border border-gray-200 rounded-lg">
+                <thead class="bg-blue-100">
+                    <tr class="text-left text-sm font-medium text-gray-600 uppercase">
+                        <th class="px-6 py-3">Reference</th>
+                        <th class="px-6 py-3">Amount</th>
+                        <th class="px-6 py-3">Status</th>
+                        <th class="px-6 py-3">Phone</th>
+                        <th class="px-6 py-3">Date</th>
+                        <th class="px-6 py-3">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for txn in transactions %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4">{{ txn.client_reference }}</td>
+                        <td class="px-6 py-4">GHS {{ "%.2f"|format(txn.amount) if txn.amount else 'N/A' }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold 
+                                {% if txn.status == 'Success' %}bg-green-100 text-green-800
+                                {% elif txn.status == 'Failed' %}bg-red-100 text-red-800
+                                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                {{ txn.status or 'Pending' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-600">{{ txn.customer_phone or 'N/A' }}</td>
+                        <td class="px-6 py-4 text-gray-500">{{ txn.created_at }}</td>
+                        <td class="px-6 py-4">
+                            <button onclick="checkStatus('{{ txn.client_reference }}')" 
+                                    class="text-blue-600 hover:text-blue-900 font-medium mr-3">
+                                Check Status
+                            </button>
+                            <button onclick="showDetails('{{ txn.id }}')" 
+                                    class="text-gray-700 hover:text-gray-900 font-medium">
+                                Details
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                            No transactions found
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Details Modal -->
+    <div id="detailsModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-screen overflow-y-auto shadow-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-800">Transaction Details</h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <pre id="transactionDetails" class="bg-gray-100 p-4 rounded text-sm overflow-x-auto"></pre>
+        </div>
+    </div>
+</div>
+
+<script>
+function checkStatus(reference) {
+    fetch(`/hubtel-status?client_reference=${reference}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(`Error: ${data.error}`);
+            } else {
+                alert(`Status: ${data.data?.Status || 'Unknown'}\nAmount: ${data.data?.Amount || 'N/A'}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to check status');
+        });
+}
+
+function showDetails(transactionId) {
+    fetch(`/admin/transaction-details/${transactionId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('transactionDetails').textContent = 
+                JSON.stringify(data, null, 2);
+            document.getElementById('detailsModal').classList.remove('hidden');
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to load transaction details');
+        });
+}
+
+function closeModal() {
+    document.getElementById('detailsModal').classList.add('hidden');
+}
+</script>
+{% endblock %}
