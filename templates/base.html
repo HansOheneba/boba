@@ -329,7 +329,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             order_number: orderData.order_number,
-            payment_method: "paid",
+            payment_method: "pending_payment",
           }),
         })
           .then((res) => res.json())
