@@ -288,7 +288,9 @@ def index():
         if shawarma_type:
             order_details += f", {shawarma_type}"
 
-        payment_status = "on_delivery" if payment_status == "on_delivery" else "pending_payment"
+        payment_status = (
+            "on_delivery" if payment_status == "on_delivery" else "pending_payment"
+        )
         create_order(
             name,
             location,
@@ -297,10 +299,9 @@ def index():
             phone,
             total,
             order_number,
-            payment_status,  
-            "pending"
+            payment_status,
+            "pending",
         )
-
 
         if payment_status == "on_delivery":
             customer_name = f"{name}"
@@ -731,3 +732,36 @@ def transaction_details(transaction_id):
         transaction["payment_details"] = json.loads(transaction["payment_details"])
 
     return jsonify(transaction)
+
+
+@app.route("/save-order", methods=["POST"])
+def save_order():
+    data = request.json
+    name = data.get("name")
+    location = data.get("location")
+    order_details = data.get("order")
+    preferences = data.get("preferences", "")  # Using preferences instead of notes
+    phone = data.get("phone")
+    total = data.get("total")
+    order_number = data.get("order_number")
+
+    # Check required fields
+    if not name or not location or not order_details or not phone or not order_number:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    # Initial payment status is 'pending_payment' when using Hubtel
+    create_order(
+        name,
+        location,
+        order_details,
+        preferences,
+        phone,
+        total,
+        order_number,
+        "pending_payment",
+        "pending",
+    )
+
+    print(f"Order {order_number} saved with pending_payment status")
+
+    return jsonify({"success": True, "message": "Order saved successfully"}), 200

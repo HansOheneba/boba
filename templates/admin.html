@@ -109,10 +109,11 @@
               <span class="text-gray-600 text-sm">{{ order.location }}</span>
               <span class="text-gray-600 text-sm">{{ order.phone }}</span>
               <span
-                class="text-xs font-semibold {% if order.payment_method == 'paid' %} text-green-600 {% else %} text-yellow-600 {% endif %}"
+                class="text-xs font-semibold {% if order.payment_status == 'paid' %} text-green-600 {% elif order.payment_status == 'pending_payment' %} text-blue-600 {% else %} text-yellow-600 {% endif %}"
               >
-                {{ "Paid Online" if order.payment_method == "paid" else "On
-                Delivery" }}
+                {% if order.payment_status == 'paid' %} Paid Online {% elif
+                order.payment_status == 'pending_payment' %} Payment Processing
+                {% else %} Pay on Delivery {% endif %}
               </span>
               <span class="text-blue-800 text-xs"> {{ order.time_ago }} </span>
             </div>
@@ -307,7 +308,7 @@
                         class="inline-flex items-center justify-center h-10 px-4 py-2 font-medium transition-colors border border-transparent rounded-md focus:outline-none focus:ring-2 text-sm text-center text-white bg-red-700 hover:bg-red-800 focus:ring-blue-300"
                         data-loader
                       >
-                         <span class="button-text">Continue</span>
+                        <span class="button-text">Continue</span>
                         <span
                           class="loader hidden animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"
                         ></span>

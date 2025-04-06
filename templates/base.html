@@ -12,7 +12,7 @@
     location: localStorage.getItem('location') || '',
     preferences: '',  // Use preferences instead of notes
     phone: localStorage.getItem('phone') || '',
-    email: localStorage.getItem('email') || '', 
+    // Removed email field
     selectedBoba: '',
     selectedShawarma: '',
     selectedShawarmaType: '',
@@ -126,7 +126,7 @@
         let price =
           size === "Medium"
             ? selectedShawarmaType.includes("Chicken")
-              ? 1
+              ? 0.1
               : 40
             : selectedShawarmaType.includes("Chicken")
             ? 45
@@ -323,15 +323,40 @@
         // Add payment_method to indicate this will be paid
         orderData.payment_method = "paid";
 
-        // First update payment status to paid
-        fetch("/update-payment", {
+        // First save the order data to database
+        fetch("/save-order", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            name: orderData.name,
+            location: document.querySelector("[x-data]").__x.$data.location,
+            phone: orderData.phone,
+            order: document.getElementById("order-input").value,
+            preferences:
+              document.querySelector("[x-data]").__x.$data.preferences,
+            total: orderData.total,
             order_number: orderData.order_number,
-            payment_method: "pending_payment",
           }),
         })
+          .then((response) => {
+            if (!response.ok) {
+              throw new Error("Failed to save order");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            console.log("Order saved successfully:", data);
+
+            // Now update payment status to pending
+            return fetch("/update-payment", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                order_number: orderData.order_number,
+                payment_method: "pending_payment",
+              }),
+            });
+          })
           .then((res) => res.json())
           .then((data) => {
             console.log("Payment method updated:", data);
@@ -340,7 +365,12 @@
             return fetch("/hubtel-payment", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(orderData),
+              body: JSON.stringify({
+                order_number: orderData.order_number,
+                total: orderData.total,
+                name: orderData.name,
+                phone: orderData.phone,
+              }),
             });
           })
           .then((response) => response.json())
@@ -365,7 +395,6 @@
           total: document.querySelector("[x-data]").__x.$data.total,
           name: document.querySelector("[x-data]").__x.$data.name,
           phone: document.querySelector("[x-data]").__x.$data.phone,
-          email: document.querySelector("[x-data]").__x.$data.email,
         };
 
         // Save form data to localStorage before proceeding
@@ -375,7 +404,6 @@
             name: orderData.name,
             location: document.querySelector("[x-data]").__x.$data.location,
             phone: orderData.phone,
-            email: orderData.email,
             order: document.getElementById("order-input").value,
             preferences:
               document.querySelector("[x-data]").__x.$data.preferences,
@@ -415,7 +443,6 @@
         const storedName = localStorage.getItem("name");
         const storedLocation = localStorage.getItem("location");
         const storedPhone = localStorage.getItem("phone");
-        const storedEmail = localStorage.getItem("email");
 
         if (storedName)
           document.querySelector("[name='name']").value = storedName;
@@ -423,8 +450,6 @@
           document.querySelector("[name='location']").value = storedLocation;
         if (storedPhone)
           document.querySelector("[name='phone']").value = storedPhone;
-        if (storedEmail)
-          document.querySelector("[name='email']").value = storedEmail;
 
         // Store values in local storage on input change
         document
@@ -441,11 +466,6 @@
           .querySelector("[name='phone']")
           .addEventListener("input", function () {
             localStorage.setItem("phone", this.value);
-          });
-        document
-          .querySelector("[name='email']")
-          .addEventListener("input", function () {
-            localStorage.setItem("email", this.value);
           });
       });
     </script>
