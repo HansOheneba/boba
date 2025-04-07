@@ -217,30 +217,19 @@
           .join(", ");
       }
 
-      function validateForm() {
-        const form = document.getElementById("order-form");
-        if (form.checkValidity() && cart.length > 0) {
-          // Fetch order number from backend
-          fetch("/generate-order-number")
-            .then((response) => response.json())
-            .then((data) => {
-              document.querySelector("[x-data]").__x.$data.showModal = true;
-              document.querySelector("[x-data]").__x.$data.total =
-                document.getElementById("total").textContent;
-              document.querySelector("[x-data]").__x.$data.orderNumber =
-                data.order_number;
-            })
-            .catch((error) => {
-              console.error("Error generating order number:", error);
-              alert("Error generating order number. Please try again.");
-            });
-        } else {
-          form.reportValidity();
-          if (cart.length === 0) {
-            alert("Please select at least one item.");
-          }
-        }
-      }
+     function validateForm() {
+  const form = document.getElementById("order-form");
+  if (form.checkValidity() && cart.length > 0) {
+    document.querySelector("[x-data]").__x.$data.showModal = true;
+    document.querySelector("[x-data]").__x.$data.total = document.getElementById("total").textContent;
+    // We no longer generate the order number here
+  } else {
+    form.reportValidity();
+    if (cart.length === 0) {
+      alert("Please select at least one item.");
+    }
+  }
+}
 
       function updatePaymentMethod(method) {
         selectedPaymentMethod = method;
@@ -387,43 +376,64 @@
           });
       }
 
-      function handleOrderConfirmation() {
-        const paymentMethod = document.getElementById("payment_method").value;
-        const orderData = {
-          order_number:
-            document.querySelector("[x-data]").__x.$data.orderNumber,
-          total: document.querySelector("[x-data]").__x.$data.total,
-          name: document.querySelector("[x-data]").__x.$data.name,
-          phone: document.querySelector("[x-data]").__x.$data.phone,
-        };
+    function handleOrderConfirmation() {
+  const paymentMethod = document.getElementById("payment_method").value;
+  
+  // Generate order number first
+  fetch("/generate-order-number")
+    .then((response) => response.json())
+    .then((data) => {
+      // Store the order number
+      document.querySelector("[x-data]").__x.$data.orderNumber = data.order_number;
+      
+      const orderData = {
+        order_number: data.order_number,
+        total: document.querySelector("[x-data]").__x.$data.total,
+        name: document.querySelector("[x-data]").__x.$data.name,
+        phone: document.querySelector("[x-data]").__x.$data.phone,
+      };
 
-        // Save form data to localStorage before proceeding
-        localStorage.setItem(
-          "pendingOrder",
-          JSON.stringify({
-            name: orderData.name,
-            location: document.querySelector("[x-data]").__x.$data.location,
-            phone: orderData.phone,
-            order: document.getElementById("order-input").value,
-            preferences:
-              document.querySelector("[x-data]").__x.$data.preferences,
-            total: orderData.total,
-            order_number: orderData.order_number,
-          })
-        );
+      // Save form data to localStorage before proceeding
+      localStorage.setItem(
+        "pendingOrder",
+        JSON.stringify({
+          name: orderData.name,
+          location: document.querySelector("[x-data]").__x.$data.location,
+          phone: orderData.phone,
+          order: document.getElementById("order-input").value,
+          preferences: document.querySelector("[x-data]").__x.$data.preferences,
+          total: orderData.total,
+          order_number: orderData.order_number,
+        })
+      );
 
-        if (paymentMethod === "on_delivery") {
-          document.querySelector("#order-form").submit();
-        } else if (paymentMethod === "hubtel") {
-          payWithHubtel(orderData);
-        } else if (paymentMethod === "paystack") {
-          payWithPaystack();
-        } else {
-          resetOrderButton();
-          alert("Please select a valid payment method");
+      if (paymentMethod === "on_delivery") {
+        // Add hidden input for order number before submitting
+        let orderNumberInput = document.getElementById("order_number_input");
+        if (!orderNumberInput) {
+          orderNumberInput = document.createElement("input");
+          orderNumberInput.type = "hidden";
+          orderNumberInput.id = "order_number_input";
+          orderNumberInput.name = "order_number";
+          document.getElementById("order-form").appendChild(orderNumberInput);
         }
+        orderNumberInput.value = orderData.order_number;
+        document.querySelector("#order-form").submit();
+      } else if (paymentMethod === "hubtel") {
+        payWithHubtel(orderData);
+      } else if (paymentMethod === "paystack") {
+        payWithPaystack();
+      } else {
+        resetOrderButton();
+        alert("Please select a valid payment method");
       }
-
+    })
+    .catch((error) => {
+      console.error("Error generating order number:", error);
+      alert("Error generating order number. Please try again.");
+      resetOrderButton();
+    });
+}
       function checkHubtelPaymentStatus(clientReference) {
         return fetch(`/hubtel-status?client_reference=${clientReference}`)
           .then((res) => res.json())
