@@ -167,101 +167,98 @@
         const source = data.source || "unknown";
 
         // Create modal content with all returned data
-        modal.innerHTML = `
-                <div class="bg-white rounded-lg p-6 max-w-2xl w-full max-h-screen overflow-y-auto shadow-lg">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-xl font-bold text-gray-800">
-                            Transaction Status 
-                            <span class="px-2 py-1 ml-2 rounded text-xs font-semibold ${
-                              source === "database"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-blue-100 text-blue-800"
-                            }">
-                                Source: ${source}
-                            </span>
-                        </h3>
-                        <button onclick="document.getElementById('statusModal').remove()" class="text-gray-500 hover:text-gray-700">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div class="p-3 bg-gray-50 rounded">
-                            <div class="font-bold text-gray-700">Reference</div>
-                            <div>${
-                              data.data?.client_reference || reference
-                            }</div>
-                        </div>
-                        <div class="p-3 bg-gray-50 rounded">
-                            <div class="font-bold text-gray-700">Status</div>
-                            <div class="flex items-center">
-                                <span class="px-2 py-1 rounded text-xs font-semibold ${
-                                  data.data?.status === "Success"
-                                    ? "bg-green-100 text-green-800"
-                                    : data.data?.status === "Failed"
-                                    ? "bg-red-100 text-red-800"
-                                    : "bg-yellow-100 text-yellow-800"
-                                }">
-                                    ${data.data?.status || "Pending"}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="p-3 bg-gray-50 rounded">
-                            <div class="font-bold text-gray-700">Amount</div>
-                            <div>GHS ${data.data?.amount || "N/A"}</div>
-                        </div>
-                        <div class="p-3 bg-gray-50 rounded">
-                            <div class="font-bold text-gray-700">Date</div>
-                            <div>${data.data?.date || "N/A"}</div>
-                        </div>
-                        ${
-                          data.data?.mobile_number
-                            ? `
-                        <div class="p-3 bg-gray-50 rounded">
-                            <div class="font-bold text-gray-700">Mobile Number</div>
-                            <div>${data.data.mobile_number}</div>
-                        </div>`
-                            : ""
-                        }
-                        ${
-                          data.data?.payment_method
-                            ? `
-                        <div class="p-3 bg-gray-50 rounded">
-                            <div class="font-bold text-gray-700">Payment Method</div>
-                            <div>${data.data.payment_method}</div>
-                        </div>`
-                            : ""
-                        }
-                        ${
-                          data.data?.provider_message
-                            ? `
-                        <div class="p-3 bg-gray-50 rounded col-span-2">
-                            <div class="font-bold text-gray-700">Provider Message</div>
-                            <div>${data.data.provider_message}</div>
-                        </div>`
-                            : ""
-                        }
-                    </div>
-                    
-                    <div class="border-t pt-4">
-                        <h4 class="font-bold text-gray-700 mb-2">All Transaction Data</h4>
-                        <pre class="bg-gray-100 p-4 rounded text-sm overflow-x-auto">${JSON.stringify(
-                          data,
-                          null,
-                          2
-                        )}</pre>
-                    </div>
-                    
-                    <div class="mt-4 flex justify-end">
-                        <button onclick="document.getElementById('statusModal').remove()" 
-                                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 shadow">
-                            Close
-                        </button>
-                    </div>
-                </div>
-            `;
+     modal.innerHTML = `
+  <div class="bg-white rounded-lg p-4 sm:p-6 w-full max-w-2xl max-h-screen overflow-y-auto shadow-lg">
+    <div class="flex flex-col sm:flex-row justify-between sm:items-center mb-4 gap-2">
+      <h3 class="text-lg sm:text-xl font-bold text-gray-800">
+        Transaction Status 
+        <span class="px-2 py-1 ml-0 sm:ml-2 mt-1 sm:mt-0 inline-block rounded text-xs font-semibold ${
+          source === "database"
+            ? "bg-green-100 text-green-800"
+            : "bg-blue-100 text-blue-800"
+        }">
+          Source: ${source}
+        </span>
+      </h3>
+      <button onclick="document.getElementById('statusModal').remove()" 
+              class="text-gray-500 hover:text-gray-700 self-end sm:self-auto">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+      <div class="p-3 bg-gray-50 rounded">
+        <div class="font-bold text-gray-700">Reference</div>
+        <div>${data.data?.client_reference || reference}</div>
+      </div>
+      <div class="p-3 bg-gray-50 rounded">
+        <div class="font-bold text-gray-700">Status</div>
+        <div class="flex items-center">
+          <span class="px-2 py-1 rounded text-xs font-semibold ${
+            data.data?.status === "Success"
+              ? "bg-green-100 text-green-800"
+              : data.data?.status === "Failed"
+              ? "bg-red-100 text-red-800"
+              : "bg-yellow-100 text-yellow-800"
+          }">
+            ${data.data?.status || "Pending"}
+          </span>
+        </div>
+      </div>
+      <div class="p-3 bg-gray-50 rounded">
+        <div class="font-bold text-gray-700">Amount</div>
+        <div>GHS ${data.data?.amount || "N/A"}</div>
+      </div>
+      <div class="p-3 bg-gray-50 rounded">
+        <div class="font-bold text-gray-700">Date</div>
+        <div>${data.data?.date || "N/A"}</div>
+      </div>
+      ${
+        data.data?.mobile_number
+          ? `
+      <div class="p-3 bg-gray-50 rounded">
+        <div class="font-bold text-gray-700">Mobile Number</div>
+        <div>${data.data.mobile_number}</div>
+      </div>` 
+          : ""
+      }
+      ${
+        data.data?.payment_method
+          ? `
+      <div class="p-3 bg-gray-50 rounded">
+        <div class="font-bold text-gray-700">Payment Method</div>
+        <div>${data.data.payment_method}</div>
+      </div>` 
+          : ""
+      }
+      ${
+        data.data?.provider_message
+          ? `
+      <div class="p-3 bg-gray-50 rounded sm:col-span-2">
+        <div class="font-bold text-gray-700">Provider Message</div>
+        <div>${data.data.provider_message}</div>
+      </div>` 
+          : ""
+      }
+    </div>
+
+    <div class="border-t pt-4">
+      <h4 class="font-bold text-gray-700 mb-2">All Transaction Data</h4>
+      <pre class="bg-gray-100 p-4 rounded text-sm overflow-x-auto whitespace-pre-wrap break-words">
+${JSON.stringify(data, null, 2)}</pre>
+    </div>
+
+    <div class="mt-4 flex justify-end">
+      <button onclick="document.getElementById('statusModal').remove()" 
+              class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 shadow w-full sm:w-auto">
+        Close
+      </button>
+    </div>
+  </div>
+`;
 
         // If data was from Hubtel API and not in our database, refresh the page after closing
         if (source === "hubtel_api") {
