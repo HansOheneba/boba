@@ -23,6 +23,23 @@
     Orders Dashboard
   </h1>
 
+  <!-- Notification area for new orders -->
+  <div
+    id="new-orders-alert"
+    class="hidden mb-4 p-4 rounded-md bg-blue-100 text-blue-800"
+  >
+    <div>
+      <span id="new-orders-count" class="font-bold"></span> new order(s)
+      received!
+    </div>
+    <button
+      onclick="window.location.reload()"
+      class="bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-800"
+    >
+      Refresh Now
+    </button>
+  </div>
+
   <a href="/admin/products">
     <button
       class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto mb-10"
@@ -112,8 +129,8 @@
                 class="text-xs font-semibold {% if order.payment_status == 'paid' %} text-green-600 {% elif order.payment_status == 'pending_payment' %} text-blue-600 {% else %} text-yellow-600 {% endif %}"
               >
                 {% if order.payment_status == 'paid' %} Paid Online {% elif
-                order.payment_status == 'pending_payment' %} Payment Processing
-                {% else %} Pay on Delivery {% endif %}
+                order.payment_status == 'pending_payment' %} Processing {% else
+                %} Pay on Delivery {% endif %}
               </span>
               <span class="text-blue-800 text-xs"> {{ order.time_ago }} </span>
             </div>
@@ -326,4 +343,33 @@
     </table>
   </div>
 </div>
+
+<script>
+  // Store the current number of pending orders
+  let currentPendingOrders = parseInt("{{ orders|selectattr('status', 'equalto', 'pending')|list|length }}");
+
+  // Function to check for new orders
+  function checkForNewOrders() {
+    fetch('/admin/pending-orders-count')
+      .then(response => response.json())
+      .then(data => {
+        if (data.count > currentPendingOrders && currentPendingOrders > 0) {
+          // We have new orders
+          const newOrdersCount = data.count - currentPendingOrders;
+          document.getElementById('new-orders-count').textContent = newOrdersCount;
+          const alertElement = document.getElementById('new-orders-alert');
+          alertElement.classList.remove('hidden');
+          alertElement.classList.add('flex', 'justify-between', 'items-center');
+
+          // Optional: Play a notification sound
+          const audio = new Audio('/static/notification.mp3');
+          audio.play().catch(e => console.log('Audio play failed:', e));
+        }
+      })
+      .catch(error => console.error('Error checking for new orders:', error));
+  }
+
+  // Check for new orders every 30 seconds
+  setInterval(checkForNewOrders, 30000);
+</script>
 {% endblock %}

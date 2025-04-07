@@ -790,3 +790,11 @@ def save_order():
     print(f"Order {order_number} saved with pending_payment status")
 
     return jsonify({"success": True, "message": "Order saved successfully"}), 200
+
+
+@app.route("/admin/pending-orders-count")
+@login_required
+def pending_orders_count():
+    """Return the count of pending orders as JSON."""
+    orders = get_orders(status="pending")
+    return jsonify({"count": len(orders)})
