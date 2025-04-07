@@ -653,32 +653,37 @@ def hubtel_status_check():
         return jsonify({"error": "client_reference is required"}), 400
 
     try:
-        # First check our database
-        transaction = get_transaction_by_reference(client_reference)
-        if transaction:
-            return jsonify(
-                {"status": "success", "data": transaction, "source": "database"}
-            )
-
-        # If not in database, check Hubtel API
+        # Format the credentials exactly as required
         auth_string = f"{Config.HUBTEL_API_ID}:{Config.HUBTEL_API_KEY}"
         basic_auth = base64.b64encode(auth_string.encode()).decode()
 
+        # Make sure merchant account is correctly formatted (no spaces)
+        merchant_id = Config.HUBTEL_MERCHANT_ACCOUNT.strip()
+
+        # Use the exact URL format provided
+        url = f"https://rmsc.hubtel.com/v1/merchantaccount/merchants/{merchant_id}/transactions/status?clientReference={client_reference}"
+
         headers = {"Authorization": f"Basic {basic_auth}", "Accept": "application/json"}
 
-        # Correct Hubtel status check URL format
-        url = f"https://api-txnstatus.hubtel.com/transactions/{Config.HUBTEL_MERCHANT_ACCOUNT}/status?clientReference={client_reference}"
+        print(f"Making direct request to Hubtel endpoint:")
+        print(f"URL: {url}")
+        print(f"Auth Header: Basic {basic_auth[:5]}...")
 
-        print(f"Making Hubtel status check request to: {url}")
-        response = requests.get(url, headers=headers, timeout=10)
+        # Make the request directly to Hubtel
+        response = requests.get(url, headers=headers, timeout=15)
 
-        # Check for Hubtel API errors
-        if response.status_code == 403:
+        # Detailed logging for debugging
+        print(f"Hubtel Response Status: {response.status_code}")
+        print(f"Hubtel Response Body: {response.text[:500]}...")
+
+        # Handle response appropriately
+        if response.status_code == 403 or response.status_code == 401:
             return (
                 jsonify(
                     {
                         "error": "Authentication failed",
                         "details": "Invalid API credentials or merchant account",
+                        "status_code": response.status_code,
                     }
                 ),
                 403,
@@ -686,23 +691,43 @@ def hubtel_status_check():
 
         response.raise_for_status()
 
+        # Parse the response data
         response_data = response.json()
-        transaction_data = response_data.get("data", {})
 
-        # Save to database if we got valid data
-        if transaction_data:
-            save_transaction_record(transaction_data)
+        # Check if we have Data array with at least one item
+        transaction_data = {}
+        if response_data.get("Data") and len(response_data["Data"]) > 0:
+            transaction_data = response_data["Data"][0]
 
-        return jsonify(
-            {"status": "success", "data": transaction_data, "source": "hubtel_api"}
-        )
+        # Create a simplified response with proper structure without saving to database
+        simplified_response = {
+            "status": "success",
+            "data": {
+                "status": transaction_data.get("TransactionStatus", "Pending"),
+                "client_reference": transaction_data.get(
+                    "ClientReference", client_reference
+                ),
+                "amount": transaction_data.get("TransactionAmount"),
+                "date": transaction_data.get("StartDate"),
+                "payment_method": transaction_data.get("PaymentMethod"),
+                "mobile_number": transaction_data.get("MobileNumber"),
+                "provider_message": transaction_data.get("ProviderDescription"),
+            },
+            "source": "hubtel_api",
+            "full_response": response_data,  # Include full response for debugging
+        }
+
+        return jsonify(simplified_response)
 
     except requests.exceptions.RequestException as e:
-        print(f"Hubtel API error: {str(e)}")
+        print(f"Hubtel API request error: {str(e)}")
+        return jsonify({"error": "Hubtel API request failed", "details": str(e)}), 502
+    except json.JSONDecodeError as e:
+        print(f"Invalid JSON response from Hubtel: {str(e)}")
         return (
-            jsonify({"error": "Hubtel API request failed", "details": str(e)}),
-            502,
-        )  # Bad Gateway
+            jsonify({"error": "Invalid response from Hubtel", "details": str(e)}),
+            500,
+        )
     except Exception as e:
         print(f"Internal server error: {str(e)}")
         return jsonify({"error": "Internal server error", "details": str(e)}), 500
