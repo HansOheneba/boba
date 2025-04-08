@@ -8,8 +8,13 @@
   x-transition:leave-start="opacity-100 scale-100"
   x-transition:leave-end="opacity-0 scale-90"
 >
-  <div class="bg-[#12091A] border border-gray-700 p-6 rounded-xl shadow-lg max-w-sm w-full">
-    <h2 class="text-xl font-bold text-gray-300 text-center" x-text="selectedBobaType"></h2>
+  <div
+    class="bg-[#12091A] border border-gray-700 p-6 rounded-xl shadow-lg max-w-sm w-full"
+  >
+    <h2
+      class="text-xl font-bold text-gray-300 text-center"
+      x-text="selectedBobaType"
+    ></h2>
     <!-- Size Selection -->
     <div class="mt-4 text-sm space-y-3">
       <label class="block text-gray-300">Size</label>
@@ -36,10 +41,12 @@
         <option value="Vanilla">Vanilla</option>
         <option value="Cheese Foam">Cheese Foam</option>
         <option value="Strawberry Popping">Strawberry Popping</option>
+        <option value="Blueberry Popping">Blueberry Popping</option>
+        <option value="Mint Popping">Mint Popping</option>
         <option value="Whipped Cream">Whipped Cream</option>
         <option value="Biscoff Spread">Biscoff Spread</option>
-        <option value="Biscoff Topping">Biscoff Topping</option>
         <option value="Caramel Syrup">Caramel Syrup</option>
+        <option value="Grape Popping">Grape Popping</option>
       </select>
     </div>
     <!-- Multiplier Selection -->
@@ -64,7 +71,8 @@
       </div>
     </div>
     <p class="text-left mt-4 text-xs text-gray-500">
-      Note: Extra toppings can be added at a fee in the special requests section.
+      Note: Extra toppings can be added at a fee in the special requests
+      section.
     </p>
     <div class="text-center mt-4">
       <button
