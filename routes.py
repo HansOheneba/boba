@@ -70,7 +70,7 @@ def initiate_hubtel_payment(
     customer_name=None,
     customer_phone=None,
 ):
-    """Initiate Hubtel payment with bb-xxxx reference according to official Hubtel documentation"""
+    """Initiate Hubtel payment with reference according to official Hubtel documentation"""
     # Debug configuration
     Config.print_hubtel_config()
 
@@ -170,43 +170,11 @@ def login_required(view):
 
 
 def format_order_details(customer_name, order_details):
-    # Map product names to their respective emojis
-    product_icons = {
-        "Blueberry Boba": "🧋",
-        "Brown Sugar Boba": "🧋",
-        "Caramel Milk": "🧋",
-        "Classic Boba": "🧋",
-        "Coconut Milk": "🧋",
-        "Coffee": "🧋",
-        "Taro Boba": "🧋",
-        "Vanilla Boba": "🧋",
-        "Lilac (Grape)": "🧋",
-        "Dew Drop-Honeydew": "🧋",
-        "Strawberry-Rosey Rush": "🧋",
-        "Banana Breeze": "🧋",
-        "Lotus-Bliss": "🧋",
-        "Matcha-Emerald": "🧋",
-        "Chocolate Delight": "🧋",
-        "Oreoreo": "🧋",
-        "Piñata-Pineapple": "🧋",
-        "Pudding (Custard)": "🧋",
-        "Xenotherev": "🧋",
-        "H2O2": "🧋",
-        "Lemon Ice Tea": "☕",
-        "Chicken Shawarma": "🍗",
-        "Beef Shawarma": "🍔",
-    }
-
-    # Process and format each item in the order
+    # Process and format each item in the order - no emojis
     items = order_details.split(", ")
-    formatted_items = "\n".join(
-        [
-            f"{product_icons.get(item.strip().split(' (')[0], '🧋')} {item.strip()}"  # Strip spaces & remove sizes
-            for item in items
-        ]
-    )
+    formatted_items = "\n".join([item.strip() for item in items])
 
-    # Final SMS message
+    # Final SMS message without emojis
     sms_message = f"""Hello {customer_name}, Your order for: 
 
 {formatted_items}  
@@ -431,11 +399,11 @@ def admin():
 
                 message = f"""Heyyy {customer_name}, 
 your order is ready for delivery! 
-A rider will call you soon. 📞  
+A rider will call you soon.
 
-🛍️ Order Reference: {order_number}
+Order Reference: {order_number}
 
-Your taste buds are in for a treat! 😋🎉  
+Your taste buds are in for a treat!
 
 Need help? Chat with us on WhatsApp: (https://wa.me/233592076527)  
 """
