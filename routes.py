@@ -40,6 +40,7 @@ from flask import current_app
 from functools import wraps
 from config import Config
 import base64
+import urllib.parse  # Add this import at the top with other imports
 
 
 HUBTEL_CLIENT_ID = Config.HUBTEL_CLIENT_ID
@@ -150,9 +151,10 @@ def check_hubtel_payment_status(client_reference):
 
 
 def generate_order_number():
-
-    unique_id = str(uuid.uuid4()).replace("-", "")[:5]
-    return "bb-" + unique_id
+    """Generate a unique numeric order number for Hubtel compatibility"""
+    # Generate a random 8-digit number
+    numeric_id = "".join(random.choices(string.digits, k=8))
+    return numeric_id
 
 
 def login_required(view):
@@ -224,26 +226,55 @@ def format_phone_number(phone):
 
 def send_sms_hubtel(to, message):
     """Send an SMS using Hubtel API"""
-    url = f"{HUBTEL_API_URL}?clientsecret={HUBTEL_CLIENT_SECRET}&clientid={HUBTEL_CLIENT_ID}&from={HUBTEL_SENDER_ID}&to={to}&content={message}"
+    # Read credentials directly from the Config object to ensure they match .env values
+    client_id = Config.HUBTEL_CLIENT_ID.strip()
+    client_secret = Config.HUBTEL_CLIENT_SECRET.strip()
+    sender_id = Config.HUBTEL_SENDER_ID.strip()
+
+    # Make sure we're using sms.hubtel.com
+    url = "https://sms.hubtel.com/v1/messages/send"
+
+    # URL encode the message content
+    encoded_message = urllib.parse.quote_plus(message)
+
+    # Print the values we're actually using for troubleshooting
+    print(
+        f"Using SMS credentials - Client ID: {client_id}, Secret: {client_secret}, Sender ID: {sender_id}"
+    )
+
+    # Build the request URL with the correct credentials from .env
+    full_url = f"{url}?clientsecret={client_secret}&clientid={client_id}&from={sender_id}&to={to}&content={encoded_message}"
+
+    print(f"Sending SMS via URL: {full_url}")
 
     try:
-        response = requests.get(url)
+        response = requests.get(full_url)
+        print(f"SMS Response Status: {response.status_code}")
+        print(f"SMS Response Body: {response.text}")
+
+        # Parse response data
         response_data = response.json()
 
-        if response.status_code == 200 and response_data.get("status") == "Success":
-            print(f"✅ SMS sent successfully to {to}")
+        # Check for successful SMS submission based on Hubtel's actual response format
+        if (response.status_code in [200, 201]) and response_data.get("status") == 0:
+            print(
+                f"✅ SMS sent successfully to {to}: Message ID: {response_data.get('messageId')}"
+            )
+            return True
         else:
-            print(f"❌ Failed to send SMS: {response_data}")
+            error_description = response_data.get("statusDescription", "Unknown error")
+            print(f"❌ Failed to send SMS: {error_description}")
+            return False
 
     except Exception as e:
         print(f"❌ Error sending SMS: {e}")
+        return False
 
 
 @app.route("/generate-order-number")
 def generate_order_number_route():
-    """Generate a unique order number using UUID"""
-    unique_id = str(uuid.uuid4()).replace("-", "")[:5]  # First 8 chars of UUID
-    order_number = f"bb-{unique_id}"
+    """Generate a unique numeric order number (for Hubtel compatibility)"""
+    order_number = "".join(random.choices(string.digits, k=8))  # 8-digit random number
     return jsonify({"order_number": order_number})
 
 
@@ -487,7 +518,7 @@ def update_payment():
 @app.route("/hubtel-payment", methods=["POST"])
 def hubtel_payment():
     data = request.json
-    order_number = data.get("order_number")  # Your bb-xxxx format
+    order_number = data.get("order_number")
     total = data.get("total")
     name = data.get("name")
     phone = data.get("phone")
@@ -521,7 +552,7 @@ def hubtel_payment():
         "returnUrl": return_url,
         "merchantAccountNumber": Config.HUBTEL_MERCHANT_ACCOUNT,
         "cancellationUrl": base_url,
-        "clientReference": order_number,
+        "clientReference": order_number,  # Use the numeric order number directly
     }
 
     # Add optional parameters if provided
