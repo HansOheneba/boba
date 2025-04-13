@@ -1,30 +1,28 @@
-from imagekitio import ImageKit
+import mysql.connector
+from mysql.connector import Error
+from config import Config  # Assuming your Config class is in config.py
 
-# Initialize ImageKit (Replace with your credentials)
-imagekit = ImageKit(
-    public_key="public_10G6VDSuQJSnLoUKAyprzW40zSU=",
-    private_key="private_gtpcuffnC1Iz/ccE1JpA9b4Hrts=",
-    url_endpoint="https://ik.imagekit.io/xenodinger/bubblebliss/",
-)
-
-
-# Function to upload an image and return its URL
-def upload_image(file_source):
+def check_db_connection():
     try:
-        with open(file_source, "rb") as file:
-            upload = imagekit.upload_file(file=file, file_name="test-upload.png")
+        connection = mysql.connector.connect(
+            host=Config.MYSQL_HOST,
+            user=Config.MYSQL_USER,
+            password=Config.MYSQL_PASSWORD,
+            database=Config.MYSQL_DB
+        )
 
-        # Get the uploaded file's URL
-        file_url = upload.url
-        print("Uploaded File URL:", file_url)
-        return file_url
-    except Exception as e:
-        print("Upload Failed! Error:", str(e))
-        return None
+        if connection.is_connected():
+            db_info = connection.get_server_info()
+            print("✅ Connected to MySQL Server version:", db_info)
+            print("✅ Connected to database:", Config.MYSQL_DB)
 
+    except Error as e:
+        print("❌ Error while connecting to MySQL:", e)
 
-# Run the test
+    finally:
+        if 'connection' in locals() and connection.is_connected():
+            connection.close()
+            print("🔌 MySQL connection is closed.")
+
 if __name__ == "__main__":
-    # Ask user for file path
-    local_file_path = input("Enter the full path of the image file: ").strip()
-    uploaded_file_url = upload_image(local_file_path)
+    check_db_connection()

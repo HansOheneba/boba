@@ -5,6 +5,12 @@ from dotenv import load_dotenv
 load_dotenv()
 
 
+print("DB Host:", os.getenv("MYSQL_HOST"))
+print("DB User:", os.getenv("MYSQL_USER"))
+print("DB Password:", os.getenv("MYSQL_PASSWORD"))
+print("DB Name:", os.getenv("MYSQL_DB"))
+
+
 class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")
     MYSQL_HOST = os.getenv("MYSQL_HOST")
