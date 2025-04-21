@@ -1,6 +1,6 @@
 {% extends "base.html" %} {% block content %}
 <form action="/" method="POST" id="order-form">
-    <!-- HQ Special Section -->
+  <!-- HQ Special Section -->
   <div class="mt-4 text-sm">
     <h2 class="text-lg font-semibold">HQ Special</h2>
     <div
@@ -11,7 +11,7 @@
         type="button"
         class="h-20 p-4 text-lg rounded-lg font-bold bg-cover bg-center bg-[#261531]"
         style="background-image: url('{{ special.image }}');"
-        onclick="selectSpecialType('{{ special.name }}')"
+        onclick="selectBobaType('{{ special.name }}')"
       >
         <p class="z-10 text-white brightness-100">{{ special.name }}</p>
       </button>
@@ -94,8 +94,6 @@
       {% endfor %}
     </div>
   </div>
-
-
 
   <input
     type="hidden"
