@@ -9,7 +9,7 @@
       {% for special in hq_special_items %}
       <button
         type="button"
-        class="h-20 p-4 text-lg rounded-lg font-bold bg-cover bg-center bg-purple-900"
+        class="h-20 p-4 text-lg rounded-lg font-bold bg-cover bg-center bg-purple-900/30"
         style="background-image: url('{{ special.image }}');"
         onclick="selectSpecialType('{{ special.name }}')"
       >
