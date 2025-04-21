@@ -1502,8 +1502,23 @@
   .bg-\[\#12091A\] {
     background-color: #12091A;
   }
+  .bg-\[\#34263d\] {
+    background-color: #34263d;
+  }
   .bg-\[\#161618\] {
     background-color: #161618;
+  }
+  .bg-\[\#\] {
+    background-color: #;
+  }
+  .bg-\[\#fff\] {
+    background-color: #fff;
+  }
+  .bg-\[\#ffff\] {
+    background-color: #ffff;
+  }
+  .bg-\[\@\] {
+    background-color: @;
   }
   .bg-\[black\] {
     background-color: black;
