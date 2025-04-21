@@ -322,6 +322,9 @@
   .left-0 {
     left: calc(var(--spacing) * 0);
   }
+  .left-1 {
+    left: calc(var(--spacing) * 1);
+  }
   .left-1\/2 {
     left: calc(1/2 * 100%);
   }
@@ -640,6 +643,9 @@
   .min-h-screen {
     min-height: 100vh;
   }
+  .w-1 {
+    width: calc(var(--spacing) * 1);
+  }
   .w-1\/2 {
     width: calc(1/2 * 100%);
   }
@@ -654,6 +660,9 @@
   }
   .w-8 {
     width: calc(var(--spacing) * 8);
+  }
+  .w-11 {
+    width: calc(var(--spacing) * 11);
   }
   .w-11\/12 {
     width: calc(11/12 * 100%);
@@ -792,6 +801,10 @@
   .translate-full {
     --tw-translate-x: 100%;
     --tw-translate-y: 100%;
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+  .-translate-x-1 {
+    --tw-translate-x: calc(var(--spacing) * -1);
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
   .-translate-x-1\/2 {
@@ -1552,6 +1565,9 @@
   .bg-purple-900 {
     background-color: var(--color-purple-900);
   }
+  .bg-purple-900\/30 {
+    background-color: color-mix(in oklab, var(--color-purple-900) 30%, transparent);
+  }
   .bg-purple-900\/70 {
     background-color: color-mix(in oklab, var(--color-purple-900) 70%, transparent);
   }
@@ -1575,6 +1591,9 @@
   }
   .bg-red-700 {
     background-color: var(--color-red-700);
+  }
+  .bg-red-900 {
+    background-color: var(--color-red-900);
   }
   .bg-red-900\/70 {
     background-color: color-mix(in oklab, var(--color-red-900) 70%, transparent);
