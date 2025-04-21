@@ -264,6 +264,11 @@ def index():
         for product in all_products
         if product["category"] == "Shawarma" and product["in_stock"]
     ]
+    hq_special_items = [
+        product
+        for product in all_products
+        if product["category"] == "HQ Special" and product["in_stock"]
+    ]
 
     if request.method == "POST":
         name = request.form.get("name")
@@ -329,6 +334,7 @@ def index():
         boba_items=boba_items,
         ice_tea_items=ice_tea_items,
         shawarma_items=shawarma_items,
+        hq_special_items=hq_special_items,
     )
 
 
