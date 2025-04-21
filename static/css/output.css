@@ -1568,6 +1568,12 @@
   .bg-purple-900\/0 {
     background-color: color-mix(in oklab, var(--color-purple-900) 0%, transparent);
   }
+  .bg-purple-900\/10 {
+    background-color: color-mix(in oklab, var(--color-purple-900) 10%, transparent);
+  }
+  .bg-purple-900\/20 {
+    background-color: color-mix(in oklab, var(--color-purple-900) 20%, transparent);
+  }
   .bg-purple-900\/30 {
     background-color: color-mix(in oklab, var(--color-purple-900) 30%, transparent);
   }
