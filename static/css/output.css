@@ -1565,6 +1565,9 @@
   .bg-purple-900 {
     background-color: var(--color-purple-900);
   }
+  .bg-purple-900\/0 {
+    background-color: color-mix(in oklab, var(--color-purple-900) 0%, transparent);
+  }
   .bg-purple-900\/30 {
     background-color: color-mix(in oklab, var(--color-purple-900) 30%, transparent);
   }
