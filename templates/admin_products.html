@@ -96,6 +96,7 @@
       method="POST"
       enctype="multipart/form-data"
       class="text-left"
+      autocomplete="off"
     >
       <input type="hidden" name="product_id" id="product_id" />
 
@@ -106,6 +107,7 @@
         id="name"
         class="border p-2 w-full mb-2"
         required
+        autocomplete="off"
       />
 
       <label class="block">Category:</label>
@@ -161,6 +163,16 @@
 
 <script>
   function openModal() {
+    // Clear the form fields first to prevent storage-based autocomplete
+    document.getElementById("product_id").value = "";
+    document.getElementById("name").value = "";
+    document.getElementById("category").value = "Bubble Tea";
+    document.getElementById("image").value = "";
+    document.getElementById("in_stock").checked = false;
+    document.getElementById("currentImage").src = "";
+    document.getElementById("currentImage").classList.add("hidden");
+    
+    // Then show the modal
     const modal = document.getElementById("productModal");
     modal.classList.remove("hidden");
     modal.classList.add("flex");
@@ -170,9 +182,11 @@
     const modal = document.getElementById("productModal");
     modal.classList.add("hidden");
     modal.classList.remove("flex");
+    
+    // Clear all form fields when closing
     document.getElementById("product_id").value = "";
     document.getElementById("name").value = "";
-    document.getElementById("category").value = "";
+    document.getElementById("category").value = "Bubble Tea";
     document.getElementById("image").value = "";
     document.getElementById("in_stock").checked = false;
     document.getElementById("currentImage").src = "";
@@ -180,17 +194,34 @@
   }
 
   function editProduct(id, name, category, inStock, imageUrl) {
+    // First reset the form to clear any previous values
+    document.getElementById("product_id").value = "";
+    document.getElementById("name").value = "";
+    document.getElementById("category").value = "Bubble Tea";
+    document.getElementById("in_stock").checked = false;
+    
+    // Then set the product details
     document.getElementById("product_id").value = id;
     document.getElementById("name").value = name;
     document.getElementById("category").value = category;
-    document.getElementById("in_stock").checked =
-      inStock === "True" || inStock === "true" || inStock === true;
-
+    
+    // Fix the in-stock checkbox handling to properly interpret Python boolean
+    const inStockValue = String(inStock).toLowerCase();
+    document.getElementById("in_stock").checked = 
+      inStockValue === "true" || inStockValue === "1";
+    
     // Update image preview
-    document.getElementById("currentImage").src = imageUrl;
-    document.getElementById("currentImage").classList.remove("hidden");
+    if (imageUrl) {
+      document.getElementById("currentImage").src = imageUrl;
+      document.getElementById("currentImage").classList.remove("hidden");
+    } else {
+      document.getElementById("currentImage").classList.add("hidden");
+    }
 
-    openModal();
+    // Open the modal
+    const modal = document.getElementById("productModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
   }
 </script>
 {% endblock %}
