@@ -1,23 +1,6 @@
 {% extends "base.html" %} {% block content %}
 <form action="/" method="POST" id="order-form">
-  <!-- HQ Special Section -->
-  <div class="mt-4 text-sm">
-    <h2 class="text-lg font-semibold">HQ Special</h2>
-    <div
-      class="grid {% if hq_special_items|length == 1 %}grid-cols-1{% else %}grid-cols-2{% endif %} gap-4 mt-4 text-white"
-    >
-      {% for special in hq_special_items %}
-      <button
-        type="button"
-        class="h-20 p-4 text-lg rounded-lg font-bold bg-cover bg-center bg-[#161618]"
-        style="background-image: url('{{ special.image }}');"
-        onclick="selectBobaType('{{ special.name }}')"
-      >
-        <p class="z-10 text-white brightness-100">{{ special.name }}</p>
-      </button>
-      {% endfor %}
-    </div>
-  </div>
+
   <div class="mt-4">
     <div class="flex justify-between items-center">
       <h2 class="text-lg text-white font-semibold">Milk Tea</h2>
@@ -58,6 +41,27 @@
       </div>
     </div>
   </div>
+
+  <!-- HQ Special Section -->
+  <div class="mt-4 text-sm">
+    <h2 class="text-lg font-semibold">HQ Special</h2>
+    <div
+      class="grid {% if hq_special_items|length == 1 %}grid-cols-1{% else %}grid-cols-2{% endif %} gap-4 mt-4 text-white"
+    >
+      {% for special in hq_special_items %}
+      <button
+        type="button"
+        class="h-20 p-4 text-lg rounded-lg font-bold bg-cover bg-center bg-[#161618]"
+        style="background-image: url('{{ special.image }}');"
+        onclick="selectBobaType('{{ special.name }}')"
+      >
+        <p class="z-10 text-white brightness-100">{{ special.name }}</p>
+      </button>
+      {% endfor %}
+    </div>
+  </div>
+
+
 
   <!-- Ice Tea Section -->
   <div class="mt-4 text-sm">
