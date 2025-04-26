@@ -1,26 +1,110 @@
 {% extends "admin_base.html" %} {% block content %}
-<div class="p-4 bg-white text-black">
-  <h2 class="text-2xl font-bold mb-4">Manage Products</h2>
+<!-- Back to Orders Button - Top Left -->
+<div class="absolute top-4 left-4 md:left-10 z-10">
+  <a
+    href="/admin"
+    class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition"
+  >
+    <i class="fa-solid fa-arrow-left text-lg"></i>
+    <span class="hidden md:inline text-sm font-medium">Back to Orders</span>
+  </a>
+</div>
 
-  <!-- Add Product Button -->
-  <div class="flex justify-between items-center mb-6">
+<div class="p-4 bg-white text-black mt-8">
+  <h2 class="text-2xl font-bold mb-6">Manage Products</h2>
+
+  <!-- Top Controls Section - Improved layout for larger screens -->
+  <div
+    class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-6"
+  >
     <!-- Add Product Button -->
-    <button
-      onclick="openModal()"
-      class="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
-    >
-      <i class="fa-solid fa-plus"></i>
-      <span>Add Product</span>
-    </button>
+    <div class="w-full lg:w-auto lg:order-2">
+      <button
+        onclick="openModal()"
+        class="w-full sm:w-auto flex items-center justify-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
+      >
+        <i class="fa-solid fa-plus"></i>
+        <span>Add Product</span>
+      </button>
+    </div>
 
-    <!-- Back to Orders Button -->
-    <a
-      href="/admin"
-      class="flex items-center space-x-2 border border-blue-600 text-blue-600 px-4 py-2 rounded-lg shadow-md hover:bg-blue-100 transition"
-    >
-      <i class="fa-solid fa-arrow-left"></i>
-      <span>Back to Orders</span>
-    </a>
+    <!-- Filters Container -->
+    <div class="w-full lg:w-auto lg:order-1 lg:flex-1 lg:pr-4">
+      <!-- Filter Controls in Flex Row on Large Screens -->
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-6 gap-y-3"
+      >
+        <!-- Category Filter -->
+        <div
+          class="flex flex-col sm:flex-row gap-2 items-start sm:items-center"
+        >
+          <label
+            for="categoryFilter"
+            class="text-sm font-medium whitespace-nowrap"
+            >Filter by Category:</label
+          >
+          <select
+            id="categoryFilter"
+            class="w-full sm:w-auto border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onchange="filterProductsByCategory()"
+          >
+            <option value="all">All Categories</option>
+            <option value="Bubble Tea">Bubble Tea</option>
+            <option value="Ice Tea">Ice Tea</option>
+            <option value="Shawarma">Shawarma</option>
+            <option value="HQ Special">HQ Special</option>
+          </select>
+        </div>
+
+        <!-- In Stock Filter -->
+        <div
+          class="flex flex-col sm:flex-row gap-2 items-start sm:items-center"
+        >
+          <label for="stockFilter" class="text-sm font-medium whitespace-nowrap"
+            >Filter by Stock:</label
+          >
+          <select
+            id="stockFilter"
+            class="w-full sm:w-auto border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onchange="filterProducts()"
+          >
+            <option value="all">All Products</option>
+            <option value="in-stock">In Stock</option>
+            <option value="out-of-stock">Out of Stock</option>
+          </select>
+        </div>
+
+        <!-- Search Box (New) -->
+        <div
+          class="flex flex-col sm:flex-row gap-2 items-start sm:items-center mt-2 sm:mt-0 lg:mt-0"
+        >
+          <label
+            for="searchFilter"
+            class="text-sm font-medium whitespace-nowrap"
+            >Search:</label
+          >
+          <input
+            type="text"
+            id="searchFilter"
+            placeholder="Search products..."
+            class="w-full sm:w-auto border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            oninput="filterProducts()"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Product Stats (New) -->
+  <div class="hidden lg:flex justify-between items-center mb-4">
+    <div class="text-sm text-gray-600">
+      <span id="product-count">0</span> products shown (Total:
+      <span id="total-products">0</span>)
+    </div>
+    <div class="text-sm text-gray-600">
+      <span id="in-stock-count">0</span> in stock /
+      <span id="out-of-stock-count">0</span> out of stock
+    </div>
   </div>
 
   <!-- Product List -->
@@ -37,7 +121,10 @@
       </thead>
       <tbody>
         {% for product in products %}
-        <tr class="border border-gray-300 text-left">
+        <tr
+          class="border border-gray-300 text-left product-row"
+          data-category="{{ product.category }}"
+        >
           <td class="p-2">{{ product.name }}</td>
           <td class="p-2">{{ product.category }}</td>
           <td class="p-2">
@@ -81,6 +168,10 @@
         {% endfor %}
       </tbody>
     </table>
+    <!-- No products message -->
+    <div id="no-products-message" class="hidden text-center py-8 text-gray-500">
+      No products found for the selected category
+    </div>
   </div>
 </div>
 
@@ -151,7 +242,7 @@
           class="bg-green-500 text-white px-4 py-2 rounded flex items-center justify-center gap-2"
           data-loader
         >
-          <span class="button-text">Save Product</span>
+          <span class="button-text">Save Changes</span>
           <span
             class="loader hidden animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"
           ></span>
@@ -171,7 +262,7 @@
     document.getElementById("in_stock").checked = false;
     document.getElementById("currentImage").src = "";
     document.getElementById("currentImage").classList.add("hidden");
-    
+
     // Then show the modal
     const modal = document.getElementById("productModal");
     modal.classList.remove("hidden");
@@ -182,7 +273,7 @@
     const modal = document.getElementById("productModal");
     modal.classList.add("hidden");
     modal.classList.remove("flex");
-    
+
     // Clear all form fields when closing
     document.getElementById("product_id").value = "";
     document.getElementById("name").value = "";
@@ -199,17 +290,17 @@
     document.getElementById("name").value = "";
     document.getElementById("category").value = "Bubble Tea";
     document.getElementById("in_stock").checked = false;
-    
+
     // Then set the product details
     document.getElementById("product_id").value = id;
     document.getElementById("name").value = name;
     document.getElementById("category").value = category;
-    
+
     // Fix the in-stock checkbox handling to properly interpret Python boolean
     const inStockValue = String(inStock).toLowerCase();
-    document.getElementById("in_stock").checked = 
+    document.getElementById("in_stock").checked =
       inStockValue === "true" || inStockValue === "1";
-    
+
     // Update image preview
     if (imageUrl) {
       document.getElementById("currentImage").src = imageUrl;
@@ -222,6 +313,83 @@
     const modal = document.getElementById("productModal");
     modal.classList.remove("hidden");
     modal.classList.add("flex");
+  }
+
+  function filterProductsByCategory() {
+    filterProducts();
+  }
+
+  function filterProducts() {
+    const selectedCategory = document.getElementById("categoryFilter").value;
+    const selectedStock = document.getElementById("stockFilter").value;
+    const searchQuery = document
+      .getElementById("searchFilter")
+      .value.toLowerCase();
+    const productRows = document.querySelectorAll(".product-row");
+
+    let visibleProducts = 0;
+    let inStockCount = 0;
+    let outOfStockCount = 0;
+    let totalProducts = productRows.length;
+
+    productRows.forEach((row) => {
+      const rowCategory = row.getAttribute("data-category");
+      const productName = row
+        .querySelector("td:first-child")
+        .textContent.toLowerCase();
+      const isInStock =
+        row.querySelector("span").textContent.trim() === "In Stock";
+
+      // Count stock status
+      if (isInStock) {
+        inStockCount++;
+      } else {
+        outOfStockCount++;
+      }
+
+      const matchesCategory =
+        selectedCategory === "all" || rowCategory === selectedCategory;
+      let matchesStock = true;
+
+      if (selectedStock === "in-stock") {
+        matchesStock = isInStock;
+      } else if (selectedStock === "out-of-stock") {
+        matchesStock = !isInStock;
+      }
+
+      const matchesSearch =
+        searchQuery === "" || productName.includes(searchQuery);
+
+      if (matchesCategory && matchesStock && matchesSearch) {
+        row.classList.remove("hidden");
+        visibleProducts++;
+      } else {
+        row.classList.add("hidden");
+      }
+    });
+
+    // Update product counts
+    document.getElementById("product-count").textContent = visibleProducts;
+    document.getElementById("total-products").textContent = totalProducts;
+    document.getElementById("in-stock-count").textContent = inStockCount;
+    document.getElementById("out-of-stock-count").textContent = outOfStockCount;
+
+    // Show/hide no products message
+    const noProductsMessage = document.getElementById("no-products-message");
+    if (visibleProducts === 0) {
+      noProductsMessage.classList.remove("hidden");
+    } else {
+      noProductsMessage.classList.add("hidden");
+    }
+  }
+
+  // Initialize product counts on page load
+  document.addEventListener("DOMContentLoaded", function () {
+    filterProducts();
+  });
+
+  function filterProductsByCategory() {
+    filterProducts();
   }
 </script>
 {% endblock %}
