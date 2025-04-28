@@ -411,7 +411,7 @@ Order Reference: {order_number}
 
 Your taste buds are in for a treat!
 
-Need help? Chat with us on WhatsApp: (https://wa.me/233592076527)  
+Need help? Chat with us on WhatsApp: (https://wa.me/233536440126)  
 """
                 # Format the phone number to international format
                 formatted_phone = format_phone_number(customer_phone)
