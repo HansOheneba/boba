@@ -31,6 +31,12 @@ from models import (
     get_transaction_details,
     get_order_by_reference,
     update_payment_status,
+    create_toppings_table,
+    get_toppings,
+    add_topping,
+    update_topping,
+    delete_topping,
+    populate_default_toppings,
 )
 from werkzeug.security import check_password_hash
 import random
@@ -803,3 +809,57 @@ def pending_orders_count():
     """Return the count of pending orders as JSON."""
     orders = get_orders(status="pending")
     return jsonify({"count": len(orders)})
+
+
+@app.route("/admin/toppings", methods=["GET", "POST"])
+@login_required
+def admin_toppings():
+    """Admin view for managing toppings"""
+    # Create toppings table if it doesn't exist
+    create_toppings_table()
+
+    # On first load, populate default toppings
+
+    populate_default_toppings()
+
+    if request.method == "POST":
+        topping_id = request.form.get("topping_id")  # If editing
+        name = request.form.get("name")
+        in_stock = request.form.get("in_stock") == "on"
+
+        if topping_id:  # If updating
+            update_topping(topping_id, name, in_stock)
+        else:  # If adding new
+            add_topping(name, in_stock)
+
+        return redirect(url_for("app.admin_toppings"))
+
+    toppings = get_toppings()
+    return render_template("admin_toppings.html", toppings=toppings)
+
+
+@app.route("/admin/delete_topping/<int:topping_id>", methods=["POST"])
+@login_required
+def delete_topping_route(topping_id):
+    """Delete a topping"""
+    delete_topping(topping_id)
+    return redirect(url_for("app.admin_toppings"))
+
+
+@app.route("/get_available_toppings", methods=["GET"])
+def get_available_toppings():
+    """API endpoint to get all available (in stock) toppings"""
+    try:
+        # Get all toppings first
+        all_toppings = get_toppings()
+
+        # Filter to only in-stock ones
+        available_toppings = [
+            topping for topping in all_toppings if topping["in_stock"]
+        ]
+
+        return jsonify(available_toppings)
+    except Exception as e:
+        print(f"Error in get_available_toppings: {str(e)}")
+        # Return an empty list rather than an error to prevent breaking the UI
+        return jsonify([])

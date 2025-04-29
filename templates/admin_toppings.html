@@ -1,0 +1,476 @@
+{% extends "admin_base.html" %} {% block content %}
+<style>
+  [x-cloak] {
+    display: none !important;
+  }
+</style>
+
+<!-- Back to Orders Button - Top Left -->
+<div class="absolute top-4 left-4 md:left-10 z-10">
+  <a
+    href="/admin"
+    class="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-700 transition"
+  >
+    <i class="fa-solid fa-arrow-left text-lg" aria-hidden="true"></i>
+    <span class="hidden md:inline text-sm font-medium">Back to Orders</span>
+  </a>
+</div>
+
+<div class="p-4 bg-white text-black mt-8">
+  <h2 class="text-2xl font-bold mb-6">Manage Toppings</h2>
+
+  <!-- Top Controls Section -->
+  <div
+    class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-6"
+  >
+    <!-- Add Topping Button -->
+    <div class="w-full lg:w-auto lg:order-2">
+      <button
+        onclick="openModal()"
+        class="w-full sm:w-auto flex items-center justify-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
+        aria-label="Add new topping"
+      >
+        <i class="fa-solid fa-plus" aria-hidden="true"></i>
+        <span>Add Topping</span>
+      </button>
+    </div>
+
+    <!-- Filters Container -->
+    <div class="w-full lg:w-auto lg:order-1 lg:flex-1 lg:pr-4">
+      <!-- Filter Controls in Flex Row -->
+      <div
+        class="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-row lg:items-center lg:gap-x-6 gap-y-3"
+      >
+        <!-- Stock Filter -->
+        <div
+          class="flex flex-col sm:flex-row gap-2 items-start sm:items-center"
+        >
+          <label for="stockFilter" class="text-sm font-medium whitespace-nowrap"
+            >Filter by Stock:</label
+          >
+          <select
+            id="stockFilter"
+            class="w-full sm:w-auto border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            onchange="filterToppings()"
+          >
+            <option value="all">All Toppings</option>
+            <option value="in-stock">In Stock</option>
+            <option value="out-of-stock">Out of Stock</option>
+          </select>
+        </div>
+
+        <!-- Search Box -->
+        <div
+          class="flex flex-col sm:flex-row gap-2 items-start sm:items-center mt-2 sm:mt-0 lg:mt-0"
+        >
+          <label
+            for="searchFilter"
+            class="text-sm font-medium whitespace-nowrap"
+            >Search:</label
+          >
+          <input
+            type="text"
+            id="searchFilter"
+            placeholder="Search toppings..."
+            class="w-full sm:w-auto border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            oninput="filterToppings()"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toppings Stats -->
+  <div class="hidden lg:flex justify-between items-center mb-4">
+    <div class="text-sm text-gray-600">
+      <span id="topping-count">0</span> toppings shown (Total:
+      <span id="total-toppings">0</span>)
+    </div>
+    <div class="text-sm text-gray-600">
+      <span id="in-stock-count">0</span> in stock /
+      <span id="out-of-stock-count">0</span> out of stock
+    </div>
+  </div>
+
+  <!-- Toppings List -->
+  <div class="mt-4">
+    <!-- Table for larger screens -->
+    <div class="hidden md:block overflow-x-auto">
+      <table class="w-full border-collapse border border-gray-300 text-left">
+        <thead>
+          <tr class="bg-gray-800 text-white">
+            <th class="p-2">Name</th>
+            <th class="p-2">Status</th>
+            <th class="p-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for topping in toppings %}
+          <tr class="border border-gray-300 text-left topping-row">
+            <td class="p-2">{{ topping.name }}</td>
+            <td class="p-2 font-semibold text-sm">
+              <span
+                class="px-2 py-1 rounded-full {% if topping.in_stock %} bg-green-200 text-green-700 {% else %} bg-red-200 text-red-700 {% endif %}"
+              >
+                {{ "In Stock" if topping.in_stock else "Out of Stock" }}
+              </span>
+            </td>
+            <td class="p-2 flex space-x-2 items-center">
+              <!-- Edit Button -->
+              <button
+                onclick="editTopping('{{ topping.id }}', '{{ topping.name }}', '{{ topping.in_stock }}')"
+                class="flex items-center justify-center w-20 h-8 space-x-1 bg-yellow-500 text-white px-3 py-1.5 rounded-md text-sm font-medium shadow-md hover:bg-yellow-600 transition"
+                aria-label="Edit topping"
+              >
+                <i class="fa-solid fa-pen" aria-hidden="true"></i>
+                <span>Edit</span>
+              </button>
+
+              <!-- 3-Dot Menu for Delete Action -->
+              <div class="relative" x-data="{ open: false }">
+                <button
+                  @click="open = !open"
+                  class="flex items-center justify-center w-10 h-8 space-x-1 bg-gray-200 text-gray-700 px-3 py-1.5 rounded-md text-sm shadow-md hover:bg-gray-300 transition"
+                  aria-label="More options"
+                >
+                  <i
+                    class="fa-solid fa-ellipsis-vertical"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+
+                <!-- Dropdown Menu -->
+                <div
+                  x-show="open"
+                  @click.away="open = false"
+                  x-transition:enter="transition ease-out duration-200"
+                  x-transition:enter-start="opacity-0 scale-95"
+                  x-transition:enter-end="opacity-100 scale-100"
+                  x-transition:leave="transition ease-in duration-150"
+                  x-transition:leave-start="opacity-100 scale-100"
+                  x-transition:leave-end="opacity-0 scale-95"
+                  class="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg z-20"
+                  x-cloak
+                >
+                  <form
+                    action="/admin/delete_topping/{{ topping.id }}"
+                    method="POST"
+                    onsubmit="return confirm('Are you sure you want to delete this topping?')"
+                    class="w-full"
+                  >
+                    <button
+                      type="submit"
+                      class="flex items-center w-full px-4 py-3 text-sm text-left text-red-600 hover:bg-red-50 rounded-md transition"
+                    >
+                      <i class="fa-solid fa-trash mr-2" aria-hidden="true"></i>
+                      <span>Delete Topping</span>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Card view for mobile screens -->
+    <div class="md:hidden space-y-4">
+      {% for topping in toppings %}
+      <div class="bg-white rounded-lg shadow-md p-4 topping-row">
+        <div class="flex items-center justify-between">
+          <h3 class="font-medium text-gray-900">{{ topping.name }}</h3>
+          <span
+            class="px-2 py-1 rounded-full text-xs font-medium {% if topping.in_stock %} bg-green-200 text-green-700 {% else %} bg-red-200 text-red-700 {% endif %}"
+          >
+            {{ "In Stock" if topping.in_stock else "Out of Stock" }}
+          </span>
+        </div>
+
+        <div class="mt-4 flex justify-end space-x-2">
+          <!-- Edit Button -->
+          <button
+            onclick="editTopping('{{ topping.id }}', '{{ topping.name }}', '{{ topping.in_stock }}')"
+            class="flex items-center justify-center w-24 h-9 space-x-1 bg-yellow-500 text-white px-3 py-1.5 rounded-md text-sm font-medium shadow-md hover:bg-yellow-600 transition"
+            aria-label="Edit topping"
+          >
+            <i class="fa-solid fa-pen" aria-hidden="true"></i>
+            <span>Edit</span>
+          </button>
+
+          <!-- 3-Dot Menu for Delete Action -->
+          <div class="relative" x-data="{ open: false }">
+            <button
+              @click="open = !open"
+              class="flex items-center justify-center w-10 h-9 bg-gray-200 text-gray-700 px-3 py-1.5 rounded-md text-sm shadow-md hover:bg-gray-300 transition"
+              aria-label="More options"
+            >
+              <i class="fa-solid fa-ellipsis-vertical" aria-hidden="true"></i>
+            </button>
+
+            <!-- Dropdown Menu -->
+            <div
+              x-show="open"
+              @click.away="open = false"
+              class="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg z-30"
+              x-cloak
+            >
+              <form
+                action="/admin/delete_topping/{{ topping.id }}"
+                method="POST"
+                onsubmit="return confirm('Are you sure you want to delete this topping?')"
+                class="w-full"
+              >
+                <button
+                  type="submit"
+                  class="flex items-center w-full px-4 py-3 text-sm text-left text-red-600 hover:bg-red-50 rounded-md transition"
+                >
+                  <i class="fa-solid fa-trash mr-2" aria-hidden="true"></i>
+                  <span>Delete Topping</span>
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- No toppings message -->
+    <div id="no-toppings-message" class="hidden text-center py-8 text-gray-500">
+      No toppings found matching your criteria
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Topping Modal -->
+<div
+  id="toppingModal"
+  class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50 text-black"
+>
+  <div class="bg-white p-6 rounded-lg w-96 max-w-[95vw]">
+    <h3 class="text-xl font-semibold mb-4">Add/Edit Topping</h3>
+
+    <!-- Form Errors -->
+    <div id="form-errors" class="text-red-500 mb-4 hidden"></div>
+
+    <form
+      action="/admin/toppings"
+      method="POST"
+      class="text-left"
+      autocomplete="off"
+    >
+      <input type="hidden" name="topping_id" id="topping_id" />
+
+      <div class="mb-4">
+        <label for="name" class="block text-sm font-medium mb-1">Name:</label>
+        <input
+          type="text"
+          name="name"
+          id="name"
+          class="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          required
+          autocomplete="off"
+        />
+      </div>
+
+      <div class="flex items-center mb-6">
+        <input
+          type="checkbox"
+          name="in_stock"
+          id="in_stock"
+          class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+        />
+        <label for="in_stock" class="ml-2 block text-sm text-gray-700"
+          >In Stock</label
+        >
+      </div>
+
+      <div class="mt-6 flex justify-end gap-2">
+        <button
+          type="button"
+          onclick="closeModal()"
+          class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="bg-green-500 text-white px-4 py-2 rounded flex items-center justify-center gap-2 hover:bg-green-600 transition"
+          data-loader
+        >
+          <span class="button-text">Save Changes</span>
+          <span
+            class="loader hidden animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"
+          ></span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  // Cache DOM elements
+  const modal = document.getElementById("toppingModal");
+  const stockFilter = document.getElementById("stockFilter");
+  const searchFilter = document.getElementById("searchFilter");
+  const formErrors = document.getElementById("form-errors");
+
+  function openModal() {
+    try {
+      // Clear the form fields first
+      document.getElementById("topping_id").value = "";
+      document.getElementById("name").value = "";
+      document.getElementById("in_stock").checked = true;
+      formErrors.classList.add("hidden");
+      formErrors.textContent = "";
+
+      // Show the modal
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    } catch (error) {
+      console.error("Error opening modal:", error);
+    }
+  }
+
+  function closeModal() {
+    try {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    } catch (error) {
+      console.error("Error closing modal:", error);
+    }
+  }
+
+  function editTopping(id, name, inStock) {
+    try {
+      // Set the topping details directly
+      document.getElementById("topping_id").value = id;
+      document.getElementById("name").value = name;
+      formErrors.classList.add("hidden");
+      formErrors.textContent = "";
+
+      // Fix the in-stock checkbox handling
+      const inStockValue = String(inStock).toLowerCase();
+      document.getElementById("in_stock").checked =
+        inStockValue === "true" || inStockValue === "1";
+
+      // Open the modal
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+      
+      console.log("Modal opened for editing topping:", id, name, inStockValue);
+    } catch (error) {
+      console.error("Error editing topping:", error);
+    }
+  }
+
+  function filterToppings() {
+    try {
+      const selectedStock = stockFilter.value;
+      const searchQuery = searchFilter.value.toLowerCase();
+
+      // Get all topping rows
+      const tableRows = document.querySelectorAll("table .topping-row");
+      const cardRows = document.querySelectorAll(".md\\:hidden .topping-row");
+
+      const totalToppings = tableRows.length || cardRows.length;
+      let visibleToppings = 0;
+      let inStockCount = 0;
+      let outOfStockCount = 0;
+
+      // Function to process each topping row
+      function processRow(row, shouldCount) {
+        // Get topping name
+        let toppingName = "";
+        const tdName = row.querySelector("td:first-child");
+        const cardName = row.querySelector("h3");
+
+        if (tdName) {
+          toppingName = tdName.textContent.toLowerCase();
+        } else if (cardName) {
+          toppingName = cardName.textContent.toLowerCase();
+        }
+
+        // Check if topping is in stock
+        const statusSpan = row.querySelector("span");
+        const isInStock =
+          statusSpan && statusSpan.textContent.trim() === "In Stock";
+
+        // Count stock status only once
+        if (shouldCount && isInStock) {
+          inStockCount++;
+        } else if (shouldCount && !isInStock) {
+          outOfStockCount++;
+        }
+
+        // Apply filters
+        let matchesStock = true;
+        if (selectedStock === "in-stock") {
+          matchesStock = isInStock;
+        } else if (selectedStock === "out-of-stock") {
+          matchesStock = !isInStock;
+        }
+
+        const matchesSearch =
+          searchQuery === "" || toppingName.includes(searchQuery);
+        const isVisible = matchesStock && matchesSearch;
+
+        // Show/hide the row based on filter results
+        if (isVisible) {
+          row.classList.remove("hidden");
+          if (shouldCount) {
+            visibleToppings++;
+          }
+        } else {
+          row.classList.add("hidden");
+        }
+
+        return isVisible;
+      }
+
+      // Process table rows (and count stats from these)
+      tableRows.forEach((row) => processRow(row, true));
+
+      // Process card rows (don't count stats again)
+      cardRows.forEach((row) => processRow(row, false));
+
+      // Update counts in the UI
+      if (document.getElementById("topping-count")) {
+        document.getElementById("topping-count").textContent = visibleToppings;
+      }
+      if (document.getElementById("total-toppings")) {
+        document.getElementById("total-toppings").textContent = totalToppings;
+      }
+      if (document.getElementById("in-stock-count")) {
+        document.getElementById("in-stock-count").textContent = inStockCount;
+      }
+      if (document.getElementById("out-of-stock-count")) {
+        document.getElementById("out-of-stock-count").textContent = outOfStockCount;
+      }
+
+      // Show/hide no toppings message
+      const noToppingsMessage = document.getElementById("no-toppings-message");
+      if (noToppingsMessage) {
+        if (visibleToppings === 0) {
+          noToppingsMessage.classList.remove("hidden");
+        } else {
+          noToppingsMessage.classList.add("hidden");
+        }
+      }
+    } catch (error) {
+      console.error("Error filtering toppings:", error);
+    }
+  }
+
+  // Initialize counts on page load
+  document.addEventListener("DOMContentLoaded", function () {
+    try {
+      filterToppings();
+    } catch (error) {
+      console.error("Error initializing page:", error);
+    }
+  });
+</script>
+{% endblock %}

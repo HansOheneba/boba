@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html  lang="en"
+<html
+  lang="en"
   x-data="{
     showModal: false,
     showToppingsModal: false,
@@ -24,7 +25,8 @@
     selectedBobaQuantity: 1,
     selectedShawarmaQuantity: 1,
     selectedIceTeaQuantity: 1,
-    selectedIceTeaSize: 'Medium'
+    selectedIceTeaSize: 'Medium',
+    availableToppings: [] // Added for toppings management
   }"
   x-init="window.addEventListener('load', () => { isLoading = false; })"
 >
@@ -52,15 +54,21 @@
       href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Playwrite+US+Trad:wght@100..400&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Quicksand:wght@300..700&family=Satisfy&display=swap"
       rel="stylesheet"
     />
-     <link
+    <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/output.css') }}"
     />
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js" defer></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js"
+      defer
+    ></script>
     <script src="https://js.paystack.co/v1/inline.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/styles.css') }}"
+    />
     <!-- <script src="{{ url_for('static', filename='js/scripts.js') }}" defer></script> -->
-      <script>
+    <script>
       let cart = [];
 
       function selectBobaType(type) {
@@ -236,18 +244,18 @@
 
       function payWithPaystack() {
         const handler = PaystackPop.setup({
-          key: 'pk_test_ab9e41a1a26c75b8f9834facfc309cb860ae3330', // Replace with your Paystack public key
+          key: "pk_test_ab9e41a1a26c75b8f9834facfc309cb860ae3330", // Replace with your Paystack public key
           email: document.querySelector("[x-data]").__x.$data.email,
           amount: document.querySelector("[x-data]").__x.$data.total * 100, // Amount in kobo
-          currency: 'GHS',
+          currency: "GHS",
           ref: document.querySelector("[x-data]").__x.$data.orderNumber,
-          callback: function(response) {
+          callback: function (response) {
             // Payment successful, submit the form
-            document.querySelector('form').submit();
+            document.querySelector("form").submit();
           },
-          onClose: function() {
-            alert('Payment cancelled');
-          }
+          onClose: function () {
+            alert("Payment cancelled");
+          },
         });
         handler.openIframe();
       }
@@ -291,53 +299,104 @@
           });
       });
 
-  document.addEventListener("DOMContentLoaded", function () {
-  document.querySelectorAll("button[data-loader]").forEach((button) => {
-    button.addEventListener("click", function (event) {
-      if (button.disabled) return;
+      document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll("button[data-loader]").forEach((button) => {
+          button.addEventListener("click", function (event) {
+            if (button.disabled) return;
 
-      event.preventDefault(); // Prevent default submission (we handle it manually)
+            event.preventDefault(); // Prevent default submission (we handle it manually)
 
-      button.disabled = true;
-      button.querySelector(".button-text").textContent = "Processing...";
-      button.querySelector(".loader").classList.remove("hidden");
+            button.disabled = true;
+            button.querySelector(".button-text").textContent = "Processing...";
+            button.querySelector(".loader").classList.remove("hidden");
 
-      // ✅ Find the nearest form and submit it
-      const form = button.closest("form");
-      if (form) {
-        form.submit();
-      }
-    });
-  });
-});
-
-
+            // ✅ Find the nearest form and submit it
+            const form = button.closest("form");
+            if (form) {
+              form.submit();
+            }
+          });
+        });
+      });
     </script>
     <style>
       [x-cloak] {
-  display: none !important;
-}
-
+        display: none !important;
+      }
     </style>
   </head>
- <body class="bg-white text-black relative">
-  <!-- Logout Button -->
-  <div class="absolute top-4 right-4 md:right-10">
-    <a href="/logout" class="flex items-center space-x-2 px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition">
-      <i class="fa-solid fa-right-from-bracket text-lg"></i>
-      <span class="hidden md:inline text-sm font-medium">Logout</span>
-    </a>
-  </div>
+  <body class="bg-white text-black relative">
+    <!-- Admin Navigation Menu -->
+    <div class="absolute top-4 right-4 md:right-10">
+      <div class="relative" x-data="{ open: false }">
+        <button
+          @click="open = !open"
+          class="flex items-center space-x-2 px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition"
+        >
+          <i class="fa-solid fa-bars text-lg"></i>
+          <span class="hidden md:inline text-sm font-medium">Menu</span>
+        </button>
 
-  <!-- Loading Animation -->
-  {% include 'partials/loading.html' %}
-
-  <div class="max-w-screen-md lg:max-w-screen xl:max-w-screen-xl mx-auto rounded-lg overflow-hidden mt-2 font-[quicksand]" x-show="!isLoading">
-    <div class="text-center">
-      <img class="h-24 md:h-32 lg:h-40 mx-auto mb-10" src="{{ url_for('static', filename='img/logo.jpg') }}" alt="logo" />
-      {% block content %}{% endblock %}
+        <div
+          x-show="open"
+          @click.away="open = false"
+          class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50"
+          x-cloak
+        >
+          <a
+            href="/admin"
+            class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100 rounded-t-md"
+          >
+            <i class="fa-solid fa-list-check mr-2"></i>
+            <span>Orders Dashboard</span>
+          </a>
+          <a
+            href="/admin/products"
+            class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            <i class="fa-solid fa-mug-hot mr-2"></i>
+            <span>Manage Products</span>
+          </a>
+          <a
+            href="/admin/toppings"
+            class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            <i class="fa-solid fa-candy-cane mr-2"></i>
+            <span>Manage Toppings</span>
+          </a>
+          <a
+            href="/admin/transactions"
+            class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-gray-100"
+          >
+            <i class="fa-solid fa-money-bill-transfer mr-2"></i>
+            <span>Transactions</span>
+          </a>
+          <a
+            href="/logout"
+            class="flex items-center px-4 py-3 text-sm text-red-600 hover:bg-gray-100 rounded-b-md border-t border-gray-200 mt-1"
+          >
+            <i class="fa-solid fa-right-from-bracket mr-2"></i>
+            <span>Logout</span>
+          </a>
+        </div>
+      </div>
     </div>
-  </div>
-</body>
 
+    <!-- Loading Animation -->
+    {% include 'partials/loading.html' %}
+
+    <div
+      class="max-w-screen-md lg:max-w-screen xl:max-w-screen-xl mx-auto rounded-lg overflow-hidden mt-2 font-[quicksand]"
+      x-show="!isLoading"
+    >
+      <div class="text-center">
+        <img
+          class="h-24 md:h-32 lg:h-40 mx-auto mb-10"
+          src="{{ url_for('static', filename='img/logo.jpg') }}"
+          alt="logo"
+        />
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+  </body>
 </html>

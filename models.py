@@ -317,8 +317,8 @@ def delete_product(product_id):
     cursor.execute("UPDATE products SET deleted = 1 WHERE id = %s", (product_id,))
     conn.commit()
     conn.close()
-    
-    
+
+
 def get_transactions(search_query=None):
     """Fetch all transactions with optional search filtering"""
     conn = get_db_connection()
@@ -376,5 +376,105 @@ def update_payment_status(order_number, payment_status):
         "UPDATE orders SET payment_status=%s WHERE order_number=%s",
         (payment_status, order_number),
     )
+    conn.commit()
+    conn.close()
+
+
+def create_toppings_table():
+    """Create toppings table if it doesn't exist."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        """
+        CREATE TABLE IF NOT EXISTS toppings (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            in_stock BOOLEAN DEFAULT TRUE,
+            deleted BOOLEAN DEFAULT FALSE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """
+    )
+    conn.commit()
+    conn.close()
+
+
+def get_toppings():
+    """Fetch all active (non-deleted) toppings from the database."""
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT * FROM toppings WHERE deleted = 0 ORDER BY name")
+    toppings = cursor.fetchall()
+    conn.close()
+    return toppings
+
+
+def add_topping(name, in_stock=True):
+    """Add a new topping to the database."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO toppings (name, in_stock) VALUES (%s, %s)",
+        (name, in_stock),
+    )
+    conn.commit()
+    conn.close()
+
+
+def update_topping(topping_id, name, in_stock):
+    """Update a topping's details."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "UPDATE toppings SET name=%s, in_stock=%s WHERE id=%s",
+        (name, in_stock, topping_id),
+    )
+    conn.commit()
+    conn.close()
+
+
+def delete_topping(topping_id):
+    """Soft delete a topping by setting its deleted flag to 1."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE toppings SET deleted = 1 WHERE id = %s", (topping_id,))
+    conn.commit()
+    conn.close()
+
+
+def populate_default_toppings():
+    """Populate default toppings if table is empty."""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Check if we have any toppings already
+    cursor.execute("SELECT COUNT(*) as count FROM toppings")
+    result = cursor.fetchone()
+    if result and result["count"] > 0:
+        conn.close()
+        return
+
+    # Default toppings from the template
+    default_toppings = [
+        "No Toppings",
+        "Chocolate",
+        "Sweetened Choco",
+        "Vanilla",
+        "Cheese Foam",
+        "Strawberry Popping",
+        "Blueberry Popping",
+        "Mint Popping",
+        "Whipped Cream",
+        "Biscoff Spread",
+        "Caramel Syrup",
+        "Grape Popping",
+    ]
+
+    # Insert default toppings
+    for topping in default_toppings:
+        cursor.execute(
+            "INSERT INTO toppings (name, in_stock) VALUES (%s, %s)", (topping, True)
+        )
+
     conn.commit()
     conn.close()
