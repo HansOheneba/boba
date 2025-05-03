@@ -290,7 +290,7 @@
       }
 
       window.resetOrderButton = resetOrderButton;
-      /*
+      /* Commented out Paystack payment function as we are now using Hubtel
       function payWithPaystack() {
         const orderNumber =
           document.querySelector("[x-data]").__x.$data.orderNumber;
@@ -455,8 +455,10 @@
               document.querySelector("#order-form").submit();
             } else if (paymentMethod === "hubtel") {
               payWithHubtel(orderData);
+            /* Commented out as we're now using Hubtel
             } else if (paymentMethod === "paystack") {
               payWithPaystack();
+            */
             } else {
               resetOrderButton();
               alert("Please select a valid payment method");

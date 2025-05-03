@@ -62,7 +62,9 @@
       src="https://cdn.jsdelivr.net/npm/alpinejs@2.8.2/dist/alpine.min.js"
       defer
     ></script>
+    <!-- Remove or comment out Paystack script since we're using Hubtel now
     <script src="https://js.paystack.co/v1/inline.js"></script>
+    -->
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/styles.css') }}"
@@ -242,6 +244,7 @@
         }
       }
 
+      /* Commented out Paystack payment function as we are now using Hubtel
       function payWithPaystack() {
         const handler = PaystackPop.setup({
           key: "pk_test_ab9e41a1a26c75b8f9834facfc309cb860ae3330", // Replace with your Paystack public key
@@ -259,8 +262,7 @@
         });
         handler.openIframe();
       }
-
-  
+      */
 
       document.addEventListener("DOMContentLoaded", function () {
         document.querySelectorAll("button[data-loader]").forEach((button) => {
