@@ -50,8 +50,9 @@ from forms import LoginForm
 import logging
 
 # Set up a proper logger instead of using print statements
-logger = logging.getLogger('boba_app')
+logger = logging.getLogger("boba_app")
 logger.setLevel(logging.INFO)
+
 
 # Create a factory function that returns a blueprint with limiter applied
 def create_routes(limiter):
@@ -161,6 +162,7 @@ def create_routes(limiter):
                 flash("You must be logged in to access this page.", "error")
                 return redirect(url_for("app.login"))
             return view(*args, **kwargs)
+
         return wrapped_view
 
     def format_order_details(customer_name, order_details):
@@ -206,11 +208,15 @@ def create_routes(limiter):
             response_data = response.json()
 
             # Check for successful SMS submission based on Hubtel's actual response format
-            if (response.status_code in [200, 201]) and response_data.get("status") == 0:
+            if (response.status_code in [200, 201]) and response_data.get(
+                "status"
+            ) == 0:
                 logger.info(f"SMS sent successfully to {to}")
                 return True
             else:
-                error_description = response_data.get("statusDescription", "Unknown error")
+                error_description = response_data.get(
+                    "statusDescription", "Unknown error"
+                )
                 logger.error(f"Failed to send SMS: {error_description}")
                 return False
 
@@ -261,7 +267,9 @@ def create_routes(limiter):
             shawarma_type = request.form.get("shawarma_type")
             payment_status = request.form.get("payment_method", "paid")
             order_number = generate_order_number()
-            logger.info(f"New order {order_number} received with payment method: {payment_status}")
+            logger.info(
+                f"New order {order_number} received with payment method: {payment_status}"
+            )
 
             if not name or not location or not order_details or not phone:
                 return "All fields are required", 400
@@ -389,7 +397,9 @@ def create_routes(limiter):
     """
                     # Format the phone number to international format
                     formatted_phone = format_phone_number(customer_phone)
-                    logger.info(f"Sending order ready SMS to {formatted_phone} (original: {customer_phone})")
+                    logger.info(
+                        f"Sending order ready SMS to {formatted_phone} (original: {customer_phone})"
+                    )
 
                     # Send SMS with formatted phone number
                     send_sms_hubtel(formatted_phone, message)
@@ -457,7 +467,9 @@ def create_routes(limiter):
         payment_method = data.get("payment_method")
 
         update_payment_status(order_number, payment_method)
-        logger.info(f"Payment status for order {order_number} updated to {payment_method}")
+        logger.info(
+            f"Payment status for order {order_number} updated to {payment_method}"
+        )
 
         return {"message": "Payment updated successfully"}, 200
 
@@ -509,7 +521,7 @@ def create_routes(limiter):
 
         try:
             logger.info(f"Initiating payment for order {order_number}")
-            
+
             response = requests.post(
                 Config.HUBTEL_CHECKOUT_URL,
                 json=payload,
@@ -540,10 +552,10 @@ def create_routes(limiter):
         try:
             # Capture raw request first
             raw_data = request.get_data(as_text=True)
-            
+
             # Parse JSON data
             data = request.json
-            
+
             # Validate we have basic structure
             if not all(field in data for field in ["ResponseCode", "Status"]):
                 logger.error("Missing required top-level fields in callback data")
@@ -565,12 +577,16 @@ def create_routes(limiter):
                 order_number = transaction_data.get("ClientReference", "")
 
                 if order_number:
-                    logger.info(f"Processing successful payment for order: {order_number}")
+                    logger.info(
+                        f"Processing successful payment for order: {order_number}"
+                    )
 
                     try:
                         # Update order payment method to 'paid'
                         update_payment_status(order_number, "paid")
-                        logger.info(f"Order {order_number} payment status updated to 'paid'")
+                        logger.info(
+                            f"Order {order_number} payment status updated to 'paid'"
+                        )
 
                         # Get complete order details from database
                         order = get_order_by_reference(order_number)
@@ -584,11 +600,15 @@ def create_routes(limiter):
                                 customer_name, order_details
                             )
                             send_sms_hubtel(phone, formatted_message)
-                            logger.info(f"Payment confirmation SMS sent for order {order_number}")
+                            logger.info(
+                                f"Payment confirmation SMS sent for order {order_number}"
+                            )
                         else:
                             logger.error(f"Order {order_number} not found in database")
                     except Exception as processing_error:
-                        logger.error(f"Error processing transaction: {str(processing_error)}")
+                        logger.error(
+                            f"Error processing transaction: {str(processing_error)}"
+                        )
 
             return jsonify({"status": "received"}), 200
 
@@ -627,7 +647,9 @@ def create_routes(limiter):
 
             # Handle response appropriately
             if response.status_code == 403 or response.status_code == 401:
-                logger.error(f"Authentication failed for payment status check: {response.status_code}")
+                logger.error(
+                    f"Authentication failed for payment status check: {response.status_code}"
+                )
                 return (
                     jsonify(
                         {
