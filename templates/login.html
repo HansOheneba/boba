@@ -1,51 +1,45 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      rel="icon"
-      href="{{ url_for('static', filename='img/logo.png') }}"
-      type="image/png"
-    />
-  </head>
-  <body class="bg-gray-100">
+     <link rel="icon" href="{{ url_for('static', filename='img/logo.png') }}" type="image/png">
+</head>
+<body class="bg-gray-100">
     <div class="container mx-auto px-4 py-12">
-      <h1 class="text-3xl font-bold text-center text-gray-800 mb-10">
-        Admin Login
-      </h1>
-      <div
-        class="max-w-md mx-auto bg-white p-8 border border-gray-200 rounded-lg shadow-lg"
-      >
-        <form method="POST" action="{{ url_for('app.login') }}">
-          {{ form.hidden_tag() }}
-          <div class="mb-4">
-            <label
-              for="username"
-              class="block text-sm font-medium text-gray-700"
-              >Username</label
-            >
-            {{ form.username(class_="mt-1 block w-full px-3 py-2 border
-            border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2
-            focus:ring-blue-500") }}
-          </div>
-          <div class="mb-4">
-            <label
-              for="password"
-              class="block text-sm font-medium text-gray-700"
-              >Password</label
-            >
-            {{ form.password(class_="mt-1 block w-full px-3 py-2 border
-            border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2
-            focus:ring-blue-500") }}
-          </div>
-          {{ form.submit(class_="w-full px-4 py-2 bg-blue-600 text-white
-          rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2
-          focus:ring-blue-500") }}
-        </form>
-      </div>
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-10">Admin Login</h1>
+        <div class="max-w-md mx-auto bg-white p-8 border border-gray-200 rounded-lg shadow-lg">
+            <form action="/login" method="POST">
+                <div class="mb-4">
+                    <label for="username" class="block text-sm font-medium text-gray-700">Username</label>
+                    <input
+                        type="text"
+                        name="username"
+                        id="username"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                    />
+                </div>
+                <div class="mb-4">
+                    <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input
+                        type="password"
+                        name="password"
+                        id="password"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        required
+                    />
+                </div>
+                <button
+                    type="submit"
+                    class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                    Login
+                </button>
+            </form>
+        </div>
     </div>
-  </body>
+</body>
 </html>

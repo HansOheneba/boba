@@ -12,9 +12,7 @@ print("DB Name:", os.getenv("MYSQL_DB"))
 
 
 class Config:
-    SECRET_KEY = os.environ.get(
-        "SECRET_KEY", "a-very-secret-key-please-change-in-production"
-    )
+    SECRET_KEY = os.getenv("SECRET_KEY")
     MYSQL_HOST = os.getenv("MYSQL_HOST")
     MYSQL_USER = os.getenv("MYSQL_USER")
     MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
@@ -25,16 +23,16 @@ class Config:
     IMAGEKIT_PRIVATE_KEY = os.getenv("IMAGEKIT_PRIVATE_KEY")
     IMAGEKIT_PUBLIC_KEY = os.getenv("IMAGEKIT_PUBLIC_KEY")
     IMAGEKIT_URL_ENDPOINT = os.getenv("IMAGEKIT_URL_ENDPOINT")
-
+    
     # Hubtel payment API credentials
     HUBTEL_API_ID = os.getenv("HUBTEL_API_ID")
     HUBTEL_API_KEY = os.getenv("HUBTEL_API_KEY")
     HUBTEL_MERCHANT_ACCOUNT = os.getenv("HUBTEL_MERCHANT_ACCOUNT")
-
+    
     # Hubtel API endpoints - remove duplicates
     HUBTEL_CHECKOUT_URL = "https://payproxyapi.hubtel.com/items/initiate"
     HUBTEL_STATUS_URL = "https://api-txnstatus.hubtel.com/transactions"
-
+    
     @classmethod
     def print_hubtel_config(cls):
         """Print Hubtel configuration for debugging"""
