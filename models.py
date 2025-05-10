@@ -14,6 +14,14 @@ import pymysql.cursors
 load_dotenv()
 cloudinary.config(cloudinary_url=os.getenv("CLOUDINARY_URL"))
 
+# Global cache variable to be set from routes.py
+cache = None
+
+def set_cache(cache_instance):
+    """Set the cache instance from routes.py"""
+    global cache
+    cache = cache_instance
+
 
 def upload_image_to_cloudinary(file: FileStorage):
     try:
@@ -196,6 +204,17 @@ def create_order(
 
 
 def get_orders(status=None):
+    """Fetch orders with optional status filtering, with caching."""
+    # Generate a cache key based on the status parameter
+    cache_key = f'orders_{status if status else "all"}'
+    
+    # Check if we have a cache hit
+    if cache:
+        cached_orders = cache.get(cache_key)
+        if cached_orders:
+            return cached_orders
+    
+    # No cache hit, query the database
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
 
@@ -217,7 +236,12 @@ def get_orders(status=None):
     # Convert time to human-readable format
     for order in orders:
         order["time_ago"] = format_time_ago(order["seconds_ago"])
-
+    
+    # Store in cache with a shorter timeout (1 minute)
+    # Orders change more frequently than products or toppings
+    if cache:
+        cache.set(cache_key, orders, timeout=60)
+    
     return orders
 
 
@@ -265,12 +289,25 @@ def cancel_order(order_id):
 
 
 def get_products():
-    """Fetch all active (non-deleted) products from the database."""
+    """Fetch all active (non-deleted) products from the database with caching."""
+    # If cache is available and has products data, return it
+    if cache:
+        cached_products = cache.get('all_products')
+        if cached_products:
+            return cached_products
+    
+    # No cache hit, query the database
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     cursor.execute("SELECT * FROM products WHERE deleted = 0 ORDER BY id")
     products = cursor.fetchall()
     conn.close()
+    
+    # Store in cache if available
+    if cache:
+        # Cache for 5 minutes (300 seconds)
+        cache.set('all_products', products, timeout=300)
+    
     return products
 
 
@@ -290,6 +327,10 @@ def add_product(
     )
     conn.commit()
     conn.close()
+    
+    # Invalidate products cache when a new product is added
+    if cache:
+        cache.delete('all_products')
 
 
 def update_product(
@@ -318,6 +359,10 @@ def update_product(
 
     conn.commit()
     conn.close()
+    
+    # Invalidate products cache when a product is updated
+    if cache:
+        cache.delete('all_products')
 
 
 def delete_product(product_id):
@@ -327,6 +372,10 @@ def delete_product(product_id):
     cursor.execute("UPDATE products SET deleted = 1 WHERE id = %s", (product_id,))
     conn.commit()
     conn.close()
+    
+    # Invalidate products cache when a product is deleted
+    if cache:
+        cache.delete('all_products')
 
 
 def get_transactions(search_query=None):
@@ -410,12 +459,25 @@ def create_toppings_table():
 
 
 def get_toppings():
-    """Fetch all active (non-deleted) toppings from the database."""
+    """Fetch all active (non-deleted) toppings from the database with caching."""
+    # Check cache first
+    if cache:
+        cached_toppings = cache.get('all_toppings')
+        if cached_toppings:
+            return cached_toppings
+    
+    # No cache hit, query the database
     conn = get_db_connection()
     cursor = conn.cursor(pymysql.cursors.DictCursor)
     cursor.execute("SELECT * FROM toppings WHERE deleted = 0 ORDER BY name")
     toppings = cursor.fetchall()
     conn.close()
+    
+    # Store in cache
+    if cache:
+        # Cache for 5 minutes (300 seconds)
+        cache.set('all_toppings', toppings, timeout=300)
+    
     return toppings
 
 
@@ -429,6 +491,10 @@ def add_topping(name, in_stock=True):
     )
     conn.commit()
     conn.close()
+    
+    # Invalidate toppings cache when a new topping is added
+    if cache:
+        cache.delete('all_toppings')
 
 
 def update_topping(topping_id, name, in_stock):
@@ -441,6 +507,10 @@ def update_topping(topping_id, name, in_stock):
     )
     conn.commit()
     conn.close()
+    
+    # Invalidate toppings cache when a topping is updated
+    if cache:
+        cache.delete('all_toppings')
 
 
 def delete_topping(topping_id):
@@ -450,6 +520,10 @@ def delete_topping(topping_id):
     cursor.execute("UPDATE toppings SET deleted = 1 WHERE id = %s", (topping_id,))
     conn.commit()
     conn.close()
+    
+    # Invalidate toppings cache when a topping is deleted
+    if cache:
+        cache.delete('all_toppings')
 
 
 def populate_default_toppings():

@@ -66,6 +66,18 @@ print(f"Basic Auth: {basic_auth}")
 # Create a Blueprint named "app"
 app = Blueprint("app", __name__)
 
+# Define a cache variable to be set from app.py
+cache = None
+
+def set_cache(cache_instance):
+    """Set the cache instance from app.py"""
+    global cache
+    cache = cache_instance
+    
+    # Also set the cache in models.py
+    from models import set_cache as models_set_cache
+    models_set_cache(cache_instance)
+
 
 def initiate_hubtel_payment(
     total_amount,
