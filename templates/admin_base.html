@@ -92,20 +92,28 @@
           document.querySelector("[x-data]").__x.$data.selectedBobaQuantity;
         const selectedBobaType =
           document.querySelector("[x-data]").__x.$data.selectedBobaType;
-        let price = size === "Large" ? 40 : 30; // Default price for large with toppings
 
-        if (size === "Medium") {
-          price = 30; // Price for medium with no toppings
-          addToCart(selectedBobaType + " (" + size + ")", price, quantity);
-        } else {
-          addToCart(
-            selectedBobaType + " (" + size + ") with " + topping,
-            price,
-            quantity
-          );
-        }
+        // Get price from the database based on product name and size
+        getProductPrice(selectedBobaType, size).then((price) => {
+          if (price === null) {
+            // Fallback to default prices if product not found or error occurs
+            price = size === "Large" ? 40 : 30;
+          }
 
-        document.querySelector("[x-data]").__x.$data.showToppingsModal = false;
+          if (size === "Medium") {
+            addToCart(selectedBobaType + " (" + size + ")", price, quantity);
+          } else {
+            addToCart(
+              selectedBobaType + " (" + size + ") with " + topping,
+              price,
+              quantity
+            );
+          }
+
+          document.querySelector(
+            "[x-data]"
+          ).__x.$data.showToppingsModal = false;
+        });
       }
 
       function selectShawarmaType(type) {
@@ -125,17 +133,26 @@
           document.querySelector("[x-data]").__x.$data.selectedShawarmaQuantity;
         const selectedShawarmaType =
           document.querySelector("[x-data]").__x.$data.selectedShawarmaType;
-        let price =
-          size === "Medium"
-            ? selectedShawarmaType.includes("Chicken")
-              ? 35
-              : 40
-            : selectedShawarmaType.includes("Chicken")
-            ? 45
-            : 50;
 
-        addToCart(selectedShawarmaType + " (" + size + ")", price, quantity);
-        document.querySelector("[x-data]").__x.$data.showShawarmaModal = false;
+        // Get price from the database based on product name and size
+        getProductPrice(selectedShawarmaType, size).then((price) => {
+          if (price === null) {
+            // Fallback to default prices if product not found or error occurs
+            price =
+              size === "Medium"
+                ? selectedShawarmaType.includes("Chicken")
+                  ? 35
+                  : 40
+                : selectedShawarmaType.includes("Chicken")
+                ? 45
+                : 50;
+          }
+
+          addToCart(selectedShawarmaType + " (" + size + ")", price, quantity);
+          document.querySelector(
+            "[x-data]"
+          ).__x.$data.showShawarmaModal = false;
+        });
       }
 
       function selectIceTeaType(type) {
@@ -153,10 +170,17 @@
           document.querySelector("[x-data]").__x.$data.selectedIceTeaQuantity;
         const selectedIceTeaType =
           document.querySelector("[x-data]").__x.$data.selectedIceTeaType;
-        let price = size === "Large" ? 40 : 30; // Default price for large
 
-        addToCart(selectedIceTeaType + " (" + size + ")", price, quantity);
-        document.querySelector("[x-data]").__x.$data.showIceTeaModal = false;
+        // Get price from the database based on product name and size
+        getProductPrice(selectedIceTeaType, size).then((price) => {
+          if (price === null) {
+            // Fallback to default prices if product not found or error occurs
+            price = size === "Large" ? 40 : 30;
+          }
+
+          addToCart(selectedIceTeaType + " (" + size + ")", price, quantity);
+          document.querySelector("[x-data]").__x.$data.showIceTeaModal = false;
+        });
       }
 
       function addToCart(item, price, quantity = 1) {
@@ -283,6 +307,41 @@
           });
         });
       });
+
+      // Add this script right before the end of the existing script section
+      // This function will fetch product prices from the database
+      async function getProductPrice(productName, size) {
+        try {
+          // Fetch all products
+          const response = await fetch("/api/products");
+          if (!response.ok) {
+            throw new Error("Failed to fetch products");
+          }
+
+          const products = await response.json();
+
+          // Find the product that matches the name
+          const product = products.find((p) => p.name === productName);
+
+          if (!product) {
+            console.warn(`Product not found: ${productName}`);
+            return null;
+          }
+
+          // Return the appropriate price based on size
+          if (
+            size.toLowerCase() === "small" ||
+            size.toLowerCase() === "medium"
+          ) {
+            return product.small_price || 30; // Default to 30 if price not set
+          } else {
+            return product.large_price || 40; // Default to 40 if price not set
+          }
+        } catch (error) {
+          console.error("Error fetching product price:", error);
+          return null;
+        }
+      }
     </script>
     <style>
       [x-cloak] {

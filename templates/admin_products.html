@@ -143,7 +143,7 @@
             <td class="p-2 flex space-x-2 items-center">
               <!-- Edit Button -->
               <button
-                onclick="editProduct('{{ product.id }}', '{{ product.name }}', '{{ product.category }}', '{{ product.in_stock }}', '{{ product.image }}')"
+                onclick="editProduct('{{ product.id }}', '{{ product.name }}', '{{ product.category }}', '{{ product.in_stock }}', '{{ product.image }}', '{{ product.small_price }}', '{{ product.large_price }}')"
                 class="flex items-center justify-center w-20 h-8 space-x-1 bg-yellow-500 text-white px-3 py-1.5 rounded-md text-sm font-medium shadow-md hover:bg-yellow-600 transition"
               >
                 <i class="fa-solid fa-pen"></i>
@@ -158,10 +158,10 @@
                 >
                   <i class="fa-solid fa-ellipsis-vertical"></i>
                 </button>
-                
+
                 <!-- Dropdown Menu -->
-                <div 
-                  x-show="open" 
+                <div
+                  x-show="open"
                   @click.away="open = false"
                   x-transition:enter="transition ease-out duration-200"
                   x-transition:enter-start="opacity-0 scale-95"
@@ -194,11 +194,14 @@
         </tbody>
       </table>
     </div>
-    
+
     <!-- Card view for mobile screens -->
     <div class="md:hidden space-y-4">
       {% for product in products %}
-      <div class="bg-white rounded-lg shadow-md p-4 product-row" data-category="{{ product.category }}">
+      <div
+        class="bg-white rounded-lg shadow-md p-4 product-row"
+        data-category="{{ product.category }}"
+      >
         <div class="flex items-center justify-between">
           <h3 class="font-medium text-gray-900">{{ product.name }}</h3>
           <span
@@ -207,20 +210,26 @@
             {{ "In Stock" if product.in_stock else "Out of Stock" }}
           </span>
         </div>
-        
+
         <div class="mt-2 flex items-center">
           <div class="w-16 h-16 flex-shrink-0 mr-4">
-            <img src="{{ product.image }}" class="h-full w-full object-contain" alt="{{ product.name }}" />
+            <img
+              src="{{ product.image }}"
+              class="h-full w-full object-contain"
+              alt="{{ product.name }}"
+            />
           </div>
           <div class="flex-1">
-            <p class="text-sm text-gray-600">Category: <span class="font-medium">{{ product.category }}</span></p>
+            <p class="text-sm text-gray-600">
+              Category: <span class="font-medium">{{ product.category }}</span>
+            </p>
           </div>
         </div>
-        
+
         <div class="mt-4 flex justify-end space-x-2">
           <!-- Edit Button -->
           <button
-            onclick="editProduct('{{ product.id }}', '{{ product.name }}', '{{ product.category }}', '{{ product.in_stock }}', '{{ product.image }}')"
+            onclick="editProduct('{{ product.id }}', '{{ product.name }}', '{{ product.category }}', '{{ product.in_stock }}', '{{ product.image }}', '{{ product.small_price }}', '{{ product.large_price }}')"
             class="flex items-center justify-center w-24 h-9 space-x-1 bg-yellow-500 text-white px-3 py-1.5 rounded-md text-sm font-medium shadow-md hover:bg-yellow-600 transition"
           >
             <i class="fa-solid fa-pen"></i>
@@ -235,10 +244,10 @@
             >
               <i class="fa-solid fa-ellipsis-vertical"></i>
             </button>
-            
+
             <!-- Dropdown Menu -->
-            <div 
-              x-show="open" 
+            <div
+              x-show="open"
               @click.away="open = false"
               class="absolute right-0 mt-2 w-40 bg-white rounded-md shadow-lg z-30"
               x-cloak
@@ -263,7 +272,7 @@
       </div>
       {% endfor %}
     </div>
-    
+
     <!-- No products message -->
     <div id="no-products-message" class="hidden text-center py-8 text-gray-500">
       No products found for the selected category
@@ -321,6 +330,33 @@
         class="border p-2 w-full mb-2"
       />
 
+      <!-- Add Price Fields -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+        <div>
+          <label class="block">Small Price (GHS):</label>
+          <input
+            type="number"
+            step="0.01"
+            name="small_price"
+            id="small_price"
+            placeholder="Small size price"
+            class="border p-2 w-full mb-2"
+          />
+        </div>
+        <div>
+          <label class="block">Large Price (GHS):</label>
+          <input
+            type="number"
+            step="0.01"
+            name="large_price"
+            id="large_price"
+            placeholder="Large size price"
+            class="border p-2 w-full mb-2"
+          />
+        </div>
+      </div>
+
+      <label class="block">In Stock:</label>
       <label class="block">
         <input type="checkbox" name="in_stock" id="in_stock" /> In Stock
       </label>
@@ -380,17 +416,35 @@
     document.getElementById("currentImage").classList.add("hidden");
   }
 
-  function editProduct(id, name, category, inStock, imageUrl) {
+  function editProduct(
+    id,
+    name,
+    category,
+    inStock,
+    imageUrl,
+    smallPrice,
+    largePrice
+  ) {
     // First reset the form to clear any previous values
     document.getElementById("product_id").value = "";
     document.getElementById("name").value = "";
     document.getElementById("category").value = "Bubble Tea";
     document.getElementById("in_stock").checked = false;
+    document.getElementById("small_price").value = "";
+    document.getElementById("large_price").value = "";
 
     // Then set the product details
     document.getElementById("product_id").value = id;
     document.getElementById("name").value = name;
     document.getElementById("category").value = category;
+
+    // Set the price values if they exist
+    if (smallPrice !== "None" && smallPrice !== "undefined" && smallPrice) {
+      document.getElementById("small_price").value = smallPrice;
+    }
+    if (largePrice !== "None" && largePrice !== "undefined" && largePrice) {
+      document.getElementById("large_price").value = largePrice;
+    }
 
     // Fix the in-stock checkbox handling to properly interpret Python boolean
     const inStockValue = String(inStock).toLowerCase();
@@ -418,12 +472,14 @@
   function filterProducts() {
     const selectedCategory = document.getElementById("categoryFilter").value;
     const selectedStock = document.getElementById("stockFilter").value;
-    const searchQuery = document.getElementById("searchFilter").value.toLowerCase();
-    
+    const searchQuery = document
+      .getElementById("searchFilter")
+      .value.toLowerCase();
+
     // Get all product rows from both views
     const tableRows = document.querySelectorAll("table .product-row");
     const cardRows = document.querySelectorAll(".md\\:hidden .product-row");
-    
+
     // Use only one set for counting total products (avoid double-counting)
     const totalProducts = tableRows.length || cardRows.length;
     let visibleProducts = 0;
@@ -433,21 +489,22 @@
     // Function to process each row with the same logic
     function processRow(row, shouldCount) {
       const rowCategory = row.getAttribute("data-category");
-      
+
       // Get product name from either table cell or card heading
       let productName = "";
       const tdName = row.querySelector("td:first-child");
       const cardName = row.querySelector("h3");
-      
+
       if (tdName) {
         productName = tdName.textContent.toLowerCase();
       } else if (cardName) {
         productName = cardName.textContent.toLowerCase();
       }
-      
+
       // Check if product is in stock
       const statusSpan = row.querySelector("span");
-      const isInStock = statusSpan && statusSpan.textContent.trim() === "In Stock";
+      const isInStock =
+        statusSpan && statusSpan.textContent.trim() === "In Stock";
 
       // Count stock status only once (when shouldCount is true)
       if (shouldCount && isInStock) {
@@ -456,7 +513,8 @@
         outOfStockCount++;
       }
 
-      const matchesCategory = selectedCategory === "all" || rowCategory === selectedCategory;
+      const matchesCategory =
+        selectedCategory === "all" || rowCategory === selectedCategory;
       let matchesStock = true;
 
       if (selectedStock === "in-stock") {
@@ -465,7 +523,8 @@
         matchesStock = !isInStock;
       }
 
-      const matchesSearch = searchQuery === "" || productName.includes(searchQuery);
+      const matchesSearch =
+        searchQuery === "" || productName.includes(searchQuery);
       const isVisible = matchesCategory && matchesStock && matchesSearch;
 
       // Show/hide the row based on filter results
@@ -478,15 +537,15 @@
       } else {
         row.classList.add("hidden");
       }
-      
+
       return isVisible;
     }
 
     // Process table rows (and count stats from these)
-    tableRows.forEach(row => processRow(row, true));
-    
+    tableRows.forEach((row) => processRow(row, true));
+
     // Process card rows (don't count stats again)
-    cardRows.forEach(row => processRow(row, false));
+    cardRows.forEach((row) => processRow(row, false));
 
     // Update product counts
     document.getElementById("product-count").textContent = visibleProducts;

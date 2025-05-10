@@ -274,8 +274,10 @@ def get_products():
     return products
 
 
-def add_product(name, image_url, category, in_stock):
-    """Add a new product to the database with ImageKit URL."""
+def add_product(
+    name, image_url, category, in_stock, small_price=None, large_price=None
+):
+    """Add a new product to the database with ImageKit URL and price information."""
     conn = get_db_connection()
     cursor = conn.cursor()
 
@@ -283,27 +285,35 @@ def add_product(name, image_url, category, in_stock):
         print("Warning: Image URL is empty before inserting into DB!")
 
     cursor.execute(
-        "INSERT INTO products (name, image, category, in_stock) VALUES (%s, %s, %s, %s)",
-        (name, image_url, category, in_stock),
+        "INSERT INTO products (name, image, category, in_stock, small_price, large_price) VALUES (%s, %s, %s, %s, %s, %s)",
+        (name, image_url, category, in_stock, small_price, large_price),
     )
     conn.commit()
     conn.close()
 
 
-def update_product(product_id, name, category, in_stock, image_url=None):
-    """Update a product’s details, including optional ImageKit URL update."""
+def update_product(
+    product_id,
+    name,
+    category,
+    in_stock,
+    image_url=None,
+    small_price=None,
+    large_price=None,
+):
+    """Update a product's details, including optional ImageKit URL update and price information."""
     conn = get_db_connection()
     cursor = conn.cursor()
 
     if image_url:  # Only update image if a new one is provided
         cursor.execute(
-            "UPDATE products SET name=%s, category=%s, in_stock=%s, image=%s WHERE id=%s",
-            (name, category, in_stock, image_url, product_id),
+            "UPDATE products SET name=%s, category=%s, in_stock=%s, image=%s, small_price=%s, large_price=%s WHERE id=%s",
+            (name, category, in_stock, image_url, small_price, large_price, product_id),
         )
     else:
         cursor.execute(
-            "UPDATE products SET name=%s, category=%s, in_stock=%s WHERE id=%s",
-            (name, category, in_stock, product_id),
+            "UPDATE products SET name=%s, category=%s, in_stock=%s, small_price=%s, large_price=%s WHERE id=%s",
+            (name, category, in_stock, small_price, large_price, product_id),
         )
 
     conn.commit()

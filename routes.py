@@ -456,6 +456,16 @@ def admin_products():
         name = request.form["name"]
         category = request.form["category"]
         in_stock = request.form.get("in_stock") == "on"
+        small_price = request.form.get("small_price")
+        large_price = request.form.get("large_price")
+
+        # Convert prices to float or None
+        small_price = (
+            float(small_price) if small_price and small_price.strip() else None
+        )
+        large_price = (
+            float(large_price) if large_price and large_price.strip() else None
+        )
 
         file = request.files.get("image")  # Get the uploaded file
         image_url = None
@@ -468,9 +478,17 @@ def admin_products():
                 print("Image upload failed.")
 
         if product_id:  # If updating a product
-            update_product(product_id, name, category, in_stock, image_url)
+            update_product(
+                product_id,
+                name,
+                category,
+                in_stock,
+                image_url,
+                small_price,
+                large_price,
+            )
         else:  # If adding a new product
-            add_product(name, image_url, category, in_stock)
+            add_product(name, image_url, category, in_stock, small_price, large_price)
 
         return redirect(url_for("app.admin_products"))
 
@@ -863,3 +881,10 @@ def get_available_toppings():
         print(f"Error in get_available_toppings: {str(e)}")
         # Return an empty list rather than an error to prevent breaking the UI
         return jsonify([])
+
+
+@app.route("/api/products", methods=["GET"])
+def api_products():
+    """API endpoint to get all products with their prices"""
+    products = get_products()
+    return jsonify(products)
