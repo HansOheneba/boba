@@ -18,6 +18,7 @@ app.register_blueprint(routes_app)
 
 # Make cache available to routes
 from routes import set_cache
+
 set_cache(cache)
 
 if __name__ == "__main__":

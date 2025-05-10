@@ -69,13 +69,15 @@ app = Blueprint("app", __name__)
 # Define a cache variable to be set from app.py
 cache = None
 
+
 def set_cache(cache_instance):
     """Set the cache instance from app.py"""
     global cache
     cache = cache_instance
-    
+
     # Also set the cache in models.py
     from models import set_cache as models_set_cache
+
     models_set_cache(cache_instance)
 
 
@@ -447,17 +449,64 @@ Need help? Chat with us on WhatsApp: (https://wa.me/233536440126)
 
     status_filter = request.args.get("status", "")
     search_query = request.args.get("search", "")
+    sort_order = request.args.get("sort", "fcfs")  # Changed to default to "fcfs"
 
-    orders = get_orders(status=status_filter)
+    # Pagination parameters
+    page = request.args.get("page", 1, type=int)
+    per_page = 10  # Number of orders per page
 
+    # Get all orders first with existing filters
+    all_orders = get_orders(status=status_filter)
+
+    # Apply search filter if specified
     if search_query:
-        orders = [
+        all_orders = [
             order
-            for order in orders
+            for order in all_orders
             if search_query.lower() in order["order_number"].lower()
         ]
 
-    return render_template("admin.html", orders=orders)
+    # Apply sorting - now FCFS is the default
+    if sort_order == "fcfs" and all_orders:
+        # Sort by id (which reflects creation order) in ascending order (oldest first)
+        all_orders = sorted(all_orders, key=lambda x: x["id"])
+    elif sort_order == "newest" and all_orders:
+        # Sort by id in descending order (newest first) - only if explicitly selected
+        all_orders = sorted(all_orders, key=lambda x: x["id"], reverse=True)
+
+    # Calculate total pages
+    total_orders = len(all_orders)
+    total_pages = (total_orders + per_page - 1) // per_page  # Ceiling division
+
+    # Paginate the orders
+    start_idx = (page - 1) * per_page
+    end_idx = start_idx + per_page
+    paginated_orders = all_orders[start_idx:end_idx]
+
+    # Ensure page is within valid range
+    if page < 1 or (page > 1 and page > total_pages):
+        return redirect(
+            url_for(
+                "app.admin",
+                page=1,
+                status=status_filter,
+                search=search_query,
+                sort=sort_order,
+            )
+        )
+
+    return render_template(
+        "admin.html",
+        orders=paginated_orders,
+        page=page,
+        total_pages=total_pages,
+        per_page=per_page,
+        total_orders=total_orders,
+        status_filter=status_filter,
+        search_query=search_query,
+        sort_order=sort_order,  # Pass the sort order to the template
+        all_orders=all_orders,  # Pass all orders to the template for accurate notification counting
+    )
 
 
 @app.route("/admin/products", methods=["GET", "POST"])
@@ -836,7 +885,14 @@ def save_order():
 @app.route("/admin/pending-orders-count")
 @login_required
 def pending_orders_count():
-    """Return the count of pending orders as JSON."""
+    """Return the count of pending orders as JSON. Only for admin dashboard use."""
+    # Get the referrer (the page that made the request)
+    referrer = request.referrer
+
+    # Check if the request is coming from the admin page
+    if not referrer or "/admin" not in referrer:
+        return jsonify({"error": "Unauthorized access"}), 403
+
     orders = get_orders(status="pending")
     return jsonify({"count": len(orders)})
 
