@@ -447,9 +447,9 @@ Need help? Chat with us on WhatsApp: (https://wa.me/233536440126)
 
         return redirect("/admin")
 
-    status_filter = request.args.get("status", "")
+    status_filter = request.args.get("status", "pending")  # Default to "pending" orders
     search_query = request.args.get("search", "")
-    sort_order = request.args.get("sort", "fcfs")  # Changed to default to "fcfs"
+    sort_order = request.args.get("sort", "fcfs")  # Default to "fcfs"
 
     # Pagination parameters
     page = request.args.get("page", 1, type=int)
