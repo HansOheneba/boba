@@ -37,6 +37,9 @@ from models import (
     update_topping,
     delete_topping,
     populate_default_toppings,
+    get_setting,
+    update_setting,
+    get_cup_availability,
 )
 from werkzeug.security import check_password_hash
 import random
@@ -956,3 +959,28 @@ def api_products():
     """API endpoint to get all products with their prices"""
     products = get_products()
     return jsonify(products)
+
+
+@app.route("/api/settings/cups", methods=["GET"])
+def get_cups_availability():
+    """API endpoint to get cup size availability settings"""
+    return jsonify(get_cup_availability())
+
+
+@app.route("/api/settings/cups", methods=["POST"])
+def update_cups_availability():
+    """API endpoint to update cup size availability settings"""
+    if not session.get("admin_id"):
+        return jsonify({"error": "Unauthorized"}), 401
+
+    data = request.json
+    if not data:
+        return jsonify({"error": "No data provided"}), 400
+
+    if "small_cups_available" in data:
+        update_setting("small_cups_available", bool(data["small_cups_available"]))
+
+    if "large_cups_available" in data:
+        update_setting("large_cups_available", bool(data["large_cups_available"]))
+
+    return jsonify({"success": True, "settings": get_cup_availability()})

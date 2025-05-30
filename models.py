@@ -563,3 +563,57 @@ def populate_default_toppings():
 
     conn.commit()
     conn.close()
+
+
+def get_setting(key):
+    """Get a setting value by key from the settings table"""
+    # Check cache first
+    if cache:
+        cached_setting = cache.get(f"setting_{key}")
+        if cached_setting is not None:
+            return cached_setting
+
+    # No cache hit, query the database
+    conn = get_db_connection()
+    cursor = conn.cursor(pymysql.cursors.DictCursor)
+    cursor.execute("SELECT setting_value FROM settings WHERE setting_key = %s", (key,))
+    result = cursor.fetchone()
+    conn.close()
+
+    setting_value = (
+        result["setting_value"] if result else True
+    )  # Default to True if not found
+
+    # Store in cache
+    if cache:
+        # Cache for 5 minutes (300 seconds)
+        cache.set(f"setting_{key}", setting_value, timeout=300)
+
+    return setting_value
+
+
+def update_setting(key, value):
+    """Update a setting in the settings table"""
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO settings (setting_key, setting_value) VALUES (%s, %s) "
+        "ON DUPLICATE KEY UPDATE setting_value = %s",
+        (key, value, value),
+    )
+    conn.commit()
+    conn.close()
+
+    # Invalidate cache
+    if cache:
+        cache.delete(f"setting_{key}")
+
+    return True
+
+
+def get_cup_availability():
+    """Get availability status for both cup sizes"""
+    return {
+        "small_cups_available": get_setting("small_cups_available"),
+        "large_cups_available": get_setting("large_cups_available"),
+    }

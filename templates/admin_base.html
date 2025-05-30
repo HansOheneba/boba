@@ -100,7 +100,7 @@
             price = size === "Large" ? 40 : 30;
           }
 
-          if (size === "Medium") {
+          if (topping === "No Toppings") {
             addToCart(selectedBobaType + " (" + size + ")", price, quantity);
           } else {
             addToCart(

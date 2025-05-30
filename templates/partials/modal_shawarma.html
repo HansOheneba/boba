@@ -8,15 +8,36 @@
   x-transition:leave-start="opacity-100 scale-100"
   x-transition:leave-end="opacity-0 scale-90"
 >
-  <div class="bg-[#12091A] border border-gray-700 p-6 rounded-xl shadow-lg max-w-sm w-full">
-    <h2 class="text-xl font-bold text-gray-300 text-center" x-text="selectedShawarmaType"></h2>
+  <div
+    class="bg-[#12091A] border border-gray-700 p-6 rounded-xl shadow-lg max-w-sm w-full"
+  >
+    <h2
+      class="text-xl font-bold text-gray-300 text-center"
+      x-text="selectedShawarmaType"
+    ></h2>
     <div class="mt-4 text-sm space-y-3">
-      <label class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg hover:bg-[#1C0F2D] cursor-pointer transition">
-        <input type="radio" name="shawarma_size" value="Medium" class="w-5 h-5 text-purple-500 focus:ring-purple-500" />
+      <label
+        class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg hover:bg-[#1C0F2D] cursor-pointer transition"
+      >
+        <input
+          type="radio"
+          x-model="selectedShawarmaSize"
+          name="shawarma_size"
+          value="Medium"
+          class="w-5 h-5 text-purple-500 focus:ring-purple-500"
+        />
         <span class="text-gray-300">Medium</span>
       </label>
-      <label class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg hover:bg-[#1C0F2D] cursor-pointer transition">
-        <input type="radio" name="shawarma_size" value="Large" class="w-5 h-5 text-purple-500 focus:ring-purple-500" />
+      <label
+        class="flex items-center gap-3 p-3 border border-gray-600 rounded-lg hover:bg-[#1C0F2D] cursor-pointer transition"
+      >
+        <input
+          type="radio"
+          x-model="selectedShawarmaSize"
+          name="shawarma_size"
+          value="Large"
+          class="w-5 h-5 text-purple-500 focus:ring-purple-500"
+        />
         <span class="text-gray-300">Large</span>
       </label>
     </div>

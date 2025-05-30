@@ -18,7 +18,17 @@
     class="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4 mb-6"
   >
     <!-- Add Product Button -->
-    <div class="w-full lg:w-auto lg:order-2">
+    <div class="w-full lg:w-auto lg:order-2 flex flex-col sm:flex-row gap-3">
+      <!-- Cup Availability Button -->
+      <button
+        onclick="openCupSettingsModal()"
+        class="w-full sm:w-auto flex items-center justify-center space-x-2 bg-purple-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-purple-700 transition"
+      >
+        <i class="fa-solid fa-mug-hot"></i>
+        <span>Cup Settings</span>
+      </button>
+
+      <!-- Add Product Button -->
       <button
         onclick="openModal()"
         class="w-full sm:w-auto flex items-center justify-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition"
@@ -384,6 +394,87 @@
   </div>
 </div>
 
+<!-- Cup Settings Modal -->
+<div
+  id="cupSettingsModal"
+  class="fixed inset-0 items-center justify-center bg-black bg-opacity-50 hidden text-black"
+>
+  <div class="bg-white p-6 rounded-lg w-96">
+    <h3 class="text-xl font-semibold mb-4">Cup Size Availability</h3>
+    <div class="mb-6">
+      <p class="text-gray-600 text-sm mb-4">
+        Control which cup sizes are available to customers. If a cup size is
+        disabled, customers won't be able to select that size.
+      </p>
+
+      <!-- Small Cup Setting -->
+      <div class="mb-4 p-4 border rounded-lg bg-gray-50">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="font-medium">Small Cups</h4>
+            <p class="text-sm text-gray-500 mt-1">
+              Enable/disable small cup sizes
+            </p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              id="smallCupsCheckbox"
+              class="sr-only peer"
+            />
+            <div
+              class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"
+            ></div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Large Cup Setting -->
+      <div class="p-4 border rounded-lg bg-gray-50">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="font-medium">Large Cups</h4>
+            <p class="text-sm text-gray-500 mt-1">
+              Enable/disable large cup sizes
+            </p>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input
+              type="checkbox"
+              id="largeCupsCheckbox"
+              class="sr-only peer"
+            />
+            <div
+              class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"
+            ></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-2">
+      <button
+        type="button"
+        onclick="closeCupSettingsModal()"
+        class="bg-gray-500 text-white px-4 py-2 rounded"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        onclick="saveCupSettings()"
+        id="saveCupSettingsBtn"
+        class="bg-green-500 text-white px-4 py-2 rounded flex items-center justify-center gap-2"
+      >
+        <span class="button-text">Save Settings</span>
+        <span
+          class="loader hidden animate-spin border-2 border-white border-t-transparent rounded-full w-4 h-4"
+        ></span>
+      </button>
+    </div>
+  </div>
+</div>
+
 <script>
   function openModal() {
     // Clear the form fields first to prevent storage-based autocomplete
@@ -465,8 +556,95 @@
     modal.classList.add("flex");
   }
 
+  // Initialize product counts on page load
+  document.addEventListener("DOMContentLoaded", function () {
+    filterProducts();
+    // Also fetch cup settings when page loads
+    fetchCupSettings();
+  });
+
   function filterProductsByCategory() {
     filterProducts();
+  }
+
+  // Cup settings functions
+  async function fetchCupSettings() {
+    try {
+      const response = await fetch("/api/settings/cups");
+      if (!response.ok) {
+        throw new Error("Failed to fetch cup settings");
+      }
+      const settings = await response.json();
+
+      // Update checkboxes based on current settings
+      document.getElementById("smallCupsCheckbox").checked =
+        settings.small_cups_available;
+      document.getElementById("largeCupsCheckbox").checked =
+        settings.large_cups_available;
+    } catch (error) {
+      console.error("Error fetching cup settings:", error);
+    }
+  }
+
+  function openCupSettingsModal() {
+    // Fetch the latest settings first
+    fetchCupSettings();
+
+    // Then show the modal
+    const modal = document.getElementById("cupSettingsModal");
+    modal.classList.remove("hidden");
+    modal.classList.add("flex");
+  }
+
+  function closeCupSettingsModal() {
+    const modal = document.getElementById("cupSettingsModal");
+    modal.classList.add("hidden");
+    modal.classList.remove("flex");
+  }
+
+  async function saveCupSettings() {
+    // Get button and show loading state
+    const button = document.getElementById("saveCupSettingsBtn");
+    const buttonText = button.querySelector(".button-text");
+    const loader = button.querySelector(".loader");
+
+    buttonText.classList.add("opacity-0");
+    loader.classList.remove("hidden");
+
+    try {
+      const smallCupsAvailable =
+        document.getElementById("smallCupsCheckbox").checked;
+      const largeCupsAvailable =
+        document.getElementById("largeCupsCheckbox").checked;
+
+      const response = await fetch("/api/settings/cups", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          small_cups_available: smallCupsAvailable,
+          large_cups_available: largeCupsAvailable,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save cup settings");
+      }
+
+      // Close the modal after saving
+      closeCupSettingsModal();
+
+      // Show a success notification
+      alert("Cup settings saved successfully!");
+    } catch (error) {
+      console.error("Error saving cup settings:", error);
+      alert("Failed to save cup settings. Please try again.");
+    } finally {
+      // Reset button state
+      buttonText.classList.remove("opacity-0");
+      loader.classList.add("hidden");
+    }
   }
 
   function filterProducts() {
@@ -565,6 +743,8 @@
   // Initialize product counts on page load
   document.addEventListener("DOMContentLoaded", function () {
     filterProducts();
+    // Also fetch cup settings when page loads
+    fetchCupSettings();
   });
 
   function filterProductsByCategory() {
